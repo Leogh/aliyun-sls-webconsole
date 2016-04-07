@@ -1,0 +1,8 @@
+{
+  "directory": "public/javascripts/libs/",
+  "analytics": false,
+  "timeout": 120000,
+  "ignoredDependencies": [
+    "jquery", "bootstrap"
+  ]
+}
