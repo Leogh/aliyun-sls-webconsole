@@ -1,0 +1,14 @@
+{
+  "appenders": [{
+    "type": "dateFile",
+    "filename": "./logs/app.log",
+    "pattern": "_yyyy-MM-dd",
+    "maxLogSize": 50000,
+    "alwaysIncludePattern": false,
+    "category": "dateFileLog"
+  }],
+  "replaceConsole": true,
+  "levels": {
+    "dateFileLog": "INFO"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "db": {
+    "mongo": {
+      "connectionString": "mongodb://@localhost:27017/aliyun-sls-webconsole-dev"
+    }
+  },
+  "aliyun": {
+    "sls": {
+      "accessKeyId": "",
+      "secretAccessKey": "",
+      "endpoint": "http://cn-hangzhou.sls.aliyuncs.com",
+      "apiVersion": "2015-06-01"
+    }
+  },
+  "logging": {
+    "configPath": "config/log4js/log.config.json"
+  }
+}
