@@ -3,7 +3,7 @@ var defaultConfig = require("./default");
 var conf = defaultConfig._extend(defaultConfig.get(), {
   db: {
     mongo: {
-      connectionString: "mongodb://@localhost:27017/aliyun-sls-webconsole-dev"
+      connectionString: "<your-mongodb-connectionString>"
     }
   },
   aliyun: {
