@@ -11,6 +11,7 @@ by Roman Lo
 目前项目处于初始化阶段，功能也很单一：仅仅用于查询和浏览SLS上的日志。
 
 未来可能涉及的模块和功能包括但不限于
+
 1. Authentication & Authorization
 2. LogStore Management
 3. Topic Management
@@ -18,6 +19,12 @@ by Roman Lo
 5. Log Analysis (Dashboards, Notifications, etc.)
 
 ## Build & Installation
+
+### Environment Setup
+
+服务器环境搭建请参照[Environment Setup](https://github.com/DidaTravel/aliyun-sls-webconsole/wiki/Enviroment-Setup)
+
+### Application Setup
 
 pending...
 
