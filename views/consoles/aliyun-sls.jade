@@ -1,7 +1,42 @@
 extends ../layout
 
+block scripts
+
+
 block content
-  .row
-    .col-xs-12
-      h1 Console
-      p Welcome to Console!
+
+  //- indicates the controller path
+
+  input#controllerPath(type='hidden', value='consoles/aliyun-sls-controller')
+
+  //- use 'controller as' to distiguish properties in $rootScope and the current controller scope
+
+  div(ng-controller='AliyunSLSController as vm')
+    .row
+      .col-xs-12
+        h1 Aliyun SLS Console
+        hr
+
+    .row.project-panel
+      .col-xs-12
+        .panel.panel-default
+          .panel-body
+            .form-inline
+              .form-group
+                label Project:&nbsp;
+                input.form-control(ng-model='vm.searchOptions.projectName', placeholder='日志服务项目名称')
+              .form-group
+                button.btn.btn-primary(ng-click='vm.searchOptions.confirmProjectName()') 确定
+
+    .row.search-panel(ng-show='vm.logStoreLoaded')
+      .col-xs-12
+        .panel.panel-default
+          .panel-body
+            .form-inline
+              .form-group
+                select.form-control(ng-model='vm.searchOptions.logStoreName', ng-options='store in vm.stores')
+              .form-group
+                input.form-control(ng-model='vm.searchOptions.topic')
+              .form-group
+                input.form-control(ng-model='vm.searchOptions.keyword')
+

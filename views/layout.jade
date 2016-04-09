@@ -1,7 +1,41 @@
 doctype html
-html(ng-app="webapp")
+html
   include ./includes/head.jade
-  body
-    .container
+
+  body#applicationScope
+
+    .container#loadingContainer
+      p Page is loading...
+
+    .container.hidden#mainContainer(ng-cloak)
       block content
+
     include ./includes/foot.jade
+
+    //- script(src='javascripts/libs/requirejs/require.js', type='text/javascript')
+
+    script(type='text/javascript', src='//cdn.bootcss.com/require.js/2.1.22/require.js')
+    script(type='text/javascript').
+      // getting the controller path
+      var controllerPath = document.getElementById('controllerPath').value;
+      console.log(controllerPath);
+      if (controllerPath) {
+        requirejs.config({
+          baseUrl: 'javascripts/',
+        });
+        require(['config'], function () {
+          'use strict';
+          require([
+            controllerPath
+          ], function(webapp){
+            // hide the loading message
+            document.getElementById('loadingContainer').className = 'hidden';
+            // show the main container after everything is done.
+            document.getElementById('mainContainer').className = 'container';
+            // bootstraping the angular application
+            angular.bootstrap(document.getElementById('applicationScope'), ['webapp']);
+          });
+        });
+      } else {
+        console.warn('no controller path was found. angular won\'t be loaded.');
+      }
