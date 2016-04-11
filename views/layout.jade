@@ -6,10 +6,10 @@ html
     
     include ./includes/nav-banner.jade
     
-    .container#loadingContainer
+    .container.main#loadingContainer
       p Page is loading...
 
-    .container.hidden#mainContainer(ng-cloak)
+    .container.main.hidden#mainContainer(ng-cloak)
       block content
 
     include ./includes/foot.jade
@@ -25,26 +25,29 @@ html
       var controllerPathEl = document.getElementById('controllerPath');
       var controllerPath = controllerPathEl ? controllerPathEl.value : null;
       console.log(controllerPath);
-      if (controllerPath) {
-        requirejs.config({
-          baseUrl: "/javascripts/",
-        });
-        require(['config'], function () {
-          'use strict';
+      requirejs.config({
+        baseUrl: "/javascripts/",
+      });
+      require(['config'], function () {
+        'use strict';
+        if (controllerPath) {
           require([
             controllerPath
           ], function(webapp){
             // hide the loading message
             loadingContainer.className = 'hidden';
             // show the main container after everything is done.
-            mainContainer.className = 'container';
+            mainContainer.className = 'container-fluid main';
             // bootstraping the angular application
             angular.bootstrap(document.getElementById('applicationScope'), ['webapp']);
           });
-        });
-      } else {
-        console.warn('no controller path was found. angular won\'t be loaded.');
-        loadingContainer.className = 'hidden';
-        mainContainer.className = 'container';
-        mainContainer.removeAttribute('ng-cloak');
-      }
+        } else {
+          require(['jquery', 'bootstrap'], function () {
+            console.warn('no controller path was found. angular won\'t be loaded.');
+            loadingContainer.className = 'hidden';
+            mainContainer.className = 'container-fluid main';
+            mainContainer.removeAttribute('ng-cloak');
+            $('.dropdown-toggle').dropdown();
+          });          
+        }        
+      });

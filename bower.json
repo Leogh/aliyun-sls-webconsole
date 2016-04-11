@@ -8,9 +8,10 @@
     "bootstrap": "^3.3.6",
     "requirejs": "2.2.0",
     "text": "2.0.14",
-    "bootstrap-ui-datetime-picker": "^2.3.1",
     "SyntaxHighlighter": "^3.0.83",
-    "jquery": "^2.1.2"
+    "jquery": "^2.1.2",
+    "highcharts-ng": "^0.0.11",
+    "highcharts": "^4.2.3"
   },
   "ignore": []
 }

@@ -2,9 +2,25 @@ html, body {
 
 }
 
+.container-fluid.main,
+.container.main {
+  margin-top: 60px;
+}
+
+hr.sm {
+  margin: 20px 0;
+}
+
+hr.xs {
+  margin: 10px 0;
+}
+
 .form-inline .form-group {
-  margin-right: 5px;
-  margin-bottom: 10px;
+  margin: 5px 10px 5px 0;
+}
+
+.pagination-row .pagination {
+  margin: 0;
 }
 
 .code-container {

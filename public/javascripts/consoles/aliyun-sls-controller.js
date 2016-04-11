@@ -8,7 +8,7 @@ define([
 ], function(webapp) {
   
   // injections
-  aliyunSLSController.$inject = ['$scope' , 'services.aliyun-sls-service'];
+  aliyunSLSController.$inject = ['$scope' , 'services.aliyun-sls-service', 'highchartsNG'];
   
   return webapp
     .controller('AliyunSLSController', aliyunSLSController)
@@ -17,13 +17,19 @@ define([
     .filter('codeFilter', codeFilter);
     
   // controller
-  function aliyunSLSController($scope, slsService) {
+  function aliyunSLSController($scope, slsService, highchartsNG) {
     var vm = this;
     var now = new Date();
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-        
+    var tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+    
+    vm.showChart = '0';
     vm.projectNameLocked = false;
     vm.projectReady = false;
+    vm.levels = ['All', 'Debug', 'Info', 'Warn', 'Error', 'Fatal'];
+    vm.hours = genTimeRange(0, 23);
+    vm.minutes = genTimeRange(0, 59);
+    vm.seconds = genTimeRange(0, 59);
     
     vm.projects = [];
     
@@ -32,21 +38,65 @@ define([
     vm.topics = [];
     
     vm.histograms = [];
-    vm.logCount = 0;
     
     vm.logs = [];
+    
+    vm.chartConfig = {
+      options: {
+        chart: {
+          type: 'spline',
+        },
+      },
+      xAxis: {
+        type: 'datetime',
+        dateTimeLabelFormats: { // don't display the dummy year
+          minute: '%H:%M',
+          day: '%e. %b',
+        },
+        title: {
+          text: 'log time'
+        }
+      },
+      yAxis: {
+        title: {
+          text: 'log count',
+        },
+      },
+      series: [{
+        name: 'total log count',
+        data: []
+      }],
+      title: '日志',
+      loading: true,
+    };
     
     vm._preSearchOption = {};
     vm.searchOptions = {      
       projectName: '',      
       logStoreName: null,
       topic: null,
+      logLevel: 'All',
       keyword: '',
       from: today,
-      to: now,
+      to: tmr,
+      timeOptions: {
+        from: {
+          h: '00',
+          m: '00',
+          s: '00',
+        },
+        to: {
+          h: '00',
+          m: '00',
+          s: '00',
+        },
+        enabled: false,
+      },
       page: {
         pageNum: 1,
         pageSize: 20,
+        totalAmount: 0,
+        pageCount: 0,
       },
     };
     
@@ -55,8 +105,12 @@ define([
       confirmProjectName: confirmProjectName,
       unlockProjectName: unlockProjectName,
       confirmLogStore: confirmLogStore,
-      search: search,
+      search: search
     });
+    
+    highchartsNG.ready(function () {
+      
+    }, this);
     
     return;
     
@@ -67,7 +121,7 @@ define([
       vm.topics = [];    
       vm.histograms = [];
       vm.logs = [];
-      vm.logCount = 0;
+      vm.searchOptions.totalAmount = 0;
       initLogStores()
         .success(function () {
           vm.projectReady = true;
@@ -120,16 +174,19 @@ define([
     }
     
     function search(page) {
-      // TODO: implementations
       vm.logs = [];
+      if (page > 0) {
+        vm.searchOptions.page.pageNum = page;
+      }
       loadHistograms()['finally'](function () {
+        vm.chartConfig.loading = false;
         getLogs();
       });
     }
     
     function loadHistograms() {
+      vm.chartConfig.series[0].data = [];
       vm.histograms = [];
-      vm.logCount = 0;
       return slsService
         .getHistograms(
           vm.searchOptions.projectName, 
@@ -140,10 +197,37 @@ define([
           vm.searchOptions.to)
         .success(function (body, headers){
           vm.histograms = body;
-          vm.logCount = headers['x-log-count'];          
+          vm.searchOptions.page.totalAmount = parseInt(headers['x-log-count']);          
+          var cnZoneOffset = 8 * 3600; // GMT+8:00
+          var range = 0;
+          angular.forEach(vm.histograms, function (item, idx) {
+            if (idx == 0) {
+              range = item.to - item.from;
+            }
+            var ticks = Math.floor((item.to - item.from) / 2) + item.from;            
+            vm.chartConfig.series[0].data.push({
+              x: (ticks + cnZoneOffset) * 1000,
+              y: item.count
+            });            
+          });
+          if (range > 0) {
+            var unit = 'sec';
+            var mod = 1;
+            if (range > 60) {
+              unit = 'min';
+              mod = 60;
+            }
+            if (range > 3600) {
+              unit = 'hr'
+              mod = 3600;
+            }
+            vm.chartConfig.series[0].name = `Count range ${Math.ceil(range / mod)}${unit}`; 
+          }
         })
         .error(function (code, msg) {
           console.error(code, msg);
+          vm.searchOptions.page.totalAmount = 0;
+          vm.searchOptions.page.pageNum = 1;
         });        
     }
     
@@ -157,6 +241,22 @@ define([
         .error(function (code, msg) {
           console.error(code, msg);
         });       
+    }
+    
+    function pageChange(){
+      
+    }
+    
+    function genTimeRange(s, e) {
+      var arr = [];
+      for(var i = s; i <= e; i++){
+        var str = i.toString();
+        if (i < 10) {
+          str = '0' + str;
+        }
+        arr.push(str);
+      }
+      return arr;
     }
   }
 

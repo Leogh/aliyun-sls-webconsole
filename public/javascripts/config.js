@@ -10,9 +10,6 @@ requirejs.config({
     "angular-sanitize": "//cdn.bootcss.com/angular.js/1.5.0/angular-sanitize.min", //"libs/angular-sanitize/angular-sanitize.min",
     //"angular-bootstrap": "../libs/angular-bootstrap/ui-bootstrap.min",
     "angular-bootstrap-tpls": "libs/angular-bootstrap/ui-bootstrap-tpls.min",
-    // "bootstrap-ui-datetime-picker": "libs/bootstrap-ui-datetime-picker/dist/datetime-picker",
-    // "bootstrap-ui-datetime-picker-tpls": "libs/bootstrap-ui-datetime-picker/dist/datetime-picker.tpls",
-    "bootstrap-ui-datetime-picker": "libs/bootstrap-ui-datetime-picker/dist/datetime-picker.min",
     "vkbeautify": "3rd-parties/vkbeautify",
     // syntax highlighters
     "syntax-highlighter-xregexp": "libs/SyntaxHighlighter/scripts/XRegExp",
@@ -20,7 +17,9 @@ requirejs.config({
     "syntax-highlighter-autoloader": "libs/SyntaxHighlighter/scripts/shAutoloader",
     "syntax-highlighter-brush-jscript": "libs/SyntaxHighlighter/scripts/shBrushJScript",
     "syntax-highlighter-brush-xml": "libs/SyntaxHighlighter/scripts/shBrushXml",
-    
+    // highcharts support
+    "highcharts": "libs/highcharts/highcharts",
+    "highcharts-ng": "libs/highcharts-ng/dist/highcharts-ng.min",
     "text": "libs/text/text",
   },
   // defining shim
@@ -34,10 +33,7 @@ requirejs.config({
     'angular-sanitize': ['angular'],
     "angular-animate": ['angular'],
     'bootstrap': ['jquery'],
-    'angular-bootstrap-tpls': ['bootstrap', 'angular'],
-    // 'bootstrap-ui-datetime-picker-tpls': ['bootstrap-ui-datetime-picker'],
-    'bootstrap-ui-datetime-picker': ['angular-bootstrap-tpls'],
-    
+    'angular-bootstrap-tpls': ['bootstrap', 'angular'],    
     'shCore': {
         'deps': ['syntax-highlighter-xregexp'],
         'exports': 'SyntaxHighlighter',
@@ -51,6 +47,7 @@ requirejs.config({
     'syntax-highlighter-brush-jscript': ['shCore'],
     'syntax-highlighter-brush-xml': ['shCore'],
     
+    'highcharts-ng': ['highcharts', 'angular'],
     //'angular-bootstrap': ['bootstrap', 'angular-bootstrap-tpls']
   },
 

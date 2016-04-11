@@ -49,6 +49,10 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
     }
     
     function getLogs(options) {
+      if (options.timeOptions.enabled) {
+        initDateHours(options.from, options.timeOptions.from);
+        initDateHours(options.to, options.timeOptions.to);
+      }
       return slsApiRequest({
         url: '/aliyun-sls/logs',
         params: {
@@ -62,6 +66,10 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
             pageSize: options.page.pageSize,
         },
       });
+    }
+    
+    function initDateHours(date, timeOption){
+      date.setHours(parseInt(timeOption.h), parseInt(timeOption.m), parseInt(timeOption.s), 0);
     }
     
     function slsApiRequest(options) {

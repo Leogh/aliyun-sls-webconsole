@@ -32,6 +32,11 @@ router.post('/login', function (req, res, next) {
   })(req, res, next);
 });
 
+router.get('/logout', function (req) {
+  req.logout();
+  req.redirect('/login');
+});
+
 router.get('/register', function (req, res, next) {
   res.render('register', { title: 'Register' }); 
 });

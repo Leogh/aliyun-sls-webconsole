@@ -2,7 +2,7 @@ define([
   "angular",
   "angular-sanitize",
   "angular-bootstrap-tpls",
-  "bootstrap-ui-datetime-picker"
+  "highcharts-ng",
 ], function (angular) {
   'use strict';
   // construct angular module
@@ -10,6 +10,6 @@ define([
   return angular.module('webapp', [
     'ngSanitize',
     'ui.bootstrap',
-    'ui.bootstrap.datetimepicker'
+    'highcharts-ng',
   ]);
 });
