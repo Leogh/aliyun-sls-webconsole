@@ -1,6 +1,6 @@
 {
   "name": "aliyun-sls-webconsole",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "这是一个用于连接阿里云日志服务（Aliyun SLS）的基于Nodejs的网页应用。目的在于让Aliyun SLS的使用者能更加方便地查找和浏览存在阿里云中的日志（没办法，官方的控制台遇到长日志的时候根本看不下去）。",
   "main": "app.js",
   "scripts": {
