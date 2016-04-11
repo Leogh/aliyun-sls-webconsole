@@ -16,7 +16,7 @@ define(['webapp'], function (webapp) {
   webapp
     .directive('didaLogStruct', didaLogStruct);
   
-  didaLogStructController.$inject = ['$scope', '$filter'];
+  didaLogStructController.$inject = ['$scope', '$filter', '$timeout'];
     
   function didaLogStruct() {
     return {
@@ -26,15 +26,27 @@ define(['webapp'], function (webapp) {
       },
       controller: didaLogStructController,
       controllerAs: 'vm',
+      link: link,
       bindToController: true,
-      templateUrl: '/javascripts/directives/dida-log-struct.tpls.html'
+      templateUrl: '/javascripts/directives/dida-log-struct.tpls.html',
     };
   }
   
-  function didaLogStructController ($scope, $filter) {
+  function link(scope, element, attrs){
+    scope.highlightCode = function () {
+      $('.code-container', element).each(function (index, container){
+        var code = $('.codeblock', container).html();
+        var preBlock = $('pre', container);
+        preBlock.html(code);
+        SyntaxHighlighter.highlight(undefined, preBlock[0]); 
+      });
+    };
+  }
+  
+  function didaLogStructController ($scope, $filter, $timeout) {
     var vm = this;
-    var brushFilter = $filter('brushfilter');
-    var codeFilter = $filter('codefilter');
+    var brushFilter = $filter('brushFilter');
+    var codeFilter = $filter('codeFilter');
     var loglevelFilter = $filter('logLevel');
     
     vm.extraFields = [];    
@@ -60,6 +72,9 @@ define(['webapp'], function (webapp) {
           vm.extraFields.push(key);
         }
       });
+      $timeout(function () {
+        $scope.highlightCode();
+      }, 0);
     }
     
     function getLogLevelLabelClass(level) {

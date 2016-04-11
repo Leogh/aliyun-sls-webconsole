@@ -2,7 +2,7 @@ define([
   'webapp',
   'services/aliyun-sls-service',
   'directives/dida-log-struct',
-  'syntax-highlighter-brush-jsscript',
+  'syntax-highlighter-brush-jscript',
   'syntax-highlighter-brush-xml',
   'vkbeautify',
 ], function(webapp) {
@@ -64,12 +64,16 @@ define([
       vm.projectNameLocked = true;
       vm.projectReady = false;
       vm.logStores = [];
-      vm.topics = [];
+      vm.topics = [];    
+      vm.histograms = [];
+      vm.logs = [];
+      vm.logCount = 0;
       initLogStores()
         .success(function () {
           vm.projectReady = true;
         })
         .error(function () {
+          vm.projectNameLocked = false;
           vm.projectReady = false;
         });
     }
@@ -90,6 +94,7 @@ define([
         })
         .error(function (code, msg) {
           console.error(code, msg);
+          alert('error: ' + msg);
         });
     }
     

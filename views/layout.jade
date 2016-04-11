@@ -3,7 +3,9 @@ html
   include ./includes/head.jade
 
   body#applicationScope
-
+    
+    include ./includes/nav-banner.jade
+    
     .container#loadingContainer
       p Page is loading...
 
@@ -17,7 +19,11 @@ html
     script(type='text/javascript', src='//cdn.bootcss.com/require.js/2.1.22/require.js')
     script(type='text/javascript').
       // getting the controller path
-      var controllerPath = document.getElementById('controllerPath').value;
+      
+      var mainContainer = document.getElementById('mainContainer');
+      var loadingContainer = document.getElementById('loadingContainer');
+      var controllerPathEl = document.getElementById('controllerPath');
+      var controllerPath = controllerPathEl ? controllerPathEl.value : null;
       console.log(controllerPath);
       if (controllerPath) {
         requirejs.config({
@@ -29,13 +35,16 @@ html
             controllerPath
           ], function(webapp){
             // hide the loading message
-            document.getElementById('loadingContainer').className = 'hidden';
+            loadingContainer.className = 'hidden';
             // show the main container after everything is done.
-            document.getElementById('mainContainer').className = 'container';
+            mainContainer.className = 'container';
             // bootstraping the angular application
             angular.bootstrap(document.getElementById('applicationScope'), ['webapp']);
           });
         });
       } else {
         console.warn('no controller path was found. angular won\'t be loaded.');
+        loadingContainer.className = 'hidden';
+        mainContainer.className = 'container';
+        mainContainer.removeAttribute('ng-cloak');
       }

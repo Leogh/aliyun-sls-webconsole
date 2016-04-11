@@ -6,3 +6,17 @@ html, body {
   margin-right: 5px;
   margin-bottom: 10px;
 }
+
+.code-container {
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.code-container .panel-body {
+  padding: 0;
+}
+
+.code-container .syntaxhighlighter { 
+  max-height: 600px; 
+  margin: 0 !important; 
+}

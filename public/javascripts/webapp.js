@@ -2,7 +2,7 @@ define([
   "angular",
   "angular-sanitize",
   "angular-bootstrap-tpls",
-  "bootstrap-ui-datetime-picker-tpls"
+  "bootstrap-ui-datetime-picker"
 ], function (angular) {
   'use strict';
   // construct angular module

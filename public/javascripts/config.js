@@ -15,11 +15,11 @@ requirejs.config({
     "bootstrap-ui-datetime-picker": "libs/bootstrap-ui-datetime-picker/dist/datetime-picker.min",
     "vkbeautify": "3rd-parties/vkbeautify",
     // syntax highlighters
-    "syntax-highlighter-xregexp": "libs/SyntaxHighlighter/scripts/XRegExp.js",
-    "syntax-highlighter-core": "libs/SyntaxHighlighter/scripts/shCore.js",
-    "syntax-highlighter-autoloader": "libs/SyntaxHighlighter/scripts/shAutoloader.js",
-    "syntax-highlighter-brush-jsscript": "libs/SyntaxHighlighter/scripts/shAutoloader.js",
-    "syntax-highlighter-brush-xml": "libs/SyntaxHighlighter/scripts/shAutoloader.js",
+    "syntax-highlighter-xregexp": "libs/SyntaxHighlighter/scripts/XRegExp",
+    "shCore": "libs/SyntaxHighlighter/scripts/shCore",
+    "syntax-highlighter-autoloader": "libs/SyntaxHighlighter/scripts/shAutoloader",
+    "syntax-highlighter-brush-jscript": "libs/SyntaxHighlighter/scripts/shBrushJScript",
+    "syntax-highlighter-brush-xml": "libs/SyntaxHighlighter/scripts/shBrushXml",
     
     "text": "libs/text/text",
   },
@@ -38,9 +38,18 @@ requirejs.config({
     // 'bootstrap-ui-datetime-picker-tpls': ['bootstrap-ui-datetime-picker'],
     'bootstrap-ui-datetime-picker': ['angular-bootstrap-tpls'],
     
-    'syntax-highlighter-core': ['syntax-highlighter-xregexp'],
-    'syntax-highlighter-brush-jsscript': ['syntax-highlighter-core'],
-    'syntax-highlighter-brush-xml': ['syntax-highlighter-core'],
+    'shCore': {
+        'deps': ['syntax-highlighter-xregexp'],
+        'exports': 'SyntaxHighlighter',
+        'init': function () {
+            // proxy the SyntaxHighlighter as exports
+            return {
+                SyntaxHighlighter: this.SyntaxHighlighter
+            };
+        }
+    },
+    'syntax-highlighter-brush-jscript': ['shCore'],
+    'syntax-highlighter-brush-xml': ['shCore'],
     
     //'angular-bootstrap': ['bootstrap', 'angular-bootstrap-tpls']
   },

@@ -1,5 +1,6 @@
 /* namespace: aliyun-sls */
 var express = require('express');
+var passport = require('passport');
 var crypto = require("crypto");
 var shasum = crypto.createHash('sha1');
 var merge = require("merge");
@@ -7,6 +8,9 @@ var config = require("../../common/config");
 var restResp = require("../../common/rest-response");
 var AliyunSLSProject = require("../../models/aliyun-sls-project");
 var ALY = require("aliyun-sdk");
+var log4js = require('log4js');
+
+var logger = log4js.getLogger("aliyun.sls");
 
 var router = express.Router();
 /* create sls instance */
@@ -18,7 +22,7 @@ shasum.update(config.aliyun.sls.accessKeyId);
 const ALY_SLS_ACCESS_HASH = shasum.digest('hex');
 
 /* GET sls console home page. */
-router.get('/', function(req, res, next) {
+router.get('/', authChk('/login'), function(req, res, next) {
     // AliyunSLSProject
     //   .find({ hashing: ALY_SLS_ACCESS_HASH })
     //   .sort({ name: -1 })
@@ -34,7 +38,7 @@ router.get('/', function(req, res, next) {
 });
 
 /* POST save the project */
-router.post('/project', function (req, res, next) {
+router.post('/project', authChk('/login'), function (req, res, next) {
     var projectName = req.param('projectName');
     var project = new AliyunSLSProject({
       name: projectName,
@@ -53,12 +57,12 @@ router.post('/project', function (req, res, next) {
 });
 
 /* GET get log stores inside a project */
-router.get('/logstores', function (req, res, next) {
+router.get('/logstores', authChk('/login'), function (req, res, next) {
   sls.listLogStores(req.query, aliyunSLSCallback.bind(res));
 });
 
 /* GET get topics of a log store */
-router.get('/topics', function (req, res, next) {
+router.get('/topics', authChk('/login'), function (req, res, next) {
   sls.listTopics({
     //必选字段
     projectName: req.query.projectName,
@@ -69,7 +73,7 @@ router.get('/topics', function (req, res, next) {
 });
 
 /* GET get histograms of a topic */
-router.get('/histograms', function (req, res, next) {
+router.get('/histograms', authChk('/login'), function (req, res, next) {
   var from = calculateUNIXTimestamp(new Date(req.query.from));
   var to = calculateUNIXTimestamp(new Date(req.query.to));
   var topic = req.query.topic;
@@ -87,7 +91,7 @@ router.get('/histograms', function (req, res, next) {
   }, aliyunSLSCallback.bind(res));
 });
 
-router.get('/logs', function (req, res, next) {
+router.get('/logs', authChk('/login'), function (req, res, next) {
   var from = calculateUNIXTimestamp(new Date(req.query.from));
   var to = calculateUNIXTimestamp(new Date(req.query.to));
   var topic = req.query.topic;
@@ -130,11 +134,26 @@ function aliyunSLSCallback (err, data) {
   var result = null;
   if (err) {
     result = restResp.error(err.code, err.errorMessage || err.message);
-    console.error(err);
+    logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
   } else {
     result = restResp.success(data);
   }
   this.send(result);
+}
+
+function authChk (failRedirect) {
+  if (!failRedirect) {
+    //failRedirect = '/admin/login';
+  }
+  return function (req, res, next) {
+    if (req.isAuthenticated && req.user) {
+      return next();
+    }
+    if (typeof failRedirect === 'string') {
+      return res.redirect(failRedirect + "?from=" + req.originalUrl);            
+    }
+    res.status(401);
+  };
 }
 
 module.exports = router;

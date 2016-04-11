@@ -25,9 +25,11 @@
   <div class="col-xs-12 col-sm-6">
     <uib-tabset active="activeForm">
       <uib-tab index="$index" heading="{{ fieldName }}" ng-repeat="fieldName in vm.extraFields">
-        <div class="code-container">
-          <pre class="{{ vm.getCodeBrush(vm.doc[fieldName]) }}"></pre>
-          <div class="codeblock hidden">{{ vm.getFormattedCode(vm.doc[fieldName]) }}</div>
+        <div class="panel panel-default code-container">
+          <div class="panel-body">
+            <pre class="{{ vm.getCodeBrush(vm.doc[fieldName]) }}"></pre>
+            <div class="codeblock hidden">{{ vm.getFormattedCode(vm.doc[fieldName]) }}</div>
+          </div>
         </div>
       </uib-tab>
     </uib-tabset>
