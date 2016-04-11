@@ -1,0 +1,38 @@
+html, body {
+
+}
+
+.container-fluid.main,
+.container.main {
+  margin-top: 60px;
+}
+
+hr.sm {
+  margin: 20px 0;
+}
+
+hr.xs {
+  margin: 10px 0;
+}
+
+.form-inline .form-group {
+  margin: 5px 10px 5px 0;
+}
+
+.pagination-row .pagination {
+  margin: 0;
+}
+
+.code-container {
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.code-container .panel-body {
+  padding: 0;
+}
+
+.code-container .syntaxhighlighter { 
+  max-height: 600px; 
+  margin: 0 !important; 
+}

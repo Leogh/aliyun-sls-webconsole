@@ -1,0 +1,53 @@
+{
+  "name": "aliyun-sls-webconsole",
+  "version": "0.0.0",
+  "description": "这是一个用于连接阿里云日志服务（Aliyun SLS）的基于Nodejs的网页应用。目的在于让Aliyun SLS的使用者能更加方便地查找和浏览存在阿里云中的日志（没办法，官方的控制台遇到长日志的时候根本看不下去）。",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DidaTravel/aliyun-sls-webconsole.git"
+  },
+  "keywords": [
+    "aliyun-sls-webconsole",
+    "aliyun sls",
+    "阿里云日志服务"
+  ],
+  "author": {
+    "name": "Roman Lo",
+    "email": "roman@didatravel.com"
+  },
+  "contributors": [],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DidaTravel/aliyun-sls-webconsole/issues"
+  },
+  "homepage": "https://github.com/DidaTravel/aliyun-sls-webconsole#readme",
+  "dependencies": {
+    "aliyun-sdk": "^1.8.5",
+    "body-parser": "~1.13.2",
+    "cookie-parser": "~1.3.5",
+    "debug": "~2.2.0",
+    "express": "~4.13.1",
+    "express-session": "^1.13.0",
+    "jade": "~1.11.0",
+    "log4js": "^0.6.33",
+    "merge": "^1.2.0",
+    "mongoose": "^4.4.11",
+    "morgan": "~1.6.1",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^4.0.0",
+    "serve-favicon": "~2.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^2.7.0",
+    "eslint-config-google": "^0.4.0",
+    "gulp": "^3.9.1",
+    "gulp-eslint": "^2.0.0",
+    "gulp-jade": "^1.1.0"
+  }
+}

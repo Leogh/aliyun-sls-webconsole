@@ -1,0 +1,23 @@
+extends layout
+
+block content
+  .row
+    .col-sm-6.col-sm-push-3.col-md-4.col-md-push-4
+      h1= title
+      hr
+      if hasError
+        p.text-danger= errMessage
+      form.form-horizontal(method='POST')
+        .form-group
+          .col-xs-12
+            input.form-control(type='text', name='username', placeholder='用户名', value=username)
+        .form-group
+          .col-xs-12
+            input.form-control(type='password', name='password', placeholder='密码')
+        .form-group
+          .col-xs-12
+            input.form-control(type='password', name='passwordConfirm', placeholder='密码确认')
+        .form-group
+          .col-xs-12.text-center
+            input.btn.btn-primary(type='submit', value='注册')
+            
