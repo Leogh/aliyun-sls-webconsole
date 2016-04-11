@@ -1,5 +1,9 @@
 extends ../layout
 
+block stylesheets
+  link(rel="stylesheet", href="/javascripts/libs/SyntaxHighlighter/styles/shCore.css")
+  link(rel="stylesheet", href="/javascripts/libs/SyntaxHighlighter/styles/shThemeDefault.css")
+
 block scripts
 
 
@@ -14,29 +18,97 @@ block content
   div(ng-controller='AliyunSLSController as vm')
     .row
       .col-xs-12
-        h1 Aliyun SLS Console
-        hr
-
+        h2 Aliyun SLS Console
     .row.project-panel
       .col-xs-12
-        .panel.panel-default
+        h3 Search Options
+        .panel.panel-default 
           .panel-body
             .form-inline
               .form-group
                 label Project:&nbsp;
-                input.form-control(ng-model='vm.searchOptions.projectName', placeholder='日志服务项目名称')
-              .form-group
-                button.btn.btn-primary(ng-click='vm.searchOptions.confirmProjectName()') 确定
-
-    .row.search-panel(ng-show='vm.logStoreLoaded')
+                input.form-control(type='text', ng-model='vm.searchOptions.projectName', ng-disabled='vm.projectNameLocked', placeholder='日志服务项目名称')
+              .form-group(ng-show='!vm.projectNameLocked')
+                button.btn.btn-primary(ng-click='vm.confirmProjectName()') 确定
+              .form-group(ng-show='vm.projectNameLocked')
+                button.btn.btn-warning(ng-click='vm.unlockProjectName()') 修改
+              .form-group(ng-show='vm.projectReady')
+                label Log Store:&nbsp;
+                select.form-control(ng-model='vm.searchOptions.logStoreName', ng-change='vm.confirmLogStore()', ng-options='store for store in vm.logStores')
+              .form-group(ng-show='vm.projectReady')
+                label Topic:&nbsp;
+                select.form-control(ng-model='vm.searchOptions.topic', ng-options='topic for topic in vm.topics')
+              .form-group(ng-show='vm.projectReady')
+                label LogLevel:&nbsp;
+                select.form-control(ng-model='vm.searchOptions.logLevel', ng-options='level for level in vm.levels')
+            div(ng-show='vm.projectReady')              
+              hr.xs
+              .form-inline
+                //- From Date Options
+                .form-group
+                  label From:&nbsp;
+                  .input-group
+                    input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.fromIsOpen", ng-model='vm.searchOptions.from')
+                    span.input-group-btn
+                      button.btn.btn-default(ng-click='vm.fromIsOpen = true')
+                        i.glyphicon.glyphicon-calendar                
+                //- Advanced time select
+                .form-group(ng-show='vm.searchOptions.timeOptions.enabled')
+                  select.form-control(ng-model='vm.searchOptions.timeOptions.from.h',ng-options='hr for hr in vm.hours')
+                  label &nbsp;:&nbsp;
+                  select.form-control(ng-model='vm.searchOptions.timeOptions.from.m',ng-options='min for min in vm.minutes')
+                  label &nbsp;:&nbsp;
+                  select.form-control(ng-model='vm.searchOptions.timeOptions.from.s',ng-options='sec for sec in vm.seconds')
+                br(ng-if='vm.searchOptions.timeOptions.enabled')
+                //- To Date Options
+                .form-group
+                  label
+                    span(ng-if='vm.searchOptions.timeOptions.enabled') &nbsp;&nbsp;&nbsp;&nbsp;
+                    | To:&nbsp;
+                  .input-group
+                    input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.toIsOpen", ng-model='vm.searchOptions.to')
+                    span.input-group-btn
+                      button.btn.btn-default(ng-click='vm.toIsOpen = true')
+                        i.glyphicon.glyphicon-calendar                
+                //- Advanced time select
+                .form-group(ng-show='vm.searchOptions.timeOptions.enabled')
+                  select.form-control(ng-model='vm.searchOptions.timeOptions.to.h',ng-options='hr for hr in vm.hours')
+                  label &nbsp;:&nbsp;
+                  select.form-control(ng-model='vm.searchOptions.timeOptions.to.m',ng-options='min for min in vm.minutes')
+                  label &nbsp;:&nbsp;
+                  select.form-control(ng-model='vm.searchOptions.timeOptions.to.s',ng-options='sec for sec in vm.seconds')   
+                
+                .form-group
+                  a(ng-click='vm.searchOptions.timeOptions.enabled = !vm.searchOptions.timeOptions.enabled', href='') 
+                    i.glyphicon.glyphicon-time(ng-show='!vm.searchOptions.timeOptions.enabled')
+                    | &nbsp;{{ vm.searchOptions.timeOptions.enabled ? 'Hide' : 'Show' }} time options
+                
+              .form-inline
+                .form-group
+                  label Chart:&nbsp;
+                  select.form-control(ng-model='vm.showChart')
+                    option(value='1') Show
+                    option(value='0') Hide
+                .form-group
+                  label Keyword:&nbsp;
+                  input.form-control(type='text', ng-model='vm.searchOptions.keyword')
+                .form-group
+                  button.btn.btn-primary(ng-click='vm.search(1)') 查找
+    
+    .row.chart-row(ng-show='vm.projectReady && vm.showChart == "1"')
+      highchart#logSpanChart(config='vm.chartConfig')
+    
+    .row.log-panel
       .col-xs-12
-        .panel.panel-default
-          .panel-body
-            .form-inline
-              .form-group
-                select.form-control(ng-model='vm.searchOptions.logStoreName', ng-options='store in vm.stores')
-              .form-group
-                input.form-control(ng-model='vm.searchOptions.topic')
-              .form-group
-                input.form-control(ng-model='vm.searchOptions.keyword')
+        table.table.table-hover.table-striped.table-bordered
+          tbody
+            tr(ng-repeat="doc in vm.logs")
+              td
+                dida-log-struct(doc='doc')
+     
+    .row.pagination-row(ng-show='vm.searchOptions.page.pageCount > 1')
+      .col-xs-12
+        uib-pagination(total-items='vm.searchOptions.page.totalAmount', 
+                    ng-model='vm.searchOptions.page.pageNum', num-pages='vm.searchOptions.page.pageCount',
+                    ng-change='vm.search()', rotate='false', max-size='8', boundary-links='true')
 

@@ -47,6 +47,12 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+// pass user info to locals
+app.use(function(req,res,next){
+    res.locals.user = req.user;
+    next();
+});
+
 // mongoose setup
 mongoose.connect(config.db.mongo.connectionString);
 

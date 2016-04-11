@@ -1,0 +1,37 @@
+<div class="row">
+  <div class="col-xs-12 log-message-container">
+    <p>
+      <span class="label" ng-class="vm.getLogLevelLabelClass(vm.doc.LogLevel)">{{ vm.doc.LogLevel }}</span> &nbsp; {{ vm.doc.LogTime
+      }} - {{ vm.doc.LogMessage }}
+    </p>
+  </div>
+  <div class="col-xs-12 col-sm-6">
+    <p>
+      <strong>Machine (IP):</strong> {{ vm.doc.MachineName }} ({{ vm.doc.ip }})
+    </p>
+    <p>
+      <strong>Process:</strong> {{ vm.doc.ProcessName }}
+    </p>
+    <p>
+      <strong>Logger Name:</strong> {{ vm.doc.LoggerName }}
+    </p>
+    <p>
+      <strong>Stack Trace:</strong> {{ vm.doc.StackTrace }}
+    </p>
+    <p>
+      <strong>Exception:</strong> {{ vm.doc.Exception }}
+    </p>
+  </div>
+  <div class="col-xs-12 col-sm-6">
+    <uib-tabset active="activeForm">
+      <uib-tab index="$index" heading="{{ fieldName }}" ng-repeat="fieldName in vm.extraFields">
+        <div class="panel panel-default code-container">
+          <div class="panel-body">
+            <pre class="{{ vm.getCodeBrush(vm.doc[fieldName]) }}"></pre>
+            <div class="codeblock hidden">{{ vm.getFormattedCode(vm.doc[fieldName]) }}</div>
+          </div>
+        </div>
+      </uib-tab>
+    </uib-tabset>
+  </div>
+</div>
