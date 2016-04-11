@@ -19,24 +19,52 @@ block content
 
     .row.project-panel
       .col-xs-12
-        .panel.panel-default
+        h3 Search Options
+        .panel.panel-default 
           .panel-body
             .form-inline
               .form-group
                 label Project:&nbsp;
-                input.form-control(ng-model='vm.searchOptions.projectName', placeholder='日志服务项目名称')
-              .form-group
-                button.btn.btn-primary(ng-click='vm.searchOptions.confirmProjectName()') 确定
-
-    .row.search-panel(ng-show='vm.logStoreLoaded')
+                input.form-control(type='text', ng-model='vm.searchOptions.projectName', ng-disabled='vm.projectNameLocked', placeholder='日志服务项目名称')
+              .form-group(ng-show='!vm.projectNameLocked')
+                button.btn.btn-primary(ng-click='vm.confirmProjectName()') 确定
+              .form-group(ng-show='vm.projectNameLocked')
+                button.btn.btn-warning(ng-click='vm.unlockProjectName()') 修改
+              .form-group(ng-show='vm.projectReady')
+                label Log Store:&nbsp;
+                select.form-control(ng-model='vm.searchOptions.logStoreName', ng-change='vm.confirmLogStore()', ng-options='store for store in vm.logStores')
+              .form-group(ng-show='vm.projectReady')
+                label Topic:&nbsp;
+                select.form-control(ng-model='vm.searchOptions.topic', ng-options='topic for topic in vm.topics')
+            div(ng-show='vm.projectReady')
+              hr
+              .form-inline
+                .form-group
+                  label From:&nbsp;
+                  .input-group(ng-click='vm.fromIsOpen = true')
+                    input.form-control(type='text', datetime-picker="yyyy-MM-dd hh:mm:ss", is-open="vm.fromIsOpen", ng-model='vm.searchOptions.from')
+                    span.input-group-addon
+                      i.glyphicon.glyphicon-calendar                      
+                .form-group
+                  label To:&nbsp;
+                  .input-group(ng-click='vm.toIsOpen = true')
+                    input.form-control(type='text', datetime-picker="yyyy-MM-dd hh:mm:ss", is-open="vm.toIsOpen", ng-model='vm.searchOptions.to')
+                    span.input-group-addon
+                      i.glyphicon.glyphicon-calendar
+                .form-group
+                  label Keyword:&nbsp;
+                  input.form-control(type='text', ng-model='vm.searchOptions.keyword')
+                .form-group
+                  button.btn.btn-primary(ng-click='vm.search()') 查找
+    
+    
+    .row.log-panel
       .col-xs-12
-        .panel.panel-default
-          .panel-body
-            .form-inline
-              .form-group
-                select.form-control(ng-model='vm.searchOptions.logStoreName', ng-options='store in vm.stores')
-              .form-group
-                input.form-control(ng-model='vm.searchOptions.topic')
-              .form-group
-                input.form-control(ng-model='vm.searchOptions.keyword')
+        table.table.table-hover.table-striped.table-bordered
+          tbody
+            tr(ng-repeat="doc in vm.logs")
+              td
+                dida-log-struct(doc='doc')
+     
+    
 

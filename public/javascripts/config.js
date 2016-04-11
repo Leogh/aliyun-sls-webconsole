@@ -10,6 +10,17 @@ requirejs.config({
     "angular-sanitize": "//cdn.bootcss.com/angular.js/1.5.0/angular-sanitize.min", //"libs/angular-sanitize/angular-sanitize.min",
     //"angular-bootstrap": "../libs/angular-bootstrap/ui-bootstrap.min",
     "angular-bootstrap-tpls": "libs/angular-bootstrap/ui-bootstrap-tpls.min",
+    // "bootstrap-ui-datetime-picker": "libs/bootstrap-ui-datetime-picker/dist/datetime-picker",
+    // "bootstrap-ui-datetime-picker-tpls": "libs/bootstrap-ui-datetime-picker/dist/datetime-picker.tpls",
+    "bootstrap-ui-datetime-picker": "libs/bootstrap-ui-datetime-picker/dist/datetime-picker.min",
+    "vkbeautify": "3rd-parties/vkbeautify",
+    // syntax highlighters
+    "syntax-highlighter-xregexp": "libs/SyntaxHighlighter/scripts/XRegExp.js",
+    "syntax-highlighter-core": "libs/SyntaxHighlighter/scripts/shCore.js",
+    "syntax-highlighter-autoloader": "libs/SyntaxHighlighter/scripts/shAutoloader.js",
+    "syntax-highlighter-brush-jsscript": "libs/SyntaxHighlighter/scripts/shAutoloader.js",
+    "syntax-highlighter-brush-xml": "libs/SyntaxHighlighter/scripts/shAutoloader.js",
+    
     "text": "libs/text/text",
   },
   // defining shim
@@ -24,6 +35,13 @@ requirejs.config({
     "angular-animate": ['angular'],
     'bootstrap': ['jquery'],
     'angular-bootstrap-tpls': ['bootstrap', 'angular'],
+    // 'bootstrap-ui-datetime-picker-tpls': ['bootstrap-ui-datetime-picker'],
+    'bootstrap-ui-datetime-picker': ['angular-bootstrap-tpls'],
+    
+    'syntax-highlighter-core': ['syntax-highlighter-xregexp'],
+    'syntax-highlighter-brush-jsscript': ['syntax-highlighter-core'],
+    'syntax-highlighter-brush-xml': ['syntax-highlighter-core'],
+    
     //'angular-bootstrap': ['bootstrap', 'angular-bootstrap-tpls']
   },
 
