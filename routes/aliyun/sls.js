@@ -77,7 +77,7 @@ router.get('/histograms', authChk('/login'), function (req, res, next) {
   var from = calculateUNIXTimestamp(new Date(req.query.from));
   var to = calculateUNIXTimestamp(new Date(req.query.to));
   var topic = req.query.topic;
-  var query = req.query.keyword;
+  var query = req.query.query;
   sls.getHistograms({
     //必选字段
     projectName: req.query.projectName,
@@ -95,7 +95,7 @@ router.get('/logs', authChk('/login'), function (req, res, next) {
   var from = calculateUNIXTimestamp(new Date(req.query.from));
   var to = calculateUNIXTimestamp(new Date(req.query.to));
   var topic = req.query.topic;
-  var query = req.query.keyword;
+  var query = req.query.query;
   var pageNum = req.query.pageNum - 1;
   var pageSize = req.query.pageSize;
   sls.getLogs({

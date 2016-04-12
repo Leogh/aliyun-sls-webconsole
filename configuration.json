@@ -1,0 +1,14 @@
+{
+  "apps": [{
+    "name": "aliyun-sls-webconsole-dev",
+    "script": "./bin/www",
+    "node_args": ["--debug=7000"],
+    "env": {
+      "NODE_ENV": "local-dev"
+    },    
+    "watch": ["routes", "models", "config", "common"],
+    "out_file": "./logs/log.log",
+    "error_file": "./logs/err.log",
+    "merge_logs": true
+  }]
+}
