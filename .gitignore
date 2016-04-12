@@ -7,4 +7,5 @@ config/conf.prod.js
 .vscode/
 .mongo-data/
 .vscode/
+logs/
 mongod

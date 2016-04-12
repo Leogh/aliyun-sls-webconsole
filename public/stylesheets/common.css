@@ -23,11 +23,16 @@ hr.xs {
   margin: 0;
 }
 
+.reserve-field-container p {
+  word-wrap: break-word;
+}
+
 .code-container {
   border-top: 0;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
+
 .code-container .panel-body {
   padding: 0;
 }

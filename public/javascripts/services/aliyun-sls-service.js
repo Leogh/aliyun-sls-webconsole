@@ -34,21 +34,35 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
       });
     }
     
-    function getHistograms(projectName, logStoreName, topic, keyword, from, to) {
+    function getHistograms(options, queryBuilder) {
+      var query = options.keyword;
+      if (typeof queryBuilder === 'function') {
+          query = queryBuilder(options);
+      }
+      if (options.timeOptions.enabled) {
+        initDateHours(options.from, options.timeOptions.from);
+        initDateHours(options.to, options.timeOptions.to);
+      }
       return slsApiRequest({
         url: '/aliyun-sls/histograms',
         params: {
-            projectName: projectName,
-            logStoreName: logStoreName,
-            topic: topic,
-            from: from,
-            to: to,
-            keyword: keyword,
+          projectName: options.projectName,
+          logStoreName: options.logStoreName,
+          topic: options.topic,
+          from: options.from,
+          to: options.to,
+          query: query,
+          pageNum: options.page.pageNum,
+          pageSize: options.page.pageSize,
         },
       });
     }
     
-    function getLogs(options) {
+    function getLogs(options, queryBuilder) {
+      var query = options.keyword;
+      if (typeof queryBuilder === 'function') {
+          query = queryBuilder(options);
+      }
       if (options.timeOptions.enabled) {
         initDateHours(options.from, options.timeOptions.from);
         initDateHours(options.to, options.timeOptions.to);
@@ -56,14 +70,14 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
       return slsApiRequest({
         url: '/aliyun-sls/logs',
         params: {
-            projectName: options.projectName,
-            logStoreName: options.logStoreName,
-            topic: options.topic,
-            from: options.from,
-            to: options.to,
-            keyword: options.keyword,
-            pageNum: options.page.pageNum,
-            pageSize: options.page.pageSize,
+          projectName: options.projectName,
+          logStoreName: options.logStoreName,
+          topic: options.topic,
+          from: options.from,
+          to: options.to,
+          query: query,
+          pageNum: options.page.pageNum,
+          pageSize: options.page.pageSize,
         },
       });
     }
@@ -78,14 +92,14 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
       
       promise.success = function (callback) {
         promise.then(function (data) {
-            callback(data.body, data.headers);
+          callback(data.body, data.headers);
         });
         return promise;
       };
       
       promise.error = function (callback) {
         promise["catch"](function(arr){
-            callback(arr[0], arr[1]);
+          callback(arr[0], arr[1]);
         });
         return promise;
       };
@@ -93,10 +107,10 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
       http
         .send(options)
         .success(function (data) {
-            deferred.resolve(data);
+          deferred.resolve(data);
         })
         .error(function (code, msg) {
-            deferred.reject([code, msg]);
+          deferred.reject([code, msg]);
         });
       
       return promise;

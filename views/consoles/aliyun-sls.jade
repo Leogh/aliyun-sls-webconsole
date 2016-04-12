@@ -27,20 +27,23 @@ block content
             .form-inline
               .form-group
                 label Project:&nbsp;
-                input.form-control(type='text', ng-model='vm.searchOptions.projectName', ng-disabled='vm.projectNameLocked', placeholder='日志服务项目名称')
+                input.form-control(type='text', ng-model='vm.searchOptions.projectName', ng-keydown='vm.onProjectNameKeydown($event)', 
+                                ng-disabled='vm.projectNameLocked', placeholder='日志服务项目名称')
               .form-group(ng-show='!vm.projectNameLocked')
                 button.btn.btn-primary(ng-click='vm.confirmProjectName()') 确定
               .form-group(ng-show='vm.projectNameLocked')
                 button.btn.btn-warning(ng-click='vm.unlockProjectName()') 修改
+              
               .form-group(ng-show='vm.projectReady')
                 label Log Store:&nbsp;
                 select.form-control(ng-model='vm.searchOptions.logStoreName', ng-change='vm.confirmLogStore()', ng-options='store for store in vm.logStores')
               .form-group(ng-show='vm.projectReady')
                 label Topic:&nbsp;
-                select.form-control(ng-model='vm.searchOptions.topic', ng-options='topic for topic in vm.topics')
+                select.form-control(ng-model='vm.searchOptions.topic', ng-options='topic for topic in vm.topics') &nbsp;
               .form-group(ng-show='vm.projectReady')
-                label LogLevel:&nbsp;
-                select.form-control(ng-model='vm.searchOptions.logLevel', ng-options='level for level in vm.levels')
+                a(href='', ng-click='vm.reloadLogStoreAndTopic()') 
+                  i.glyphicon.glyphicon-refresh
+                  |  Reload              
             div(ng-show='vm.projectReady')              
               hr.xs
               .form-inline
@@ -84,6 +87,9 @@ block content
                     | &nbsp;{{ vm.searchOptions.timeOptions.enabled ? 'Hide' : 'Show' }} time options
                 
               .form-inline
+                .form-group(ng-show='vm.projectReady')
+                  label LogLevel:&nbsp;
+                  select.form-control(ng-model='vm.searchOptions.logLevel', ng-options='level for level in vm.levels')
                 .form-group
                   label Chart:&nbsp;
                   select.form-control(ng-model='vm.showChart')
@@ -94,9 +100,22 @@ block content
                   input.form-control(type='text', ng-model='vm.searchOptions.keyword')
                 .form-group
                   button.btn.btn-primary(ng-click='vm.search(1)') 查找
-    
+        
     .row.chart-row(ng-show='vm.projectReady && vm.showChart == "1"')
       highchart#logSpanChart(config='vm.chartConfig')
+    
+    .row.page-info-row(ng-show='vm.projectReady')
+      .col-xs-12
+        p 
+          strong Page Info:          
+          | {{ vm.searchOptions.page.pageNum }} / {{ vm.searchOptions.page.pageCount }} - 
+          strong Total: 
+          | {{ vm.searchOptions.page.totalAmount }} &nbsp;&nbsp;&nbsp;&nbsp;
+          button.btn.btn-sm.btn-link(ng-click='vm.searchOptions.page.pageNum = vm.searchOptions.page.pageNum - 1; vm.search();', 
+                                    ng-disabled='vm.searchOptions.page.pageNum == 1') Prev
+          | &nbsp;&nbsp;&nbsp;&nbsp;
+          button.btn.btn-sm.btn-link(ng-click='vm.searchOptions.page.pageNum = vm.searchOptions.page.pageNum + 1; vm.search();', 
+                                    ng-disabled='vm.searchOptions.page.pageNum == vm.searchOptions.page.pageCount') Next
     
     .row.log-panel
       .col-xs-12
@@ -108,7 +127,7 @@ block content
      
     .row.pagination-row(ng-show='vm.searchOptions.page.pageCount > 1')
       .col-xs-12
-        uib-pagination(total-items='vm.searchOptions.page.totalAmount', 
+        uib-pagination(total-items='vm.searchOptions.page.totalAmount', items-per-page='vm.searchOptions.page.pageSize'
                     ng-model='vm.searchOptions.page.pageNum', num-pages='vm.searchOptions.page.pageCount',
                     ng-change='vm.search()', rotate='false', max-size='8', boundary-links='true')
 
