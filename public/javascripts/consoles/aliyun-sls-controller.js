@@ -103,8 +103,10 @@ define([
     // actions
     angular.merge(vm, {
       confirmProjectName: confirmProjectName,
+      onProjectNameKeydown: onProjectNameKeydown,
       unlockProjectName: unlockProjectName,
       confirmLogStore: confirmLogStore,
+      reloadLogStoreAndTopic: reloadLogStoreAndTopic,
       search: search
     });
     
@@ -121,7 +123,8 @@ define([
       vm.topics = [];    
       vm.histograms = [];
       vm.logs = [];
-      vm.searchOptions.totalAmount = 0;
+      vm.searchOptions.page.totalAmount = 0;
+      vm.searchOptions.page.pageNum = 1;
       initLogStores()
         .success(function () {
           vm.projectReady = true;
@@ -132,23 +135,29 @@ define([
         });
     }
     
+    function onProjectNameKeydown(e) {
+      if (e.which == 13){
+        confirmProjectName();
+      }
+    }
+    
     function unlockProjectName() {
       vm.projectNameLocked = false;
     }
     
-    function initLogStores() {
+    function initLogStores(reloadCall) {
       return slsService
         .getLogStores(vm.searchOptions.projectName)
         .success(function (body, headers) {
           vm.logStores = body.logstores;
-          if (body.count > 0) {
+          if (!reloadCall && body.count > 0) {
             vm.searchOptions.logStoreName = vm.logStores[0];
             confirmLogStore();
           }
         })
         .error(function (code, msg) {
           console.error(code, msg);
-          alert('error: ' + msg);
+          alert('log stores load failed: ' + msg);
         });
     }
     
@@ -156,20 +165,29 @@ define([
       initTopics();
     }
     
-    function initTopics() {
-      vm.topics = [];
+    function initTopics(reloadCall) {     
       return slsService
         .getTopics(vm.searchOptions.projectName, vm.searchOptions.logStoreName)
         .success(function (body, headers) {
+          var topics = [];
           angular.forEach(body, function (topic, id) {
-            vm.topics.push(topic);
-          });
-          if (vm.topics.length > 0) {
+            topics.push(topic);
+          });          
+          vm.topics = topics;
+          if (!reloadCall && vm.topics.length > 0) {
             vm.searchOptions.topic = vm.topics[0];
           }
         })
         .error(function (code, msg) {
           console.error(code, msg);
+          alert('topics load failed: ' + msg);
+        });
+    }
+    
+    function reloadLogStoreAndTopic () {
+      initLogStores(true)
+        .success(function () {
+          initTopics(true);
         });
     }
     
@@ -188,13 +206,7 @@ define([
       vm.chartConfig.series[0].data = [];
       vm.histograms = [];
       return slsService
-        .getHistograms(
-          vm.searchOptions.projectName, 
-          vm.searchOptions.logStoreName,
-          vm.searchOptions.topic,
-          vm.searchOptions.keyword,
-          vm.searchOptions.from,
-          vm.searchOptions.to)
+        .getHistograms(vm.searchOptions, buildQuery)
         .success(function (body, headers){
           vm.histograms = body;
           vm.searchOptions.page.totalAmount = parseInt(headers['x-log-count']);          
@@ -227,25 +239,39 @@ define([
         .error(function (code, msg) {
           console.error(code, msg);
           vm.searchOptions.page.totalAmount = 0;
-          vm.searchOptions.page.pageNum = 1;
+          vm.searchOptions.page.pageNum = 1;          
+          alert('histograms load failed: ' + msg);
         });        
     }
     
     function getLogs() {
       vm.logs = [];
       return slsService
-        .getLogs(vm.searchOptions)
+        .getLogs(vm.searchOptions, buildQuery)
         .success(function (body, headers){
           vm.logs = body;
         })
         .error(function (code, msg) {
           console.error(code, msg);
+          alert('logs load failed: ' + msg);
         });       
     }
-    
-    function pageChange(){
-      
+    /**
+     * Build customize query
+     * @param Object options: search options
+     * @returns String query string
+     */
+    function buildQuery(options){
+      var queryArray = [];
+      if (options.keyword != null && options.keyword != '') {
+          queryArray.push(options.keyword);
+      }
+      if (options.logLevel != vm.levels[0]) {
+          queryArray.push('LogLevel:' + options.logLevel);
+      }
+      return queryArray.join(' and ');
     }
+    
     
     function genTimeRange(s, e) {
       var arr = [];

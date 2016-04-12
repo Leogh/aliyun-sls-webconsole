@@ -4,8 +4,9 @@ define(['webapp'], function (webapp) {
     'LogLevel',
     'LogTime',
     'LogMessage',
-    'ip',
+    'IP',
     'ProcessName',
+    'MachineName',
     'LoggerName',
     'StackTrace',
     'Exception',
@@ -57,6 +58,7 @@ define(['webapp'], function (webapp) {
       getLogLevelLabelClass: getLogLevelLabelClass,
       getCodeBrush: getCodeBrush,
       getFormattedCode: getFormattedCode,
+      isEmpty: isEmpty,
     });
     
     $scope.$watch('doc', function (newValue, oldValue) {
@@ -87,6 +89,13 @@ define(['webapp'], function (webapp) {
     
     function getFormattedCode(code) {
       return codeFilter(code);
+    }
+    
+    function isEmpty(value) {
+      if (typeof value === 'undefined') {
+        return true;
+      }
+      return false;
     }
   }
 });

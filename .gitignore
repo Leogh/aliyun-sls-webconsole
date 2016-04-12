@@ -6,4 +6,5 @@ config/conf.prod.js
 .c9/
 .mongo-data/
 .vscode/
+logs/
 mongod
