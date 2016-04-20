@@ -11,6 +11,8 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
       getTopics: getTopics,
       getHistograms: getHistograms,
       getLogs: getLogs,
+      favorProject: favorProject,
+      getFavorProject: getFavorProject,
     };
     
     function getLogStores(projectName) {
@@ -85,6 +87,26 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
     function initDateHours(date, timeOption){
       date.setHours(parseInt(timeOption.h), parseInt(timeOption.m), parseInt(timeOption.s), 0);
     }
+    
+    
+    function favorProject(projectName, isFavor) {
+      return http.send({
+        url: '/aliyun-sls/favor-project',
+        params: {
+          projectName: projectName,
+          isFavor: isFavor,
+        },
+        method: 'put'
+      });
+    }
+    
+    function getFavorProject() {
+      return http.send({
+        url: '/aliyun-sls/favor-project',       
+        method: 'get'
+      });
+    }
+    
     
     function slsApiRequest(options) {
       var deferred = $q.defer();

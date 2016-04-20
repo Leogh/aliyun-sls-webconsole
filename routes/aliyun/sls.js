@@ -7,6 +7,7 @@ var merge = require("merge");
 var config = require("../../common/config");
 var restResp = require("../../common/rest-response");
 var AliyunSLSProject = require("../../models/aliyun-sls-project");
+var User = require("../../models/user");
 var ALY = require("aliyun-sdk");
 var log4js = require('log4js');
 
@@ -23,42 +24,134 @@ const ALY_SLS_ACCESS_HASH = shasum.digest('hex');
 
 /* GET sls console home page. */
 router.get('/', authChk('/login'), function(req, res, next) {
-    // AliyunSLSProject
-    //   .find({ hashing: ALY_SLS_ACCESS_HASH })
-    //   .sort({ name: -1 })
-    //   .exec(function (err, projects) {
-    //     if(err){
-    //       console.error(err);
-    //     }
-        
-    //   });
-    res.render('consoles/aliyun-sls', {
-      title: 'Aliyun SLS Web Console',
+  User
+    .findOne({ _id : req.user._doc._id })
+    .exec(function (err, user) {
+      var favoredProj = null;
+      if (!err) {
+        var doc = user._doc;
+        if (doc.favorProjects && doc.favorProjects[ALY_SLS_ACCESS_HASH]) {
+          favoredProj = doc.favorProjects[ALY_SLS_ACCESS_HASH];
+        }
+      }
+      res.render('consoles/aliyun-sls', {
+        title: 'Aliyun SLS Web Console',
+        favoredProject: favoredProj,
+        isProjectFavored: favoredProj != null
+      });
+    });
+    
+});
+
+/* GET get the project */
+router.get('/project', authChk('/login'), function (req, res, next) {
+  AliyunSLSProject
+    .find({ hashing: ALY_SLS_ACCESS_HASH })
+    .sort({ name: -1 })
+    .exec(function (err, projects) {
+      if(err){
+        console.error(err);
+      }
+      res.send(projects);
     });
 });
 
 /* POST save the project */
 router.post('/project', authChk('/login'), function (req, res, next) {
-    var projectName = req.param('projectName');
-    var project = new AliyunSLSProject({
-      name: projectName,
-      status: 1,
-      hashing: ALY_SLS_ACCESS_HASH,
-    });
-    project.save(function (err) {
+  var projectName = req.param('projectName');
+  var project = new AliyunSLSProject({
+    name: projectName,
+    status: 1,
+    hashing: ALY_SLS_ACCESS_HASH,
+  });
+  project.save(function (err) {
+    if (err) {
+      console.info('failed to create a new project: ', project);
+      res.send(err);
+      return;
+    }
+    console.info('a new project created: ', project);
+    res.send(project);
+  });
+});
+
+router.get('/favor-project', authChk('/login'), function (req, res, next) {
+  User
+    .findOne({ _id : req.user._doc._id })
+    .exec(function (err, user) {
       if (err) {
-        console.info('failed to create a new project: ', project);
-        res.send(err);
+        res.send(restResp.error(0, 'user not found'));
         return;
       }
-      console.info('a new project created: ', project);
-      res.send(project);
+      var doc = user._doc;
+      if (doc.favorProjects && doc.favorProjects[ALY_SLS_ACCESS_HASH]) {
+        res.send(restResp.success(doc.favorProjects[ALY_SLS_ACCESS_HASH]));
+        return;
+      }
+      res.send(restResp.success(null));
+    });
+});
+
+router.put('/favor-project', authChk('/login'), function (req, res, next) {
+  var projectName = req.query.projectName;
+  var isFavor = req.query.isFavor == 'true';
+  var result = null;
+  User
+    .findOne({ _id : req.user._doc._id })
+    .exec(function (err, user) {
+      if (err) {
+        res.send(restResp.error(0, 'user not found'));
+        return;
+      }
+      var doc = user._doc;
+      if (!doc.favorProjects) {
+        doc.favorProjects = {};
+      }
+      if (isFavor) {
+        doc.favorProjects[ALY_SLS_ACCESS_HASH] = projectName;
+      } else {
+        delete doc.favorProjects[ALY_SLS_ACCESS_HASH];
+      }      
+      user.markModified('favorProjects');
+      user.save(function (err) {
+        if (err) {
+          console.info('failed to favor/unfavor a project: ', projectName, isFavor);
+          res.send(restResp.error(0, 'failed to favor/unfavor a project'));
+          return;
+        }
+        console.info('a project favored/unfavored: ', projectName, isFavor);
+        res.send(restResp.success(isFavor ? projectName : null));
+      });
     });
 });
 
 /* GET get log stores inside a project */
 router.get('/logstores', authChk('/login'), function (req, res, next) {
-  sls.listLogStores(req.query, aliyunSLSCallback.bind(res));
+  sls.listLogStores(req.query, function (err, data) {
+    if (!err) {
+      AliyunSLSProject
+      .findOne({ hashing: ALY_SLS_ACCESS_HASH, name: req.query.projectName })
+      .exec(function (err, proj) {
+        if (proj == null) {
+          var project = new AliyunSLSProject({
+            name: req.query.projectName,
+            status: 1,
+            hashing: ALY_SLS_ACCESS_HASH,
+          });
+          project.save(function (err) {
+            if (err) {
+              console.info('failed to create a new project: ', project);
+              return;
+            }
+            console.info('a new project created: ', project);
+          });
+          return;
+        }
+        console.info('project existed: ', req.query.projectName);
+      });
+    }
+    aliyunSLSCallback.call(res, err, data);
+  });
 });
 
 /* GET get topics of a log store */
