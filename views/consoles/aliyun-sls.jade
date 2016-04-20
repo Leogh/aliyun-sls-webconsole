@@ -1,11 +1,12 @@
 extends ../layout
 
 block stylesheets
+  link(rel="stylesheet", href="/stylesheets/select2.min.css")
   link(rel="stylesheet", href="/javascripts/libs/SyntaxHighlighter/styles/shCore.css")
   link(rel="stylesheet", href="/javascripts/libs/SyntaxHighlighter/styles/shThemeDefault.css")
 
 block scripts
-
+  
 
 block content
 
@@ -16,6 +17,10 @@ block content
   //- use 'controller as' to distiguish properties in $rootScope and the current controller scope
 
   div(ng-controller='AliyunSLSController as vm')
+    if isProjectFavored     
+      div(ng-init='vm.searchOptions.projectName = "#{favoredProject}"')
+      div(ng-init='vm.isProjectFavored = true')
+      div(ng-init='vm.confirmProjectName()')
     .row
       .col-xs-12
         h2 Aliyun SLS Console
@@ -27,8 +32,13 @@ block content
             .form-inline
               .form-group
                 label Project:&nbsp;
-                input.form-control(type='text', ng-model='vm.searchOptions.projectName', ng-keydown='vm.onProjectNameKeydown($event)', 
+                div.input-group                
+                  input.form-control(type='text', ng-model='vm.searchOptions.projectName', ng-keydown='vm.onProjectNameKeydown($event)', 
                                 ng-disabled='vm.projectNameLocked', placeholder='日志服务项目名称')
+                  span.input-group-btn
+                    button.btn(ng-disabled='!vm.projectNameLocked', ng-class='!vm.isProjectFavored ? "btn-default" : "btn-success"', ng-click='vm.toggleFavorProject()')
+                      span.glyphicon(ng-class='vm.isProjectFavored ? "glyphicon-star" : "glyphicon-star-empty"')
+                      
               .form-group(ng-show='!vm.projectNameLocked')
                 button.btn.btn-primary(ng-click='vm.confirmProjectName()') 确定
               .form-group(ng-show='vm.projectNameLocked')
