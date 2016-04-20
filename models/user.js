@@ -7,6 +7,7 @@ var User = new Schema({
 	username: String,
 	password: String,
 	status: Number,
+	favorProjects: Schema.Types.Mixed,
 	createTime: { type: Date, default: Date.now },
 });
 

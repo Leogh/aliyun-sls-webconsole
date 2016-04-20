@@ -30,7 +30,7 @@ define([
     vm.hours = genTimeRange(0, 23);
     vm.minutes = genTimeRange(0, 59);
     vm.seconds = genTimeRange(0, 59);
-    
+        
     vm.projects = [];
     
     vm.logStores = [];
@@ -107,7 +107,8 @@ define([
       unlockProjectName: unlockProjectName,
       confirmLogStore: confirmLogStore,
       reloadLogStoreAndTopic: reloadLogStoreAndTopic,
-      search: search
+      search: search,
+      toggleFavorProject: toggleFavorProject,
     });
     
     highchartsNG.ready(function () {
@@ -283,6 +284,18 @@ define([
         arr.push(str);
       }
       return arr;
+    }
+    
+    function toggleFavorProject() {
+      return slsService
+        .favorProject(vm.searchOptions.projectName, !vm.isProjectFavored)
+        .success(function (projectName){
+          vm.isProjectFavored = projectName == vm.searchOptions.projectName;
+        })
+        .error(function (code, msg) {
+          console.error(code, msg);
+          alert('project favor failed: ' + msg);
+        });       
     }
   }
 
