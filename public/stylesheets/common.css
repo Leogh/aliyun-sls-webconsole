@@ -41,3 +41,9 @@ hr.xs {
   max-height: 600px; 
   margin: 0 !important; 
 }
+
+.condition-label {
+  padding: 8px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
