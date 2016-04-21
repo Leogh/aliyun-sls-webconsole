@@ -36,7 +36,7 @@ block content
                   input.form-control(type='text', ng-model='vm.searchOptions.projectName', ng-keydown='vm.onProjectNameKeydown($event)', 
                                 ng-disabled='vm.projectNameLocked', placeholder='日志服务项目名称')
                   span.input-group-btn
-                    button.btn(ng-disabled='!vm.projectNameLocked', ng-class='!vm.isProjectFavored ? "btn-default" : "btn-success"', ng-click='vm.toggleFavorProject()')
+                    button.btn(ng-disabled='!vm.projectNameLocked', ng-class='!vm.isProjectFavored ? "btn-default" : "btn-success"', ng-click='vm.toggleFavorProject()', title='收藏/取消收藏')
                       span.glyphicon(ng-class='vm.isProjectFavored ? "glyphicon-star" : "glyphicon-star-empty"')
                       
               .form-group(ng-show='!vm.projectNameLocked')
@@ -56,61 +56,94 @@ block content
                   |  Reload              
             div(ng-show='vm.projectReady')              
               hr.xs
-              .form-inline
-                //- From Date Options
-                .form-group
-                  label From:&nbsp;
-                  .input-group
-                    input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.fromIsOpen", ng-model='vm.searchOptions.from')
-                    span.input-group-btn
-                      button.btn.btn-default(ng-click='vm.fromIsOpen = true')
-                        i.glyphicon.glyphicon-calendar                
-                //- Advanced time select
-                .form-group(ng-show='vm.searchOptions.timeOptions.enabled')
-                  select.form-control(ng-model='vm.searchOptions.timeOptions.from.h',ng-options='hr for hr in vm.hours')
-                  label &nbsp;:&nbsp;
-                  select.form-control(ng-model='vm.searchOptions.timeOptions.from.m',ng-options='min for min in vm.minutes')
-                  label &nbsp;:&nbsp;
-                  select.form-control(ng-model='vm.searchOptions.timeOptions.from.s',ng-options='sec for sec in vm.seconds')
-                br(ng-if='vm.searchOptions.timeOptions.enabled')
-                //- To Date Options
-                .form-group
-                  label
-                    span(ng-if='vm.searchOptions.timeOptions.enabled') &nbsp;&nbsp;&nbsp;&nbsp;
-                    | To:&nbsp;
-                  .input-group
-                    input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.toIsOpen", ng-model='vm.searchOptions.to')
-                    span.input-group-btn
-                      button.btn.btn-default(ng-click='vm.toIsOpen = true')
-                        i.glyphicon.glyphicon-calendar                
-                //- Advanced time select
-                .form-group(ng-show='vm.searchOptions.timeOptions.enabled')
-                  select.form-control(ng-model='vm.searchOptions.timeOptions.to.h',ng-options='hr for hr in vm.hours')
-                  label &nbsp;:&nbsp;
-                  select.form-control(ng-model='vm.searchOptions.timeOptions.to.m',ng-options='min for min in vm.minutes')
-                  label &nbsp;:&nbsp;
-                  select.form-control(ng-model='vm.searchOptions.timeOptions.to.s',ng-options='sec for sec in vm.seconds')   
-                
-                .form-group
-                  a(ng-click='vm.searchOptions.timeOptions.enabled = !vm.searchOptions.timeOptions.enabled', href='') 
-                    i.glyphicon.glyphicon-time(ng-show='!vm.searchOptions.timeOptions.enabled')
-                    | &nbsp;{{ vm.searchOptions.timeOptions.enabled ? 'Hide' : 'Show' }} time options
-                
-              .form-inline
-                .form-group(ng-show='vm.projectReady')
-                  label LogLevel:&nbsp;
-                  select.form-control(ng-model='vm.searchOptions.logLevel', ng-options='level for level in vm.levels')
-                .form-group
-                  label Chart:&nbsp;
-                  select.form-control(ng-model='vm.showChart')
-                    option(value='1') Show
-                    option(value='0') Hide
-                .form-group
-                  label Keyword:&nbsp;
-                  input.form-control(type='text', ng-model='vm.searchOptions.keyword')
-                .form-group
-                  button.btn.btn-primary(ng-click='vm.search(1)') 查找
-        
+              div.row
+                div.col-sm-5  
+                  .form-inline
+                    //- From Date Options
+                    .form-group
+                      label From:&nbsp;
+                      .input-group
+                        input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.fromIsOpen", ng-model='vm.searchOptions.from')
+                        span.input-group-btn
+                          button.btn.btn-default(ng-click='vm.fromIsOpen = true')
+                            i.glyphicon.glyphicon-calendar                
+                    //- Advanced time select
+                    .form-group(ng-show='vm.searchOptions.timeOptions.enabled')
+                      select.form-control(ng-model='vm.searchOptions.timeOptions.from.h',ng-options='hr for hr in vm.hours')
+                      label &nbsp;:&nbsp;
+                      select.form-control(ng-model='vm.searchOptions.timeOptions.from.m',ng-options='min for min in vm.minutes')
+                      label &nbsp;:&nbsp;
+                      select.form-control(ng-model='vm.searchOptions.timeOptions.from.s',ng-options='sec for sec in vm.seconds')
+                    br(ng-if='vm.searchOptions.timeOptions.enabled')
+                    //- To Date Options
+                    .form-group
+                      label
+                        span(ng-if='vm.searchOptions.timeOptions.enabled') &nbsp;&nbsp;&nbsp;&nbsp;
+                        | To:&nbsp;
+                      .input-group
+                        input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.toIsOpen", ng-model='vm.searchOptions.to')
+                        span.input-group-btn
+                          button.btn.btn-default(ng-click='vm.toIsOpen = true')
+                            i.glyphicon.glyphicon-calendar                
+                    //- Advanced time select
+                    .form-group(ng-show='vm.searchOptions.timeOptions.enabled')
+                      select.form-control(ng-model='vm.searchOptions.timeOptions.to.h',ng-options='hr for hr in vm.hours')
+                      label &nbsp;:&nbsp;
+                      select.form-control(ng-model='vm.searchOptions.timeOptions.to.m',ng-options='min for min in vm.minutes')
+                      label &nbsp;:&nbsp;
+                      select.form-control(ng-model='vm.searchOptions.timeOptions.to.s',ng-options='sec for sec in vm.seconds')   
+                    
+                    .form-group
+                      a(ng-click='vm.searchOptions.timeOptions.enabled = !vm.searchOptions.timeOptions.enabled', href='') 
+                        i.glyphicon.glyphicon-time(ng-show='!vm.searchOptions.timeOptions.enabled')
+                        | &nbsp;{{ vm.searchOptions.timeOptions.enabled ? 'Hide' : 'Show' }} time options
+                    
+                  .form-inline                    
+                    .form-group
+                      label Chart:&nbsp;
+                      select.form-control(ng-model='vm.showChart')
+                        option(value='1') Show
+                        option(value='0') Hide
+                        
+                div.col-sm-7
+                  .form-inline
+                    .form-group(ng-show='vm.projectReady')
+                      label LogLevel:&nbsp;
+                      select.form-control(ng-model='vm.searchOptions.logLevel', ng-options='level for level in vm.levels')                    
+                    .form-group
+                      label Keywords:&nbsp;
+                      div.input-group        
+                        span.input-group-btn(ng-if='vm.searchOptions.keywordArr.length > 0')
+                          button.btn.btn-default(ng-click='vm.orOperation = !vm.orOperation', title='切换操作符') {{ vm.orOperation ? 'Or' : 'And' }}        
+                        input.form-control(type='text', ng-model='vm.searchOptions.keyword')
+                        span.input-group-btn                           
+                          button.btn.btn-default(ng-click='vm.addKeyword()', title='添加关键字') 
+                            span.glyphicon.glyphicon-plus 
+                        
+                    .form-group
+                      button.btn.btn-primary(ng-click='vm.search(1)') 查找
+                  .form-inline
+                    .form-group
+                      label Field Query:&nbsp;
+                      div.input-group
+                        input.form-control(ng-model='vm.searchOptions.fieldName', placeholder='Field name')
+                        div.input-group-addon : 
+                        input.form-control(ng-model='vm.searchOptions.fieldValue', placeholder='Field value')
+                        span.input-group-btn                           
+                          button.btn.btn-default(ng-click='vm.addFieldQuery()', title='添加字段查询') 
+                            span.glyphicon.glyphicon-plus 
+                      
+                  .form-inline
+                    .form-group
+                      label Conditions:&nbsp;
+                      p.form-control-static(ng-if='vm.searchOptions.keywordArr.length == 0') {{ vm.searchOptions.keyword }}
+                      div(ng-if='vm.searchOptions.keywordArr.length > 0')
+                        span.condition-label.label.label-default(ng-repeat='opt in vm.searchOptions.keywordArr') 
+                          {{ opt | keywordFilter:($index != 0) }} &nbsp;
+                          a.text-danger(href='', ng-click='vm.removeKeywordCondition($index)') X
+                        span.condition-label.label.label-default 
+                          {{ vm.orOperation ? 'or' : 'and' }} ( "{{ vm.searchOptions.keyword }}" )
+    
     .row.chart-row(ng-show='vm.projectReady && vm.showChart == "1"')
       highchart#logSpanChart(config='vm.chartConfig')
     
