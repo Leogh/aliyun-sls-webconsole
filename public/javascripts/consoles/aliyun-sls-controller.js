@@ -5,6 +5,7 @@ define([
   'syntax-highlighter-brush-jscript',
   'syntax-highlighter-brush-xml',
   'vkbeautify',
+  'select2',
 ], function(webapp) {
   
   // injections
@@ -14,7 +15,8 @@ define([
     .controller('AliyunSLSController', aliyunSLSController)
     .filter('logLevel', logLevelFilter)
     .filter('brushFilter', brushFilter)
-    .filter('codeFilter', codeFilter);
+    .filter('codeFilter', codeFilter)
+    .filter('keywordFilter', keywordFilter);
     
   // controller
   function aliyunSLSController($scope, slsService, highchartsNG) {
@@ -77,6 +79,7 @@ define([
       topic: null,
       logLevel: 'All',
       keyword: '',
+      keywordArr: [],
       from: today,
       to: tmr,
       timeOptions: {
@@ -109,11 +112,15 @@ define([
       reloadLogStoreAndTopic: reloadLogStoreAndTopic,
       search: search,
       toggleFavorProject: toggleFavorProject,
+      addKeyword: addKeyword,
+      addFieldQuery: addFieldQuery,
+      removeKeywordCondition: removeKeywordCondition,
     });
     
     highchartsNG.ready(function () {
       
     }, this);
+    
     
     return;
     
@@ -263,14 +270,31 @@ define([
      * @returns String query string
      */
     function buildQuery(options){
-      var queryArray = [];
+      var query = '';
+      var hasArr = false;
+      if (options.keywordArr.length > 0) {
+        hasArr = true;
+        angular.forEach(options.keywordArr, function (cond, index) {
+          var showOperator = false;
+          if (index > 0) {
+            showOperator = true;
+          }
+          if (cond.isFieldQuery) {
+            query += (showOperator ? ' and ' : '') + `( "${cond.field}":"${cond.value.replace(/"/g, '\\"').replace(/:/g, '\\:')}" )`;
+          } else {
+            query += (showOperator ? ` ${cond.operator} ` : '') + `( "${cond.keyword.replace(/"/g, '\\"').replace(/:/g, '\\:')}" )`
+          }          
+        });
+      }
       if (options.keyword != null && options.keyword != '') {
-          queryArray.push(options.keyword);
-      }
+          query += (hasArr ? ' and ' : '') + `( ${options.keyword} )`;
+          hasArr = true;
+      } 
       if (options.logLevel != vm.levels[0]) {
-          queryArray.push('LogLevel:' + options.logLevel);
+          query += (hasArr ? ' and ' : '') + `( "LogLevel":${options.logLevel} )`;
       }
-      return queryArray.join(' and ');
+      console.log(query);
+      return query;
     }
     
     
@@ -296,6 +320,31 @@ define([
           console.error(code, msg);
           alert('project favor failed: ' + msg);
         });       
+    }
+    
+    function addKeyword() {
+      vm.searchOptions.keywordArr.push({
+        keyword: vm.searchOptions.keyword,
+        operator: vm.orOperation ? 'or' : 'and'
+      });
+      vm.searchOptions.keyword = '';
+    }
+    
+    function removeKeywordCondition(idx) {
+      vm.searchOptions.keywordArr.splice(idx, 1);
+      if (vm.searchOptions.keywordArr.length == 0) {
+        vm.orOperation = false;
+      }
+    }
+    
+    function addFieldQuery() {
+      vm.searchOptions.keywordArr.push({
+        field: vm.searchOptions.fieldName,
+        value: vm.searchOptions.fieldValue,
+        isFieldQuery: true,
+      });
+      vm.searchOptions.fieldName = '';
+      vm.searchOptions.fieldValue = '';
     }
   }
 
@@ -354,6 +403,21 @@ define([
     data = data.replace(/\\r\\n/g, "");
     data = data.substr(1, data.length - 2);
     return vkbeautify.xml(data, 2);
+  }
+  
+  function keywordFilter() {
+    return function (cond, showOperator) {
+      var txt = '';
+      if (cond.isFieldQuery) {
+        txt = (showOperator ? 'and ' : '') + `( ${cond.field}:"${cond.value}" )`;
+      } else {        
+        if (showOperator) {
+          txt += (cond.operator + ' ');
+        }
+        txt += '( "' + cond.keyword + '" )';
+      }      
+      return txt;
+    }
   }
   
 });
