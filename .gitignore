@@ -4,6 +4,7 @@ config/conf.c9.js
 config/conf.local-dev.js
 config/conf.prod.js
 .c9/
+.vscode/
 .mongo-data/
 .vscode/
 logs/
