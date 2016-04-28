@@ -15,6 +15,17 @@ block content
   //- use 'controller as' to distiguish properties in $rootScope and the current controller scope
 
   div(ng-controller='LogAnalyticsController as vm')
-    
-    
+    div.row
+      div.col-md-12
+        div.form-inline
+          div.form-group
+            button.btn.btn-primary(ng-click='vm.events.onAddFieldBtnClick()') Add Analytics Field
+        div.form-inline
+          div.form-group
+            button.btn.btn-primary(ng-click='vm.events.onAddCompareSetBtnClick()') Add Analytics Compare Set
+
+
+    include ../modals/analytics-field-modal
+
+    include ../modals/analytics-compare-set-modal
 

@@ -22,6 +22,7 @@ requirejs.config({
     "highcharts-ng": "libs/highcharts-ng/dist/highcharts-ng.min",
     "select2": "3rd-parties/select2.full",
     "text": "libs/text/text",
+    "base": "models/base",
   },
   // defining shim
   shim: {

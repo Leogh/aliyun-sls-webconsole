@@ -1,0 +1,28 @@
+//
+   Created by roman on 4/28/16.
+
+script(type='text/ng-template', id='analytics-compare-set-modal.html')
+  div.modal-header
+    h3.modal-title {{ vm.cpSet._id == null ? 'Add an' : 'Edit' }} Analytics Compare Set
+  div.modal-body
+    div.form-horizontal
+      //- set name
+      div.form-group
+        label.control-label.col-md-2 Name
+        div.col-md-10
+          input.form-control(ng-model='vm.cpSet.name', placeholder='Set name')
+
+
+
+      //- status
+      div.form-group
+        label.control-label.col-md-2 Status
+        div.col-md-10
+          div.btn-group
+            label.btn(uib-btn-radio='1', ng-model='vm.cpSet.status', ng-class='vm.cpSet.status == 1 ? "btn-success" : "btn-default"') On
+            label.btn(uib-btn-radio='0', ng-model='vm.cpSet.status', ng-class='vm.cpSet.status == 0 ? "btn-danger" : "btn-default"') Off
+
+
+  div.modal-footer
+    button.btn.btn-primary(ng-click='vm.actions.save()') {{ vm.cpSet._id == null ? 'Add' : 'Save' }}
+    button.btn.btn-default(ng-click='vm.actions.dismiss()') Dismiss

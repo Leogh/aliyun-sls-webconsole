@@ -14,4 +14,4 @@ var AnalyticsCompareSet = new Schema({
 
 AnalyticsCompareSet.index({name: 1, hashing: 1}, {unique: true});
 
-module.exports = mongoose.model('AnalyticsCompareSet', AnalyticsCompareSet);
+module.exports = mongoose.model('Analytics.CompareSet', AnalyticsCompareSet);

@@ -1,0 +1,43 @@
+//
+   Created by roman on 4/28/16.
+
+script(type='text/ng-template', id='analytics-field-modal.html')
+  div.modal-header
+    h3.modal-title {{ vm.field._id == null ? 'Add an' : 'Edit' }} Analytics Field
+  div.modal-body
+    div.form-horizontal
+      //- field name
+      div.form-group
+        label.control-label.col-md-2 Name
+        div.col-md-10
+          input.form-control(ng-model='vm.field.name', placeholder='Field name')
+
+      //- value input
+      div.form-group
+        label.control-label.col-md-2 Value
+        div.col-md-10
+          div.input-group
+            input.form-control(ng-model='vm.tempValue', placeholder='Put value into value set.')
+            span.input-group-btn
+              button.btn.btn-default(ng-click='vm.actions.addValue()', ng-disabled='!vm.validate.isValidValue()')
+                i.glyphicon.glyphicon-plus
+      div.form-group
+        div.col-md-push-2.col-md-10
+          p.form-control-static(ng-if='vm.field.valueSet.length == 0') Empty Value Set
+          ul.list-inline(ng-if='vm.field.valueSet.length > 0')
+            li(ng-repeat='item in vm.field.valueSet')
+              span.label.label-primary {{ item }} &nbsp;
+                a(href='', ng-click='vm.actions.removeValue($index)') X
+
+      //- status
+      div.form-group
+        label.control-label.col-md-2 Status
+        div.col-md-10
+          div.btn-group
+            label.btn(uib-btn-radio='1', ng-model='vm.field.status', ng-class='vm.field.status == 1 ? "btn-success" : "btn-default"') On
+            label.btn(uib-btn-radio='0', ng-model='vm.field.status', ng-class='vm.field.status == 0 ? "btn-danger" : "btn-default"') Off
+
+
+  div.modal-footer
+    button.btn.btn-primary(ng-click='vm.actions.save()') {{ vm.field._id == null ? 'Add' : 'Save' }}
+    button.btn.btn-default(ng-click='vm.actions.dismiss()') Dismiss

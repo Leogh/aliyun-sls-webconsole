@@ -12,4 +12,4 @@ var AnalyticsField = new Schema({
 
 AnalyticsField.index({name: 1, hashing: 1}, {unique: true});
 
-module.exports = mongoose.model('AnalyticsField', AnalyticsField);
+module.exports = mongoose.model('Analytics.Field', AnalyticsField);
