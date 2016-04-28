@@ -1,6 +1,9 @@
 var merge = require('merge');
 
 var defaultConfig = {
+  auth: {
+    authEnable: true,
+  },
   db: {
     mongo: {
       connectionString: ""
