@@ -2,22 +2,22 @@ define([
   'webapp',
   'models/analytics-field',
   'models/analytics-compare-set',
-  'services/aliyun-sls-service',
+  'services/log-analytics-service',
 ], function (webapp, AnalyticsField, AnalyticsCompareSet) {
    // injections
-  logAnalyticsController.$inject = ['$scope' , 'services.aliyun-sls-service', '$uibModal'];
+  logAnalyticsController.$inject = ['$scope' , 'services.log-analytics-service', '$uibModal'];
   return webapp
     .controller('LogAnalyticsController', logAnalyticsController)
     .controller('fieldModalController', fieldModalController)
     .controller('compareSetModalController', compareSetModalController);
 
-  function logAnalyticsController($scope, slsService, $uibModal) {
+  function logAnalyticsController($scope, logAnalyticsService, $uibModal) {
     var vm = this;
 
 
     vm.events = {
       onAddFieldBtnClick: addOrUpdateFieldModal,
-      onAddCompareSetBtnClick: addOrCompareSetModal,
+      onAddCompareSetBtnClick: addOrUpdateCompareSetModal,
     };
 
 
@@ -36,13 +36,28 @@ define([
         },
       });
       fieldModalInst.result.then(function (obj, cmd) {
-        console.log(obj, cmd);
+        var promise = null;
+        var isAdd = true;
+        if (obj._id) {
+          isAdd = false;
+          promise = logAnalyticsService.field.update(obj);
+        } else {
+          promise = logAnalyticsService.field.add(obj);
+        }
+        promise.success(function(){
+          if (isAdd){
+            alert(`analytics field added!`);
+          }
+        }).error(function (code, msg) {
+          alert(`[${code}] - ${msg}`);
+          console.error(code, msg);
+        });
       }, function () {
         // closed
       });
     }
 
-    function addOrCompareSetModal(compareSet){
+    function addOrUpdateCompareSetModal(compareSet){
       var fieldModalInst = $uibModal.open({
         animation: true,
         backdrop: 'static',
@@ -54,14 +69,34 @@ define([
           compareSet: function () {
             return compareSet;
           },
+          analyticsFields: function () {
+            return logAnalyticsService.field.get();
+          }
         },
       });
       fieldModalInst.result.then(function (obj, cmd) {
-        console.log(obj, cmd);
+        var promise = null;
+        var isAdd = true;
+        if (obj._id) {
+          isAdd = false;
+          promise = logAnalyticsService.compareSet.update(obj);
+        } else {
+          isAdd = false;
+          promise = logAnalyticsService.compareSet.add(obj);
+        }
+        promise.success(function(){
+          if (isAdd){
+            alert(`analytics field added!`);
+          }
+        }).error(function (code, msg) {
+          alert(`[${code}] - ${msg}`);
+          console.error(code, msg);
+        });
       }, function () {
         // closed
       });
     }
+
 
   }
 
@@ -107,21 +142,40 @@ define([
   }
 
 
-  function compareSetModalController($scope, $uibModalInstance, compareSet) {
+  function compareSetModalController($scope, $uibModalInstance, compareSet, analyticsFields) {
     var vm = this;
+    var presetField = new AnalyticsField();
+    var fieldDict = {};
+    presetField.name = '(None)';
 
+    vm.processing = true;
     vm.cpSet = compareSet || new AnalyticsCompareSet();
+    vm.cFields = Array.prototype.concat(compareSet ? [] : [ presetField ], analyticsFields.success ? analyticsFields.data : []);
+    vm.gFields = Array.prototype.concat([ presetField ], analyticsFields.success ? analyticsFields.data : []);
+    init();
+    //reloadFields();
 
     vm.validate = {
 
     };
 
     vm.actions = {
+      onFieldChanged: onFieldChanged,
       save: save,
       dismiss: dismiss,
     };
+    
+    function onFieldChanged(type) {
+      // var fieldKey = type == 'c' ? 'compareField' : 'groupField';
+      // if (vm.cpSet[fieldKey]._id) {
+      //   var id = vm.cpSet[fieldKey]._id;
+      //   vm.cpSet[fieldKey] = fieldDict[id];
+      // }
+    }
 
     function save() {
+      vm.cpSet.compareField = fieldDict[vm.cpSet.compareField._id];
+      vm.cpSet.groupField = fieldDict[vm.cpSet.groupField._id];
       $uibModalInstance.close(vm.cpSet);
     }
 
@@ -129,7 +183,33 @@ define([
       $uibModalInstance.dismiss('cancel');
     }
 
-
+    function init() {
+      if (!analyticsFields.success) {
+        console.error(analyticsFields);
+        alert(`error: ${analyticsFields.msg}`);
+        dismiss();
+      }
+      angular.forEach(vm.gFields, function (f) {
+        fieldDict[f._id] = f;
+      });
+    }
+    /*function reloadFields(){
+      analyticsFields
+          .success(function (data) {
+            if (data) {
+              vm.fields = data;
+            }
+            vm.fields = [];
+          })
+          .error(function(code, msg){
+            vm.fields = [];
+            alert(msg);
+            console.error(code, msg);
+          })
+          .finally(function () {
+            vm.processing = false;
+          });
+    }*/
   }
 
 

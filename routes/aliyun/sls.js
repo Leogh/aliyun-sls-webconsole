@@ -167,8 +167,8 @@ router.get('/topics', utils.authChk('/login'), function (req, res, next) {
 
 /* GET get histograms of a topic */
 router.get('/histograms', utils.authChk('/login'), function (req, res, next) {
-  var from = calculateUNIXTimestamp(new Date(req.query.from));
-  var to = calculateUNIXTimestamp(new Date(req.query.to));
+  var from = utils.calculateUNIXTimestamp(new Date(req.query.from));
+  var to = utils.calculateUNIXTimestamp(new Date(req.query.to));
   var topic = req.query.topic;
   var query = req.query.query;
   sls.getHistograms({
@@ -185,8 +185,8 @@ router.get('/histograms', utils.authChk('/login'), function (req, res, next) {
 });
 
 router.get('/logs', utils.authChk('/login'), function (req, res, next) {
-  var from = calculateUNIXTimestamp(new Date(req.query.from));
-  var to = calculateUNIXTimestamp(new Date(req.query.to));
+  var from = utils.calculateUNIXTimestamp(new Date(req.query.from));
+  var to = utils.calculateUNIXTimestamp(new Date(req.query.to));
   var topic = req.query.topic;
   var query = req.query.query;
   var pageNum = req.query.pageNum - 1;

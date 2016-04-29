@@ -12,6 +12,7 @@ var slsUtils = require('../../common/aliyun-sls-utils');
 var log4js = require('log4js');
 var ALY = require("aliyun-sdk");
 var logger = log4js.getLogger("aliyun.sls");
+var ObjectId = require('mongoose').Types.ObjectId;
 
 var User = require("../../models/user");
 var AnalyticsField = require("../../models/analytics-field");
@@ -34,13 +35,17 @@ router.get('/', utils.authChk('/login'), function(req, res, next) {
 // analyticsField
 
 router.get('/analyticsField', function(req, res, next) {
+  var data = req.query;
   var queryOption = {
     hashing: ALY_LOG_ANALYTICS_ACCESS_HASH
   };
-  if (typeof req.query.fieldName !== 'undefined') {
+  if (typeof data.fieldName !== 'undefined') {
     queryOption.name = {
-      $regex: req.query.fieldName,
+      $regex: data.fieldName,
     };
+  }
+  if (typeof data.status !== 'undefined') {
+    queryOption.status = data.status;
   }
   AnalyticsField
     .find(queryOption)
@@ -54,23 +59,27 @@ router.get('/analyticsField', function(req, res, next) {
 });
 
 router.post('/analyticsField', function (req, res, next) {
-  addOrUpdateAnalyticsField(res, null, req.query.fieldName, req.query.valueSet, 1);
+  addOrUpdateAnalyticsField(res, null, req.body.fieldName, req.body.valueSet, 1);
 });
 
 router.put('/analyticsField', function (req, res, next) {
-  addOrUpdateAnalyticsField(res, req.query._id, req.query.fieldName, req.query.valueSet, 1);
+  addOrUpdateAnalyticsField(res, req.body._id, req.body.fieldName, req.body.valueSet, req.body.status);
 });
 
 // analyticsCompareSet
 
 router.get('/analyticsCompareSet', function (req, res, next) {
+  var data = req.query;
   var queryOption = {
     hashing: ALY_LOG_ANALYTICS_ACCESS_HASH
   };
-  if (typeof req.query.compareSetName !== 'undefined') {
+  if (typeof data.compareSetName !== 'undefined') {
     queryOption.name = {
-      $regex: req.query.compareSetName,
+      $regex: data.compareSetName,
     };
+  }
+  if (typeof data.status !== 'undefined') {
+    queryOption.status = data.status;
   }
   AnalyticsCompareSet
     .find(queryOption)
@@ -83,14 +92,16 @@ router.get('/analyticsCompareSet', function (req, res, next) {
     });
 });
 
-router.post('/analyticsCompareSet', function (req, res, next) {  
-  addOrUpdateAnalyticsCompareSet(res, null, res.query.compareSetName, 
-    res.query.compareFieldName, res.query.groupFieldName, res.query.chartType, 1);  
+router.post('/analyticsCompareSet', function (req, res, next) {
+  var data = req.body;
+  addOrUpdateAnalyticsCompareSet(res, null, data.compareSetName,
+      data.compareFieldId, data.groupFieldId, data.chartType, 1);
 });
 
-router.put('/analyticsCompareSet', function (req, res, next) {  
-  addOrUpdateAnalyticsCompareSet(res, res.query._id, res.query.compareSetName, 
-    res.query.compareFieldName, res.query.groupFieldName, res.query.chartType, 1);  
+router.put('/analyticsCompareSet', function (req, res, next) {
+  var data = req.body;
+  addOrUpdateAnalyticsCompareSet(res, data._id, data.compareSetName,
+      data.compareFieldId, data.groupFieldId, data.chartType, data.status);
 });
 
 module.exports = router;
@@ -139,50 +150,27 @@ function addOrUpdateAnalyticsField(res, _id, fieldName, valueSet, status) {
   });
 }
 
-function addOrUpdateAnalyticsCompareSet(res, _id, setName, compareFieldName, groupFieldName, chartType, status) {
-  var isForAdd = !!_id;
-  if(!isForAdd){
-    if (!/\w+/.test(compareFieldName) || compareFieldName == null || typeof compareFieldName === 'undefined') {
-      res.send(restResp.error(restResp.CODE_ERROR, 'compareFieldName cannot be empty'));
-      return;
-    }
-    AnalyticsCompareSet.findOne({
-      _id: _id,
-      hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
-    }).exec(function (err, target) {
-      if (err) {
-        utils.handleMongooseError(res, err);
-        return;
-      } 
-      if (target == null) {
-        res.send(restResp.error(restResp.CODE_ERROR, 'invalid compare set'));
-        return;
-      } 
-      asyncTsk(target);
-    });    
-  } else {
-    asyncTsk(null);
-  }
-  
+function addOrUpdateAnalyticsCompareSet(res, _id, setName, compareFieldId, groupFieldId, chartType, status) {
+  var isForAdd = _id == null;
   var asyncTsk = function (existedSet) {
     async.parallel({
       compareField: function (cb) {
         AnalyticsField
           .findOne({
             hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
-            name: compareFieldName,
+            _id: compareFieldId
           })
           .exec(cb);
       },
       groupField: function (cb) {
-        if (compareFieldName == null || typeof compareFieldName === 'undefined') {
-          compareFieldName = '';
+        if (groupFieldId == null || typeof groupFieldId === 'undefined') {
+          groupFieldId = '';
         }
-        if (/\w+/.test(groupFieldName)) {
+        if (/\w+/.test(groupFieldId)) {
           AnalyticsField
             .findOne({
               hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
-              name: groupFieldName,
+              _id: groupFieldId
             })
             .exec(cb);
         } else {
@@ -195,11 +183,11 @@ function addOrUpdateAnalyticsCompareSet(res, _id, setName, compareFieldName, gro
         return;
       }
       if (!result.compareField) {
-        res.send(restResp.error('Invalid compareFieldName'));
+        res.send(restResp.error('Invalid compareFieldId'));
         return;
       }
       if (!result.groupField) {
-        res.send(restResp.error('Invalid groupFieldName'));
+        res.send(restResp.error('Invalid groupFieldId'));
         return;
       }
       
@@ -237,5 +225,27 @@ function addOrUpdateAnalyticsCompareSet(res, _id, setName, compareFieldName, gro
       }      
     });
   };
+  if(!isForAdd){
+    if (!/\w+/.test(compareFieldId) || compareFieldId == null || typeof compareFieldId === 'undefined') {
+      res.send(restResp.error(restResp.CODE_ERROR, 'compareFieldId cannot be empty'));
+      return;
+    }
+    AnalyticsCompareSet.findOne({
+      _id: _id,
+      hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
+    }).exec(function (err, target) {
+      if (err) {
+        utils.handleMongooseError(res, err);
+        return;
+      }
+      if (target == null) {
+        res.send(restResp.error(restResp.CODE_ERROR, 'invalid compare set'));
+        return;
+      }
+      asyncTsk(target);
+    });
+  } else {
+    asyncTsk(null);
+  }
 }
 

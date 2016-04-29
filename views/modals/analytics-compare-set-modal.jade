@@ -12,7 +12,15 @@ script(type='text/ng-template', id='analytics-compare-set-modal.html')
         div.col-md-10
           input.form-control(ng-model='vm.cpSet.name', placeholder='Set name')
 
+      div.form-group
+        label.control-label.col-md-2 Compare Field
+        div.col-md-10
+          select.form-control(ng-model='vm.cpSet.compareField._id', ng-change='vm.actions.onFieldChanged("c")', ng-options='field._id as field.name for field in vm.cFields')
 
+      div.form-group
+        label.control-label.col-md-2 Group Field
+        div.col-md-10
+          select.form-control(ng-model='vm.cpSet.groupField._id', ng-change='vm.actions.onFieldChanged("g")', ng-options='field._id as field.name for field in vm.gFields')
 
       //- status
       div.form-group

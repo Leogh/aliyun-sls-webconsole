@@ -8,6 +8,7 @@ var User = new Schema({
 	password: String,
 	status: Number,
 	favorProjects: Schema.Types.Mixed,
+	analyticsDashboard: [{ type: Schema.Types.ObjectId, ref: 'Analytics.CompareSet', unique: true }],
 	createTime: { type: Date, default: Date.now },
 });
 
