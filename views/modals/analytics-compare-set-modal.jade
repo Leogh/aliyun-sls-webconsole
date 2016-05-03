@@ -13,14 +13,39 @@ script(type='text/ng-template', id='analytics-compare-set-modal.html')
           input.form-control(ng-model='vm.cpSet.name', placeholder='Set name')
 
       div.form-group
+        label.control-label.col-md-2 Compare Strategy
+        div.col-md-10
+          label.radio-inline
+            input(type='radio', ng-model='vm.cpSet.compareStrategy', value='0')
+            | Group
+          label.radio-inline
+            input(type='radio', ng-model='vm.cpSet.compareStrategy', value='1')
+            | Condition
+
+      div.form-group
         label.control-label.col-md-2 Compare Field
         div.col-md-10
           select.form-control(ng-model='vm.cpSet.compareField._id', ng-change='vm.actions.onFieldChanged("c")', ng-options='field._id as field.name for field in vm.cFields')
 
-      div.form-group
+      div.form-group(ng-if='vm.cpSet.compareStrategy == 0')
         label.control-label.col-md-2 Group Field
         div.col-md-10
           select.form-control(ng-model='vm.cpSet.groupField._id', ng-change='vm.actions.onFieldChanged("g")', ng-options='field._id as field.name for field in vm.gFields')
+
+      div.form-group(ng-if='vm.cpSet.compareStrategy == 1')
+        label.control-label.col-md-2 Condition Field
+        div.col-md-10.form-inline
+          div.row
+            div.col-sm-12.form-group(ng-repeat='cond in vm.cpSet.compareConditions')
+              label {{ cond.field.name }}:&nbsp;
+              select.form-control(ng-options='v for v in cond.field.valueSet', ng-model='cond.value')
+              | &nbsp;&nbsp;
+              button.btn.btn-danger(ng-click='vm.actions.removeCondField($index)') Remove
+            div.col-sm-12.form-group
+              label Add Condition:&nbsp;
+              select.form-control(ng-model='vm.condition', ng-options='field._id as field.name for field in vm.condFields')
+              | &nbsp;&nbsp;
+              button.btn.btn-success(ng-click='vm.actions.addCondField(vm.condition)') Add
 
       //- status
       div.form-group

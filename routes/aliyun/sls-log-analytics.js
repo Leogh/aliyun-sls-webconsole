@@ -13,6 +13,7 @@ var log4js = require('log4js');
 var ALY = require("aliyun-sdk");
 var logger = log4js.getLogger("aliyun.sls");
 var ObjectId = require('mongoose').Types.ObjectId;
+var AppEnum = require('../../common/app-enum-types');
 
 var User = require("../../models/user");
 var AnalyticsField = require("../../models/analytics-field");
@@ -83,6 +84,8 @@ router.get('/analyticsCompareSet', function (req, res, next) {
   }
   AnalyticsCompareSet
     .find(queryOption)
+    .populate('compareField')
+    .populate('groupField')
     .exec(function (err, result) {
       if (err) {
         utils.handleMongooseError(res, err);
@@ -102,6 +105,111 @@ router.put('/analyticsCompareSet', function (req, res, next) {
   var data = req.body;
   addOrUpdateAnalyticsCompareSet(res, data._id, data.compareSetName,
       data.compareFieldId, data.groupFieldId, data.chartType, data.status);
+});
+
+router.get('/dashboard', function (req, res, next) {
+  var data = req.query;
+  if (data.compareSetId == null){
+    res.send(restResp.error(restResp.CODE_ERROR, 'unknown compare set'));
+    return;
+  }
+
+  async.waterfall([
+    // query the target AnalyticsCompareSet
+    function (callback) {
+      AnalyticsCompareSet.findOne({
+        _id: data.compareSetId,
+        hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
+      })
+      .populate('compareField')
+      .populate('groupField')
+      .populate({
+        path: 'compareConditions.field',
+        select: 'name'
+      })
+      .exec(callback);
+    },
+    function (compareSet, callback) {
+      if (compareSet == null) {
+        callback(null, null);
+        return;
+      }
+      var from = utils.calculateUNIXTimestamp(new Date(data.from));
+      var to = utils.calculateUNIXTimestamp(new Date(data.to));
+      var q = null;
+      if (compareSet.strategy == AppEnum.CompareStrategy.Condition){
+        q = buildConditionQuery(compareSet);
+      }
+      async.parallel({
+        full: function (cbHisParallel) {
+          sls.getHistograms({
+            //必选字段
+            projectName: 'didamonitor',//data.projectName,
+            logStoreName:  'monitor', //data.logStoreName,
+            from: from, //开始时间(精度为秒,从 1970-1-1 00:00:00 UTC 计算起的秒数)
+            to: to,    //结束时间(精度为秒,从 1970-1-1 00:00:00 UTC 计算起的秒数)
+
+            //以下为可选字段
+            topic: 'Monitoring', //topic,      //指定日志主题(用户所有主题可以通过listTopics获得)
+            query: q,
+          }, function (err, data) {
+            if (err) {
+              logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
+              return cbHisParallel(err, false);
+            }
+            var count = data.headers['x-log-count'];
+            cbHisParallel(null, count);
+          });
+        },
+        sub: function (cbHisParallel) {
+          var dict = {};
+          async.every(compareSet.compareField.valueSet, function (fieldValue, cbFieldValue) {
+            var fQ = buildLogSearchQuery(compareSet.compareField.name, fieldValue);
+            var subQ = q ? `${q} and ( ${fQ} )` : fQ; // build sub query
+            sls.getHistograms({
+              //必选字段
+              projectName: 'didamonitor',//data.projectName,
+              logStoreName:  'monitor', //data.logStoreName,
+              from: from, //开始时间(精度为秒,从 1970-1-1 00:00:00 UTC 计算起的秒数)
+              to: to,    //结束时间(精度为秒,从 1970-1-1 00:00:00 UTC 计算起的秒数)
+
+              //以下为可选字段
+              topic: 'Monitoring', //topic,      //指定日志主题(用户所有主题可以通过listTopics获得)
+              query: subQ    //查询的关键词,不输入关键词,则查询全部日志数据
+            }, function (err, data) {
+              if (err) {
+                logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
+                return cbFieldValue(err, false);
+              }
+              var count = data.headers['x-log-count'];
+              dict[fieldValue] = count;
+              cbFieldValue(null, count);
+            });
+          }, function (err, result) {
+            cbHisParallel(err, dict);
+          });
+        }
+      }, function (err, result) {
+        if (err) {
+          return callback(err, false);
+        }
+        callback(null, {
+          full: result.full,
+          sub: result.sub,
+        })
+      });
+    }
+  ], function (err, results){
+    if (err) {
+      utils.handleMongooseError(res, err);
+      return;
+    }
+    if (results == null){
+      res.send(restResp.error(restResp.CODE_ERROR, 'Unknown compare set.'));
+      return;
+    }
+    res.send(restResp.success(results));
+  });
 });
 
 module.exports = router;
@@ -247,5 +355,17 @@ function addOrUpdateAnalyticsCompareSet(res, _id, setName, compareFieldId, group
   } else {
     asyncTsk(null);
   }
+}
+
+function buildConditionQuery(compareSet) {
+  var q = '';
+  compareSet.compareConditions.forEach(function (cond, index) {
+    var sub = `( ${buildLogSearchQuery(cond.field.name, cond.value)} )`;
+    q += ( index > 0 ? ` and ${sub}` : sub );
+  });
+}
+
+function buildLogSearchQuery(fieldName, fieldValue) {
+  return `"${fieldName}":"${fieldValue.replace(/"/g, '\\"').replace(/:/g, '\\:')}"`;
 }
 

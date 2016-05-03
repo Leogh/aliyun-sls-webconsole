@@ -25,6 +25,9 @@ define([
         get: getAnalyticsField,
         add: addAnalyticsField,
         update: updateAnalyticsField,
+      },
+      dashboard:{
+        build: buildCompareSetDashboard,
       }
     };
 
@@ -32,7 +35,7 @@ define([
     function getAnalyticsCompareSet(name, status) {
       return http.send({
         url: '/aliyun-sls-analytics/analyticsCompareSet',
-        param: {
+        params: {
           compareSetName: name,
           status: status
         },
@@ -72,7 +75,7 @@ define([
     function getAnalyticsField(name, status){
       return http.send({
         url: '/aliyun-sls-analytics/analyticsField',
-        param: {
+        params: {
           fieldName: name,
           status: status
         },
@@ -108,6 +111,26 @@ define([
         },
         method: 'put'
       });
+    }
+
+    function buildCompareSetDashboard(options){
+      if (options.timeOptions.enabled) {
+        initDateHours(options.from, options.timeOptions.from);
+        initDateHours(options.to, options.timeOptions.to);
+      }
+      return http.send({
+        url: '/aliyun-sls-analytics/dashboard',
+        params: {
+          compareSetId: options.compareSetId,
+          from: options.from,
+          to: options.to,
+        },
+        method: 'get'
+      });
+    }
+
+    function initDateHours(date, timeOption){
+      date.setHours(parseInt(timeOption.h), parseInt(timeOption.m), parseInt(timeOption.s), 0);
     }
 
   }
