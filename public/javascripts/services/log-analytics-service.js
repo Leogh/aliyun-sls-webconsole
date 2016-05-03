@@ -50,10 +50,7 @@ define([
       return http.send({
         url: '/aliyun-sls-analytics/analyticsCompareSet',
         data: {
-          compareSetName: compareSet.name,
-          compareFieldId: compareSet.compareField._id,
-          groupFieldId: compareSet.groupField._id,
-          chartType: compareSet.chartType
+          compareSet: compareSet
         },
         method: 'post'
       });
@@ -66,7 +63,7 @@ define([
       return http.send({
         url: '/aliyun-sls-analytics/analyticsCompareSet',
         data: {
-          fieldName: name
+          compareSet: compareSet
         },
         method: 'put'
       });

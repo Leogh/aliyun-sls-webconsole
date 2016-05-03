@@ -11,7 +11,7 @@ define([
     this.compareField = new AnalyticsField();
     this.groupField = new AnalyticsField();
     this.chartType = '';
-    this.compareStrategy = 0;
+    this.strategy = 0;
     this.compareConditions = [];
     this.createTime = new Date();
     this.status = 1;

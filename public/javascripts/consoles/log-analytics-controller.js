@@ -1,9 +1,10 @@
 define([
+  'angular',
   'webapp',
   'models/analytics-field',
   'models/analytics-compare-set',
   'services/log-analytics-service',
-], function (webapp, AnalyticsField, AnalyticsCompareSet) {
+], function (angular, webapp, AnalyticsField, AnalyticsCompareSet) {
    // injections
   logAnalyticsController.$inject = ['$scope' , 'services.log-analytics-service', '$uibModal'];
   return webapp
@@ -44,6 +45,8 @@ define([
 
     vm.anaFields = [];
     vm.compareSets = [];
+
+    vm.dashboards = [];
 
     vm.actions = {
       addOrUpdateFieldModal: addOrUpdateFieldModal,
@@ -144,18 +147,114 @@ define([
     }
     
     function analyze() {
+      vm.dashboards = [];
       logAnalyticsService
         .dashboard
         .build(vm.options)
         .success(function (data) {
           console.log(data);
+          var set = data.compareSet;
+          if (set.strategy == 0 && set.groupField != null) {  // grouping
+            angular.forEach(data.dashboard.sub, function (subBoard, key) {
+              var board = {
+                groupKey: key,
+                full: data.dashboard.full[key],
+                sub: subBoard,
+              };
+              board.chartConfig = buildPieChartConfig(set, board, vm.options);
+              vm.dashboards.push(board);
+            });
+          } else {
+            var board = {
+              full: data.dashboard.full,
+              sub: data.dashboard.sub,
+            };
+            board.chartConfig = buildPieChartConfig(set, board, vm.options);
+            vm.dashboards.push(board);
+          }
         })
         .error(function (code, msg) {
           console.error(code, msg);
         })
         ['finally'](function () {
-          // console.log(data);
+          if (vm.dashboards.length > 0) {
+            // show chart
+
+          }
         });
+    }
+
+    function buildPieChartConfig (compareSet, board, options) {
+      var title = `${compareSet.name} - ${options.from} to ${options.to}`;
+      if (compareSet.strategy == 0 && compareSet.groupField != null) {
+        title = `${compareSet.groupField.name} [${board.groupKey}] - ` + title;
+      }
+      return {
+        options: {
+          chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'pie'
+          },
+          plotOptions: {
+            pie: {
+              allowPointSelect: true,
+              cursor: 'pointer',
+              dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                style: {
+                  color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                }
+              }
+            }
+          },
+          tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+          },
+        },
+        title: {
+          text: title
+        },
+        series: [{
+          name: 'Count',
+          colorByPoint: true,
+          data: (function (brd){
+            var dataArr = [];
+            var fullCnt = brd.full;
+            angular.forEach(brd.sub, function (subItem, key) {
+              dataArr.push({
+                name: `${compareSet.compareField.name} - ${key}`,
+                y: subItem / fullCnt
+              });
+            });
+            console.log(dataArr);
+            return dataArr;
+          })(board),
+          // data: [{
+          //   name: 'Microsoft Internet Explorer',
+          //   y: 56.33
+          // }, {
+          //   name: 'Chrome',
+          //   y: 24.03,
+          //   sliced: true,
+          //   selected: true
+          // }, {
+          //   name: 'Firefox',
+          //   y: 10.38
+          // }, {
+          //   name: 'Safari',
+          //   y: 4.77
+          // }, {
+          //   name: 'Opera',
+          //   y: 0.91
+          // }, {
+          //   name: 'Proprietary or Undetectable',
+          //   y: 0.2
+          // }]
+        }]
+      };
     }
 
     function reloadFieldsAndSets () {
@@ -195,7 +294,7 @@ define([
   function fieldModalController($scope, $uibModalInstance, fieldObj) {
     var vm = this;
 
-    vm.field = angular.merge(new AnalyticsField(), fieldObj) || new AnalyticsField();
+    vm.field = angular.merge(new AnalyticsField(), fieldObj || new AnalyticsField());
     vm.tempValue = '';
 
     vm.validate = {
@@ -241,7 +340,7 @@ define([
     presetField.name = '(None)';
 
     vm.processing = true;
-    vm.cpSet = angular.merge(new AnalyticsCompareSet(), compareSet) || new AnalyticsCompareSet();
+    vm.cpSet = angular.merge(new AnalyticsCompareSet(), compareSet || new AnalyticsCompareSet());
     vm.cFields = Array.prototype.concat(compareSet ? [] : [ presetField ], analyticsFields.success ? analyticsFields.data : []);
     vm.gFields = Array.prototype.concat([ presetField ], analyticsFields.success ? analyticsFields.data : []);
     vm.condFields = Array.prototype.concat([], analyticsFields.success ? analyticsFields.data : []);
@@ -270,10 +369,10 @@ define([
 
     function save() {
       vm.cpSet.compareField = fieldDict[vm.cpSet.compareField._id];
-      if (vm.cpSet.compareStrategy == 0){   // group
-        vm.cpSet.groupField = fieldDict[vm.cpSet.groupField._id];
+      if (vm.cpSet.strategy == 0){   // group
+        vm.cpSet.groupField = vm.cpSet.groupField._id == null ? null : fieldDict[vm.cpSet.groupField._id];
         vm.cpSet.compareConditions = [];  // reset compare conditions
-      } else if (vm.cpSet.compareStrategy == 1 ){ // cond
+      } else if (vm.cpSet.strategy == 1 ){ // cond
         angular.forEach(vm.cpSet.compareConditions, function (item) {
           item.field = fieldDict[item.field._id];
         });
@@ -296,6 +395,9 @@ define([
       for(var i = 0; i < vm.condFields.length; i++){
         if (vm.condFields[i]._id == fieldId) {
           vm.condFields.splice(i, 1);
+          if (vm.condFields.length > 0){
+            vm.condition = vm.condFields[0]._id;
+          }
           break;
         }
       }

@@ -116,8 +116,8 @@ block content
 
 
     div.row.dashboard-section
-      div.col-md-12
-
+      div.col-md-6.col-xs-12(ng-repeat='board in vm.dashboards')
+        highchart(config='board.chartConfig')
 
     include ../modals/analytics-field-modal
 

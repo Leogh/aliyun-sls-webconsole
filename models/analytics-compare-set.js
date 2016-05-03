@@ -18,6 +18,6 @@ var AnalyticsCompareSet = new Schema({
 });
 
 AnalyticsCompareSet.index({name: 1, hashing: 1}, {unique: true});
-AnalyticsCompareSet.index({ 'compareConditions.field': 1 }, {unique: true});
+//AnalyticsCompareSet.index({ 'compareConditions.field': 1 }, {unique: true});
 
 module.exports = mongoose.model('Analytics.CompareSet', AnalyticsCompareSet);
