@@ -486,6 +486,7 @@ function buildConditionQuery(compareSet) {
     var sub = `( ${buildLogSearchQuery(cond.field.name, cond.value)} )`;
     q += ( index > 0 ? ` and ${sub}` : sub );
   });
+  return q;
 }
 
 function buildLogSearchQuery(fieldName, fieldValue) {
