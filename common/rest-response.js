@@ -17,3 +17,6 @@ exports.success = function (data) {
 exports.error = function (code, msg) {
   return new StandardResponseModel(null, false, code, msg);
 };
+
+exports.CODE_SUCCESS = ResponseCode.SUCCESS;
+exports.CODE_ERROR = ResponseCode.ERROR;

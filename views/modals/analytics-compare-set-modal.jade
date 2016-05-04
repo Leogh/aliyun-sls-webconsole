@@ -1,0 +1,62 @@
+//
+   Created by roman on 4/28/16.
+
+script(type='text/ng-template', id='analytics-compare-set-modal.html')
+  div.modal-header
+    h3.modal-title {{ vm.cpSet._id == null ? 'Add an' : 'Edit' }} Analytics Compare Set
+  div.modal-body
+    div.form-horizontal
+      //- set name
+      div.form-group
+        label.control-label.col-md-2 Name
+        div.col-md-10
+          input.form-control(ng-model='vm.cpSet.name', placeholder='Set name')
+
+      div.form-group
+        label.control-label.col-md-2 Compare Strategy
+        div.col-md-10
+          label.radio-inline
+            input(type='radio', ng-model='vm.cpSet.strategy', value='0')
+            | Group
+          label.radio-inline
+            input(type='radio', ng-model='vm.cpSet.strategy', value='1')
+            | Condition
+
+      div.form-group
+        label.control-label.col-md-2 Compare Field
+        div.col-md-10
+          select.form-control(ng-model='vm.cpSet.compareField._id', ng-change='vm.actions.onFieldChanged("c")', ng-options='field._id as field.name for field in vm.cFields')
+
+      div.form-group(ng-if='vm.cpSet.strategy == 0')
+        label.control-label.col-md-2 Group Field
+        div.col-md-10
+          select.form-control(ng-model='vm.cpSet.groupField._id', ng-change='vm.actions.onFieldChanged("g")', ng-options='field._id as field.name for field in vm.gFields')
+
+      div.form-group(ng-if='vm.cpSet.strategy == 1')
+        label.control-label.col-md-2 Condition Field
+        div.col-md-10.form-inline
+          div.row
+            div.col-sm-12.form-group(ng-repeat='cond in vm.cpSet.compareConditions')
+              label {{ cond.field.name }}:&nbsp;
+              select.form-control(ng-options='v for v in cond.field.valueSet', ng-model='cond.value')
+              | &nbsp;&nbsp;
+              button.btn.btn-danger(ng-click='vm.actions.removeCondField($index)') Remove
+
+            div.col-sm-12.form-group(ng-if='vm.condFields.length > 0')
+              label Add Condition:&nbsp;
+              select.form-control(ng-model='vm.condition', ng-options='field._id as field.name for field in vm.condFields')
+              | &nbsp;&nbsp;
+              button.btn.btn-success(ng-click='vm.actions.addCondField(vm.condition)') Add
+
+      //- status
+      div.form-group
+        label.control-label.col-md-2 Status
+        div.col-md-10
+          div.btn-group
+            label.btn(uib-btn-radio='1', ng-model='vm.cpSet.status', ng-class='vm.cpSet.status == 1 ? "btn-success" : "btn-default"') On
+            label.btn(uib-btn-radio='0', ng-model='vm.cpSet.status', ng-class='vm.cpSet.status == 0 ? "btn-danger" : "btn-default"') Off
+
+
+  div.modal-footer
+    button.btn.btn-primary(ng-click='vm.actions.save()') {{ vm.cpSet._id == null ? 'Add' : 'Save' }}
+    button.btn.btn-default(ng-click='vm.actions.dismiss()') Dismiss

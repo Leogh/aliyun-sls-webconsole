@@ -9,3 +9,5 @@ config/conf.prod.js
 .vscode/
 logs/
 mongod
+/.project
+/.idea
