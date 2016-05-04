@@ -25,7 +25,7 @@ block content
               div.panel.panel-info
                 div.panel-heading Analytics Field
                 div.panel-body
-                  button.btn.btn-primary(ng-click='vm.actions.addOrUpdateFieldModal()') Add Analytics Field
+                  button.btn.btn-primary(ng-click='vm.actions.addOrUpdateFieldModel()') Add Analytics Field
                 table.table.table-bordered
                   thead
                     tr
@@ -36,33 +36,41 @@ block content
                   tbody
                     tr(ng-repeat='field in vm.anaFields')
                       td {{ field.name }}
-                      td {{ field.valueSet }}
+                      td
+                        ul.list-inline
+                          li(ng-repeat="val in field.valueSet") {{ val }}{{ $last ? '' : ',' }}
                       td {{ field.status }}
                       td
-                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateFieldModal(field)') Edit
+                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateFieldModel(field)') Edit
+                        | &nbsp;&nbsp;
+                        button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeFieldModel(field)') Remove
 
 
             div.col-sm-6
               div.panel.panel-info
                 div.panel-heading Compare Set
                 div.panel-body
-                  button.btn.btn-primary(ng-click='vm.actions.addOrUpdateCompareSetModal()') Add Analytics Compare Set
+                  button.btn.btn-primary(ng-click='vm.actions.addOrUpdateCompareSetModel()') Add Analytics Compare Set
                 table.table.table-bordered
                   thead
                     tr
                       th Name
                       th Compare Field
                       th Group Field
-                      th Status
+                      th Condition Field
                       th Actions
                   tbody
                     tr(ng-repeat='set in vm.compareSets')
                       td {{ set.name }}
                       td {{ set.compareField.name }}
                       td {{ set.groupField != null ? set.groupField.name : "(None)" }}
-                      td {{ set.status }}
                       td
-                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateCompareSetModal(set)') Edit
+                        ul.list-inline
+                          li(ng-repeat='field in set.compareConditions') {{ field.field.name }}:{{ field.value }}
+                      td
+                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateCompareSetModel(set)') Edit
+                        | &nbsp;&nbsp;
+                        button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeCompareSetModel(set)') Remove
 
     div.row.search-option-section
       div.col-md-12
@@ -110,14 +118,58 @@ block content
               br
               .form-group
                 label Compare Set:&nbsp;
-                select.form-control(ng-options='set._id as set.name for set in vm.compareSets', ng-model='vm.options.compareSetId')
+                select.form-control(ng-options='set._id as set.name for set in vm.compareSets', ng-model='vm.options.compareSetId', ng-change='vm.actions.onCompareSetChange()')
               .form-group
                 button.btn.btn-primary(ng-click='vm.actions.analyze()') Analyze
 
 
     div.row.dashboard-section
-      div.col-md-6.col-xs-12(ng-repeat='board in vm.dashboards')
-        highchart(config='board.chartConfig')
+      div.col-xs-12(ng-if='vm.compareSetOption != null')
+        h3 Compare Set Option Detail
+        table.table.table-bordered
+          tr
+            th Name
+            th Strategy
+            th Compare Field
+            th(ng-show='!vm.compareSetOption.strategy') Group Field
+            th(ng-show='vm.compareSetOption.strategy == 1') Condition Field
+          tr
+            td {{ vm.compareSetOption.name }}
+            td {{ vm.compareSetOption.strategy | strategy }}
+            td {{ vm.compareSetOption.compareField.name }}
+            td(ng-show='!vm.compareSetOption.strategy') {{ vm.compareSetOption.groupField != null ? vm.compareSetOption.groupField.name : "(None)" }}
+            td(ng-show='vm.compareSetOption.strategy == 1')
+              ul.list-inline
+                li(ng-repeat='field in vm.compareSetOption.compareConditions') {{ field.field.name }}:{{ field.value }}
+
+      div.col-xs-12(ng-repeat='board in vm.dashboards')
+        div.row
+          div.col-sm-6.pie-chart
+            highchart(config='board.chartConfig')
+          div.col-sm-6
+            h3 Chart Options
+            table.table.table-bordered.table-striped
+              tr
+                th From
+                td {{ board.dateRange.from | timestamp | date:'yyyy-MM-dd HH:mm:ss' }}
+              tr
+                th To
+                td {{ board.dateRange.to | timestamp | date:'yyyy-MM-dd HH:mm:ss' }}
+            h3 Chart Data
+            table.table.table-striped
+              tr
+                th {{ board.cpFieldName }}
+                th Count
+                th Percentage
+              tr(ng-repeat='(key, count) in board.sub')
+                th {{ key }}
+                td {{ count }}
+                td {{ (count / board.full) | percentage }}%
+              tr
+                th(colspan='3') Total Amount: {{ board.full }}
+          div.col-md-12
+            hr
+
 
     include ../modals/analytics-field-modal
 

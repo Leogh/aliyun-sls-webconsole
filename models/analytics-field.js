@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
 var AnalyticsField = new Schema({
   name: String,
   hashing: String,
+  filterName: String,
   valueSet: [ { type: String, unique: true} ],
   createTime: { type: Date, default: Date.now },
   status: Number

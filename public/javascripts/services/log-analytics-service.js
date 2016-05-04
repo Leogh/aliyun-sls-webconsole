@@ -20,11 +20,13 @@ define([
         get: getAnalyticsCompareSet,
         add: addAnalyticsCompareSet,
         update: updateAnalyticsCompareSet,
+        remove: removeAnalyticsCompareSet,
       },
       field: {
         get: getAnalyticsField,
         add: addAnalyticsField,
         update: updateAnalyticsField,
+        remove: removeAnalyticsField,
       },
       dashboard:{
         build: buildCompareSetDashboard,
@@ -69,6 +71,16 @@ define([
       });
     }
 
+    function removeAnalyticsCompareSet(id) {
+      return http.send({
+        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        params: {
+          _id: id
+        },
+        method: 'delete'
+      });
+    }
+
     function getAnalyticsField(name, status){
       return http.send({
         url: '/aliyun-sls-analytics/analyticsField',
@@ -107,6 +119,16 @@ define([
           status: field.status,
         },
         method: 'put'
+      });
+    }
+
+    function removeAnalyticsField(id){
+      return http.send({
+        url: '/aliyun-sls-analytics/analyticsField',
+        params: {
+          _id: id
+        },
+        method: 'delete'
       });
     }
 

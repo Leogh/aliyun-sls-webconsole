@@ -12,6 +12,12 @@ script(type='text/ng-template', id='analytics-field-modal.html')
         div.col-md-10
           input.form-control(ng-model='vm.field.name', placeholder='Field name')
 
+      //- filter name
+      div.form-group
+        label.control-label.col-md-2 Filter
+        div.col-md-10
+          input.form-control(ng-model='vm.field.filterName', placeholder='Value display angular filter')
+
       //- value input
       div.form-group
         label.control-label.col-md-2 Value

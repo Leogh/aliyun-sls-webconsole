@@ -10,7 +10,10 @@ define([
   return webapp
     .controller('LogAnalyticsController', logAnalyticsController)
     .controller('fieldModalController', fieldModalController)
-    .controller('compareSetModalController', compareSetModalController);
+    .controller('compareSetModalController', compareSetModalController)
+    .filter('timestamp', timestampFilter)
+    .filter('percentage', percentageFilter)
+    .filter('strategy', strategyFilter);
 
   function logAnalyticsController($scope, logAnalyticsService, $uibModal) {
     var vm = this;
@@ -46,18 +49,21 @@ define([
     vm.anaFields = [];
     vm.compareSets = [];
 
+    vm.compareSetOption = null;
     vm.dashboards = [];
 
     vm.actions = {
-      addOrUpdateFieldModal: addOrUpdateFieldModal,
-      addOrUpdateCompareSetModal: addOrUpdateCompareSetModal,
+      addOrUpdateFieldModel: addOrUpdateFieldModel,
+      addOrUpdateCompareSetModel: addOrUpdateCompareSetModel,
+      removeFieldModel: removeFieldModel,
+      removeCompareSetModel: removeCompareSetModel,
       toggleToolPanel: toggleToolPanel,
       analyze: analyze,
     };
 
     reloadFieldsAndSets();
 
-    function addOrUpdateFieldModal(fieldObj) {
+    function addOrUpdateFieldModel(fieldObj) {
       var fieldModalInst = $uibModal.open({
         animation: true,
         backdrop: 'static',
@@ -96,7 +102,19 @@ define([
       });
     }
 
-    function addOrUpdateCompareSetModal(compareSet){
+    function removeFieldModel(fieldObj) {
+      if (fieldObj._id && confirm(`You are going to remove field "${fieldObj.name}", please confirm.`)){
+        var promise = logAnalyticsService.field.remove(fieldObj._id);
+        promise.error(function (code, msg) {
+          alert(`${code} - ${msg}`);
+          console.error(code, msg);
+        })['finally'](function () {
+          reloadFieldsAndSets();
+        });
+      }
+    }
+
+    function addOrUpdateCompareSetModel(compareSet){
       var fieldModalInst = $uibModal.open({
         animation: true,
         backdrop: 'static',
@@ -139,15 +157,28 @@ define([
       });
     }
 
+    function removeCompareSetModel(compareSet){
+      if (compareSet._id && confirm(`You are going to remove compare set "${compareSet.name}", please confirm.`)){
+        var promise = logAnalyticsService.compareSet.remove(compareSet._id);
+        promise.error(function (code, msg) {
+          alert(`${code} - ${msg}`);
+          console.error(code, msg);
+        })['finally'](function () {
+          reloadFieldsAndSets();
+        });
+      }
+    }
+
     function toggleToolPanel() {
       vm.showManagementTools = !vm.showManagementTools;
       if (vm.showManagementTools) {
         reloadFieldsAndSets();
       }
     }
-    
+
     function analyze() {
       vm.dashboards = [];
+      vm.compareSetOption = null;
       logAnalyticsService
         .dashboard
         .build(vm.options)
@@ -158,6 +189,8 @@ define([
             angular.forEach(data.dashboard.sub, function (subBoard, key) {
               var board = {
                 groupKey: key,
+                cpFieldName: set.compareField.name,
+                dateRange: data.dateRange,
                 full: data.dashboard.full[key],
                 sub: subBoard,
               };
@@ -166,12 +199,15 @@ define([
             });
           } else {
             var board = {
+              cpFieldName: set.compareField.name,
+              dateRange: data.dateRange,
               full: data.dashboard.full,
               sub: data.dashboard.sub,
             };
             board.chartConfig = buildPieChartConfig(set, board, vm.options);
             vm.dashboards.push(board);
           }
+          vm.compareSetOption = set;
         })
         .error(function (code, msg) {
           console.error(code, msg);
@@ -179,15 +215,18 @@ define([
         ['finally'](function () {
           if (vm.dashboards.length > 0) {
             // show chart
-
           }
         });
     }
 
+    function buildColumnChartConfig(compareSet, board, options) {
+
+    }
+
     function buildPieChartConfig (compareSet, board, options) {
-      var title = `${compareSet.name} - ${options.from} to ${options.to}`;
+      var title = `${compareSet.name}`;
       if (compareSet.strategy == 0 && compareSet.groupField != null) {
-        title = `${compareSet.groupField.name} [${board.groupKey}] - ` + title;
+        title += ` - ${compareSet.groupField.name} [${board.groupKey}]`;
       }
       return {
         options: {
@@ -207,7 +246,8 @@ define([
                 style: {
                   color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                 }
-              }
+              },
+              showInLegend: true
             }
           },
           tooltip: {
@@ -232,27 +272,6 @@ define([
             console.log(dataArr);
             return dataArr;
           })(board),
-          // data: [{
-          //   name: 'Microsoft Internet Explorer',
-          //   y: 56.33
-          // }, {
-          //   name: 'Chrome',
-          //   y: 24.03,
-          //   sliced: true,
-          //   selected: true
-          // }, {
-          //   name: 'Firefox',
-          //   y: 10.38
-          // }, {
-          //   name: 'Safari',
-          //   y: 4.77
-          // }, {
-          //   name: 'Opera',
-          //   y: 0.91
-          // }, {
-          //   name: 'Proprietary or Undetectable',
-          //   y: 0.2
-          // }]
         }]
       };
     }
@@ -331,7 +350,6 @@ define([
 
 
   }
-
 
   function compareSetModalController($scope, $uibModalInstance, compareSet, analyticsFields) {
     var vm = this;
@@ -428,7 +446,37 @@ define([
     }
   }
 
+  function percentageFilter () {
+    return function (num) {
+      var tmp = num * 10000;
+      tmp = Math.ceil(tmp);
+      return tmp / 100;
+    };
+  }
 
+  function timestampFilter () {
+    var UNIX_TIME_START = new Date(1970, 0, 1, 0, 0, 0);
+    return function (timestamp) {
+      var stamp = parseInt(timestamp) + (8 * 3600);
+      var date = new Date();
+      date.setTime(UNIX_TIME_START.getTime() + stamp * 1000);
+      return date;
+    };
+  }
+
+  function strategyFilter() {
+    return function (strategy) {
+      if (strategy === null || typeof strategy === 'undefined') {
+        return 'Group';
+      }
+      var num = parseInt(strategy);
+      switch (num) {
+        case 0: return 'Group';
+        case 1: return 'Condition';
+        default: return 'Unknown';
+      }
+    };
+  }
 
 
 });

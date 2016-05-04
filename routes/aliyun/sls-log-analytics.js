@@ -64,6 +64,19 @@ router.put('/analyticsField', utils.authChk('/login'), function (req, res, next)
   addOrUpdateAnalyticsField(res, req.body._id, req.body.fieldName, req.body.valueSet, req.body.status);
 });
 
+router.delete('/analyticsField', utils.authChk('/login'), function (req, res, next) {
+  var data = req.query;
+  var fieldId = data._id;
+  AnalyticsField.remove({
+    _id: fieldId
+  }, function (err, result) {
+    if(err){
+      utils.handleMongooseError(res, err);
+    }
+    res.send(restResp.success(true));
+  });
+});
+
 // analyticsCompareSet
 
 router.get('/analyticsCompareSet', utils.authChk('/login'), function (req, res, next) {
@@ -113,6 +126,18 @@ router.put('/analyticsCompareSet', utils.authChk('/login'), function (req, res, 
   addOrUpdateAnalyticsCompareSet(res, compareSet);
 });
 
+router.delete('/analyticsCompareSet', utils.authChk('/login'), function (req, res, next) {
+  var data = req.query;
+  var compareSetId = data._id;
+  AnalyticsCompareSet.remove({
+    _id: compareSetId
+  }, function (err, result) {
+    if(err){
+      utils.handleMongooseError(res, err);
+    }
+    res.send(restResp.success(true));
+  });
+});
 
 // analysis request
 
@@ -123,6 +148,7 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
     return;
   }
   var cpSet = null;
+  var dateRange = {from: null, to: null};
   async.waterfall([
     // query the target AnalyticsCompareSet
     function (callback) {
@@ -146,6 +172,8 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
       cpSet = compareSet;
       var from = utils.calculateUNIXTimestamp(new Date(data.from));
       var to = utils.calculateUNIXTimestamp(new Date(data.to));
+      dateRange.from = from;
+      dateRange.to = to;
       var q = null;
       if (compareSet.strategy == AppEnum.CompareStrategy.Condition){
         q = buildConditionQuery(compareSet);
@@ -259,13 +287,13 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
     }
     res.send(restResp.success({
       compareSet: cpSet,
+      dateRange: dateRange,
       dashboard: results,
     }));
   });
 });
 
 module.exports = router;
-
 
 
 function addOrUpdateAnalyticsField(res, _id, fieldName, valueSet, status) {
