@@ -266,8 +266,8 @@ define([
     }
     /**
      * Build customize query
-     * @param Object options: search options
-     * @returns String query string
+     * @param {Object} options: search options
+     * @returns {String} query string
      */
     function buildQuery(options){
       var query = '';

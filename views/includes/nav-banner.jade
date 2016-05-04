@@ -14,12 +14,10 @@ nav.navbar.navbar-default.navbar-fixed-top.navbar-inverse
     div#admin-navbar-collapse.collapse.navbar-collapse  
       if (user)
         ul.nav.navbar-nav
-          li.dropdown
-            a.dropdown-toggle(href="#", data-toggle="dropdown", role="button") Tools 
-              span.caret
-            ul.dropdown-menu
-              li
-                a(href="/aliyun-sls/") SLS Console
+          li
+            a(href="/aliyun-sls/") SLS Console
+          li
+            a(href='/aliyun-sls-analytics/') Analytics
 
       ul.nav.navbar-nav.navbar-right
         if (user)
