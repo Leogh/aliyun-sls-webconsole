@@ -386,11 +386,17 @@ define([
     return function (text) {
       if (text == null || typeof text === 'undefined' || text.length == 0) {
         return text;
-      }  
+      }
+      if (text[0] == '"' && text[text.length - 1] == '"') {
+        text = text.substr(1, text.length - 2);
+      }
       if (/^{[\w\W\s\S]*\}$/.test(text)) {
         return processJson(text);
       }
-      return processXml(text);
+      if (text[0] == '<' && text[text.length - 1] == '>') {
+        return processXml(text);
+      }
+      return text;
     };
   }
   
@@ -401,7 +407,7 @@ define([
   function processXml(data) {
     data = data.replace(/\\"/g, '"');
     data = data.replace(/\\r\\n/g, "");
-    data = data.substr(1, data.length - 2);
+    // data = data.substr(1, data.length - 2);
     return vkbeautify.xml(data, 2);
   }
   
