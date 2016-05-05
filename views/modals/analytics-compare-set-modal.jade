@@ -38,7 +38,7 @@ script(type='text/ng-template', id='analytics-compare-set-modal.html')
           div.row
             div.col-sm-12.form-group(ng-repeat='cond in vm.cpSet.compareConditions')
               label {{ cond.field.name }}:&nbsp;
-              select.form-control(ng-options='v for v in cond.field.valueSet', ng-model='cond.value')
+              select.form-control(ng-options='v as vm.interpretFieldValue(v, cond.field) for v in cond.field.valueSet', ng-model='cond.value')
               | &nbsp;&nbsp;
               button.btn.btn-danger(ng-click='vm.actions.removeCondField($index)') Remove
 

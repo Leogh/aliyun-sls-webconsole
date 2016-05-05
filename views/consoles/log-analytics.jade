@@ -15,113 +15,8 @@ block content
   //- use 'controller as' to distiguish properties in $rootScope and the current controller scope
 
   div(ng-controller='LogAnalyticsController as vm')
-    div.row
-      div.col-md-12
-        p
-          a(href='', ng-click='vm.actions.toggleToolPanel()') {{ vm.showManagementTools ? 'Hide' : 'Show' }} Management Panel
-        div(uib-collapse='!vm.showManagementTools')
-          div.row
-            div.col-sm-6
-              div.panel.panel-info
-                div.panel-heading Analytics Field
-                div.panel-body
-                  button.btn.btn-primary(ng-click='vm.actions.addOrUpdateFieldModel()') Add Analytics Field
-                table.table.table-bordered
-                  thead
-                    tr
-                      th Name
-                      th Values
-                      th Status
-                      th Actions
-                  tbody
-                    tr(ng-repeat='field in vm.anaFields')
-                      td {{ field.name }}
-                      td
-                        ul.list-inline
-                          li(ng-repeat="val in field.valueSet") {{ val }}{{ $last ? '' : ',' }}
-                      td {{ field.status }}
-                      td
-                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateFieldModel(field)') Edit
-                        | &nbsp;&nbsp;
-                        button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeFieldModel(field)') Remove
-
-
-            div.col-sm-6
-              div.panel.panel-info
-                div.panel-heading Compare Set
-                div.panel-body
-                  button.btn.btn-primary(ng-click='vm.actions.addOrUpdateCompareSetModel()') Add Analytics Compare Set
-                table.table.table-bordered
-                  thead
-                    tr
-                      th Name
-                      th Compare Field
-                      th Group Field
-                      th Condition Field
-                      th Actions
-                  tbody
-                    tr(ng-repeat='set in vm.compareSets')
-                      td {{ set.name }}
-                      td {{ set.compareField.name }}
-                      td {{ set.groupField != null ? set.groupField.name : "(None)" }}
-                      td
-                        ul.list-inline
-                          li(ng-repeat='field in set.compareConditions') {{ field.field.name }}:{{ field.value }}
-                      td
-                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateCompareSetModel(set)') Edit
-                        | &nbsp;&nbsp;
-                        button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeCompareSetModel(set)') Remove
-
-    div.row.search-option-section
-      div.col-md-12
-        div.panel
-          div.panel-body
-            .form-inline
-              //- From Date Options
-              .form-group
-                label From:&nbsp;
-                .input-group
-                  input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.fromIsOpen", ng-model='vm.options.from')
-                  span.input-group-btn
-                    button.btn.btn-default(ng-click='vm.fromIsOpen = true')
-                      i.glyphicon.glyphicon-calendar
-              //- Advanced time select
-              .form-group(ng-show='vm.options.timeOptions.enabled')
-                select.form-control(ng-model='vm.options.timeOptions.from.h',ng-options='hr for hr in vm.hours')
-                label &nbsp;:&nbsp;
-                select.form-control(ng-model='vm.options.timeOptions.from.m',ng-options='min for min in vm.minutes')
-                label &nbsp;:&nbsp;
-                select.form-control(ng-model='vm.options.timeOptions.from.s',ng-options='sec for sec in vm.seconds')
-              br(ng-if='vm.options.timeOptions.enabled')
-              //- To Date Options
-              .form-group
-                label
-                  span(ng-if='vm.options.timeOptions.enabled') &nbsp;&nbsp;&nbsp;&nbsp;
-                  | To:&nbsp;
-                .input-group
-                  input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.toIsOpen", ng-model='vm.options.to')
-                  span.input-group-btn
-                    button.btn.btn-default(ng-click='vm.options.toIsOpen = true')
-                      i.glyphicon.glyphicon-calendar
-              //- Advanced time select
-              .form-group(ng-show='vm.options.timeOptions.enabled')
-                select.form-control(ng-model='vm.options.timeOptions.to.h',ng-options='hr for hr in vm.hours')
-                label &nbsp;:&nbsp;
-                select.form-control(ng-model='vm.options.timeOptions.to.m',ng-options='min for min in vm.minutes')
-                label &nbsp;:&nbsp;
-                select.form-control(ng-model='vm.options.timeOptions.to.s',ng-options='sec for sec in vm.seconds')
-
-              .form-group
-                a(ng-click='vm.options.timeOptions.enabled = !vm.options.timeOptions.enabled', href='')
-                  i.glyphicon.glyphicon-time(ng-show='!vm.options.timeOptions.enabled')
-                  | &nbsp;{{ vm.options.timeOptions.enabled ? 'Hide' : 'Show' }} time options
-              br
-              .form-group
-                label Compare Set:&nbsp;
-                select.form-control(ng-options='set._id as set.name for set in vm.compareSets', ng-model='vm.options.compareSetId', ng-change='vm.actions.onCompareSetChange()')
-              .form-group
-                button.btn.btn-primary(ng-click='vm.actions.analyze()') Analyze
-
+    include ../includes/analytics/management-panel
+    include ../includes/analytics/search-panel
 
     div.row.dashboard-section
       div.col-xs-12(ng-if='vm.compareSetOption != null')
@@ -140,7 +35,7 @@ block content
             td(ng-show='!vm.compareSetOption.strategy') {{ vm.compareSetOption.groupField != null ? vm.compareSetOption.groupField.name : "(None)" }}
             td(ng-show='vm.compareSetOption.strategy == 1')
               ul.list-inline
-                li(ng-repeat='field in vm.compareSetOption.compareConditions') {{ field.field.name }}:{{ field.value }}
+                li(ng-repeat='field in vm.compareSetOption.compareConditions') {{ field.field.name }}:{{ vm.interpretFieldValue(field.value, field.field) }}
 
       div.col-xs-12(ng-repeat='board in vm.dashboards')
         div.row
@@ -162,7 +57,7 @@ block content
                 th Count
                 th Percentage
               tr(ng-repeat='(key, count) in board.sub')
-                th {{ key }}
+                th {{ vm.interpretFieldValue(key, vm.compareSetOption.compareField) }}
                 td {{ count }}
                 td {{ (count / board.full) | percentage }}%
               tr
@@ -174,4 +69,6 @@ block content
     include ../modals/analytics-field-modal
 
     include ../modals/analytics-compare-set-modal
+
+    include ../modals/analytics-field-filter-modal
 

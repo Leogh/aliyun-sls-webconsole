@@ -3,23 +3,28 @@ define([
   'webapp',
   'models/analytics-field',
   'models/analytics-compare-set',
+  'models/analytics-field-filter',
   'services/log-analytics-service',
-], function (angular, webapp, AnalyticsField, AnalyticsCompareSet) {
+], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter) {
    // injections
   logAnalyticsController.$inject = ['$scope' , 'services.log-analytics-service', '$uibModal'];
+
   return webapp
     .controller('LogAnalyticsController', logAnalyticsController)
     .controller('fieldModalController', fieldModalController)
     .controller('compareSetModalController', compareSetModalController)
+    .controller('filterModalController', filterModalController)
     .filter('timestamp', timestampFilter)
     .filter('percentage', percentageFilter)
     .filter('strategy', strategyFilter);
 
-  function logAnalyticsController($scope, logAnalyticsService, $uibModal) {
+  function logAnalyticsController($scope, logAnalyticsService, $uibModal, $filterProvider) {
+    console.log($filterProvider);
     var vm = this;
     var now = new Date();
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
     var tmr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+    var filterDict = {};
 
     vm.options = {
       from: today,
@@ -48,6 +53,8 @@ define([
 
     vm.anaFields = [];
     vm.compareSets = [];
+    vm.anaFieldFilters = [];
+
 
     vm.compareSetOption = null;
     vm.dashboards = [];
@@ -55,11 +62,16 @@ define([
     vm.actions = {
       addOrUpdateFieldModel: addOrUpdateFieldModel,
       addOrUpdateCompareSetModel: addOrUpdateCompareSetModel,
+      addOrUpdateFieldFilterModel: addOrUpdateFieldFilterModel,
       removeFieldModel: removeFieldModel,
       removeCompareSetModel: removeCompareSetModel,
+      removeFieldFilterModel: removeFieldFilterModel,
+      copyAddCompareSetModel: copyAddCompareSetModel,
       toggleToolPanel: toggleToolPanel,
       analyze: analyze,
     };
+
+    vm.interpretFieldValue = interpretFieldValue;
 
     reloadFieldsAndSets();
 
@@ -74,7 +86,7 @@ define([
         resolve: {
           fieldObj: function () {
             return fieldObj;
-          },
+          }
         },
       });
       fieldModalInst.result.then(function (obj, cmd) {
@@ -128,6 +140,9 @@ define([
           },
           analyticsFields: function () {
             return logAnalyticsService.field.get();
+          },
+          interpreter: function () {
+            return vm.interpretFieldValue
           }
         },
       });
@@ -167,6 +182,65 @@ define([
           reloadFieldsAndSets();
         });
       }
+    }
+
+    function addOrUpdateFieldFilterModel(filter) {
+      var filterModalInst = $uibModal.open({
+        animation: true,
+        backdrop: 'static',
+        keyboard: false,
+        templateUrl: 'analytics-field-filter-modal.html',
+        controller: 'filterModalController',
+        controllerAs: 'vm',
+        resolve: {
+          filterObj: function () {
+            return filter;
+          }
+        },
+      });
+      filterModalInst.result.then(function (filter, cmd) {
+        var promise = null;
+        var isAdd = true;
+        if (filter._id) {
+          isAdd = false;
+          promise = logAnalyticsService.filter.update(filter);
+        } else {
+          isAdd = false;
+          promise = logAnalyticsService.filter.add(filter);
+        }
+        promise.success(function(){
+          if (isAdd){
+            alert(`analytics field filter added!`);
+          }
+        }).error(function (code, msg) {
+          alert(`[${code}] - ${msg}`);
+          console.error(code, msg);
+        })['finally'](function (){
+          reloadFieldsAndSets();
+        });
+      }, function () {
+        // closed
+        reloadFieldsAndSets();
+      });
+    }
+
+    function removeFieldFilterModel(filter){
+      if (filter._id && confirm(`You are going to remove filter "${filter.name}", please confirm.`)){
+        var promise = logAnalyticsService.filter.remove(filter._id);
+        promise.error(function (code, msg) {
+          alert(`${code} - ${msg}`);
+          console.error(code, msg);
+        })['finally'](function () {
+          reloadFieldsAndSets();
+        });
+      }
+    }
+
+    function copyAddCompareSetModel(baseSet) {
+      var newSet = angular.merge(new AnalyticsCompareSet(), baseSet);
+      newSet._id = null;
+      newSet.name += '_Copy';
+      vm.actions.addOrUpdateCompareSetModel(newSet);
     }
 
     function toggleToolPanel() {
@@ -226,7 +300,8 @@ define([
     function buildPieChartConfig (compareSet, board, options) {
       var title = `${compareSet.name}`;
       if (compareSet.strategy == 0 && compareSet.groupField != null) {
-        title += ` - ${compareSet.groupField.name} [${board.groupKey}]`;
+        var interpretedGroupKey = interpretFieldValue(board.groupKey, compareSet.groupField);
+        title += ` - ${compareSet.groupField.name} [${interpretedGroupKey}]`;
       }
       return {
         options: {
@@ -264,8 +339,9 @@ define([
             var dataArr = [];
             var fullCnt = brd.full;
             angular.forEach(brd.sub, function (subItem, key) {
+              var interpretedTxt = interpretFieldValue(key, compareSet.compareField);
               dataArr.push({
-                name: `${compareSet.compareField.name} - ${key}`,
+                name: `${compareSet.compareField.name} - ${interpretedTxt}`,
                 y: subItem / fullCnt
               });
             });
@@ -279,20 +355,34 @@ define([
     function reloadFieldsAndSets () {
       vm.anaFields = [];
       vm.compareSets = [];
+      vm.anaFieldFilters = [];
+      filterDict = {};
       logAnalyticsService
-          .field
-          .get()
-          .success(function (fields) {
-            vm.anaFields = fields;
-          });
+        .field
+        .get()
+        .success(function (fields) {
+          vm.anaFields = fields;
+        });
       logAnalyticsService
-          .compareSet.get()
-          .success(function (sets) {
-            vm.compareSets = sets;
-            if (vm.options.compareSetId == null && sets.length > 0) {
-              vm.options.compareSetId = sets[0]._id;
-            }
+        .filter.get()
+        .success(function (filters) {
+          vm.anaFieldFilters = filters;
+          angular.forEach(vm.anaFieldFilters, function (f) {
+            f.interDict = {};
+            angular.forEach(f.interpretations, function (inter) {
+              f.interDict[inter.key] = inter.value;
+            });
+            filterDict[f.name] = f;
           });
+        });
+      logAnalyticsService
+        .compareSet.get()
+        .success(function (sets) {
+          vm.compareSets = sets;
+          if (vm.options.compareSetId == null && sets.length > 0) {
+            vm.options.compareSetId = sets[0]._id;
+          }
+        });
     }
 
     function genTimeRange(s, e) {
@@ -306,8 +396,20 @@ define([
       }
       return arr;
     }
-    
-    
+
+    function interpretFieldValue (fieldValue, field) {
+      if (!field){
+        return fieldValue;
+      }
+      if (field.filterName && filterDict[field.filterName]) {
+        var filter = filterDict[field.filterName];
+        var interpretation = filter.interDict[fieldValue];
+        if (typeof interpretation === 'undefined') return fieldValue;
+        return interpretation;
+      }
+      return fieldValue;
+    }
+
   }
 
   function fieldModalController($scope, $uibModalInstance, fieldObj) {
@@ -351,7 +453,7 @@ define([
 
   }
 
-  function compareSetModalController($scope, $uibModalInstance, compareSet, analyticsFields) {
+  function compareSetModalController($scope, $uibModalInstance, compareSet, analyticsFields, interpreter) {
     var vm = this;
     var presetField = new AnalyticsField();
     var fieldDict = {};
@@ -362,6 +464,9 @@ define([
     vm.cFields = Array.prototype.concat(compareSet ? [] : [ presetField ], analyticsFields.success ? analyticsFields.data : []);
     vm.gFields = Array.prototype.concat([ presetField ], analyticsFields.success ? analyticsFields.data : []);
     vm.condFields = Array.prototype.concat([], analyticsFields.success ? analyticsFields.data : []);
+
+    vm.interpretFieldValue = interpreter;
+
     init();
     //reloadFields();
 
@@ -409,6 +514,10 @@ define([
         field: tar,
         value: tar.valueSet[0],
       });
+      removeCondFieldOptionById(fieldId);
+    }
+
+    function removeCondFieldOptionById(fieldId) {
       // remove
       for(var i = 0; i < vm.condFields.length; i++){
         if (vm.condFields[i]._id == fieldId) {
@@ -440,9 +549,95 @@ define([
       angular.forEach(vm.gFields, function (f) {
         fieldDict[f._id] = f;
       });
+      // init cond fields options (remove existed conditions)
       if (vm.condFields.length > 0){
+        angular.forEach(vm.cpSet.compareConditions, function(cond) {
+          removeCondFieldOptionById(cond.field._id);
+        });
         vm.condition = vm.condFields[0]._id;
       }
+    }
+  }
+
+  function filterModalController($scope, $uibModalInstance, filterObj) {
+    var vm = this;
+
+    vm.filter = angular.merge(new AnalyticsFieldFilter(), filterObj);
+    vm.planText = getInterpretationPlanText();
+    vm.bulkMode = 0;
+
+    vm.actions = {
+      addInterpretation: addInterpretation,
+      removeInterpretation: removeInterpretation,
+      bulkUpdate: bulkUpdate,
+      modeChange: modeChange,
+      save: save,
+      dismiss: dismiss,
+    };
+
+    function addInterpretation() {
+      vm.filter.interpretations.push({
+        key: '',
+        value: null,
+      });
+    }
+
+    function bulkUpdate() {
+      var tmp = [];
+      var arr = vm.planText.replace(/(\r\n|\n|\r)/gm,"").split('|');
+      angular.forEach(arr, function (item) {
+        var idx = item.indexOf('":"');
+        var key = item.substr(1, idx - 1);
+        var val = item.substr(idx + 3, item.length - idx - 4);
+        tmp.push({
+          key: key,
+          value: val
+        });
+      });
+      vm.filter.interpretations = tmp;
+    }
+
+    function modeChange() {
+      vm.planText = getInterpretationPlanText();
+    }
+
+    function getInterpretationPlanText(){
+      var txt = '';
+      angular.forEach(vm.filter.interpretations, function (inter) {
+        txt += `"${inter.key}":"${inter.value}"|`;
+      });
+      if (txt[txt.length - 1] == '|') {
+        txt = txt.substr(0, txt.length - 1);
+      }
+      return txt;
+    }
+
+    function save() {
+      if (vm.bulkMode == 1){
+        bulkUpdate();
+      }
+      var hasErr = false;
+      var arr = [];
+      for(var i = 0; i < vm.filter.interpretations.length; i ++ ){
+        var inter = vm.filter.interpretations[i];
+        if (arr.indexOf(inter.key) >= 0) {
+          alert(`Duplicate key ${inter.key}`);
+          hasErr = true;
+          break;
+        }
+        arr.push(inter.key);
+      }
+      if (!hasErr){
+        $uibModalInstance.close(vm.filter);
+      }
+    }
+
+    function dismiss() {
+      $uibModalInstance.dismiss('cancel');
+    }
+
+    function removeInterpretation(index) {
+      vm.filter.interpretations.splice(index, 1);
     }
   }
 
@@ -477,6 +672,5 @@ define([
       }
     };
   }
-
 
 });

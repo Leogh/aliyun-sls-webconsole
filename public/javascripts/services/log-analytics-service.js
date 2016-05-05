@@ -6,8 +6,9 @@ define([
   'webapp',
   'models/analytics-field',
   'models/analytics-compare-set',
+  'models/analytics-field-filter',
   'utils/http-client'
-], function (angular, webapp, AnalyticsField, AnalyticsCompareSet) {
+], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter) {
 
   webapp.factory('services.log-analytics-service', logAnalyticsService);
 
@@ -27,6 +28,12 @@ define([
         add: addAnalyticsField,
         update: updateAnalyticsField,
         remove: removeAnalyticsField,
+      },
+      filter: {
+        get: getAnalyticsFieldFilter,
+        add: addAnalyticsFieldFilter,
+        update: updateAnalyticsFieldFilter,
+        remove: removeAnalyticsFieldFilter,
       },
       dashboard:{
         build: buildCompareSetDashboard,
@@ -81,6 +88,7 @@ define([
       });
     }
 
+
     function getAnalyticsField(name, status){
       return http.send({
         url: '/aliyun-sls-analytics/analyticsField',
@@ -99,8 +107,7 @@ define([
       return http.send({
         url: '/aliyun-sls-analytics/analyticsField',
         data: {
-          fieldName: field.name,
-          valueSet: field.valueSet,
+          field: field,
         },
         method: 'post'
       });
@@ -113,10 +120,7 @@ define([
       return http.send({
         url: '/aliyun-sls-analytics/analyticsField',
         data: {
-          _id: field._id,
-          fieldName: field.name,
-          valueSet: field.valueSet,
-          status: field.status,
+          field: field,
         },
         method: 'put'
       });
@@ -131,6 +135,52 @@ define([
         method: 'delete'
       });
     }
+
+
+    function getAnalyticsFieldFilter(){
+      return http.send({
+        url: '/aliyun-sls-analytics/filter',
+        method: 'get'
+      });
+    }
+
+    function addAnalyticsFieldFilter(filter){
+      if (!(filter instanceof  AnalyticsFieldFilter)) {
+        throw Error('filter is not an instance of AnalyticsFieldFilter.');
+      }
+      return http.send({
+        url: '/aliyun-sls-analytics/filter',
+        data: {
+          filter: filter
+        },
+        method: 'post'
+      });
+    }
+
+    function updateAnalyticsFieldFilter(filter){
+      if (!(filter instanceof  AnalyticsFieldFilter)) {
+        throw Error('filter is not an instance of AnalyticsFieldFilter.');
+      }
+      return http.send({
+        url: '/aliyun-sls-analytics/filter',
+        data: {
+          filter: filter
+        },
+        method: 'put'
+      });
+    }
+
+    function removeAnalyticsFieldFilter(id){
+      return http.send({
+        url: '/aliyun-sls-analytics/filter',
+        params: {
+          _id: id
+        },
+        method: 'delete'
+      });
+    }
+
+
 
     function buildCompareSetDashboard(options){
       if (options.timeOptions.enabled) {

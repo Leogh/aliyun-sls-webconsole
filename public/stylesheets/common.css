@@ -47,3 +47,11 @@ hr.xs {
   margin-right: 5px;
   margin-bottom: 5px;
 }
+
+.panel-heading-link {
+  color: #fff;
+}
+
+.col-action {
+  width: 300px;
+}

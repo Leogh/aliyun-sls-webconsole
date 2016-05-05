@@ -15,6 +15,7 @@ var AppEnum = require('../../common/app-enum-types');
 
 var AnalyticsField = require("../../models/analytics-field");
 var AnalyticsCompareSet = require("../../models/analytics-compare-set");
+var AnalyticsFieldFilter = require("../../models/analytics-field-filter");
 
 var router = express.Router();
 
@@ -57,11 +58,15 @@ router.get('/analyticsField', utils.authChk('/login'), function(req, res, next) 
 });
 
 router.post('/analyticsField', utils.authChk('/login'), function (req, res, next) {
-  addOrUpdateAnalyticsField(res, null, req.body.fieldName, req.body.valueSet, 1);
+  var data = req.body;
+  var field = data.field;
+  addOrUpdateAnalyticsField(res, field);
 });
 
 router.put('/analyticsField', utils.authChk('/login'), function (req, res, next) {
-  addOrUpdateAnalyticsField(res, req.body._id, req.body.fieldName, req.body.valueSet, req.body.status);
+  var data = req.body;
+  var field = data.field;
+  addOrUpdateAnalyticsField(res, field);
 });
 
 router.delete('/analyticsField', utils.authChk('/login'), function (req, res, next) {
@@ -139,6 +144,51 @@ router.delete('/analyticsCompareSet', utils.authChk('/login'), function (req, re
   });
 });
 
+// field filters
+router.get('/filter', utils.authChk('/login'), function (req, res, next) {
+  var data = req.query;
+  var queryOptions = {};
+  if (data.name) {
+    queryOptions.name = data.name;
+  }
+  AnalyticsFieldFilter
+    .find(queryOptions)
+    .exec(function (err, filters) {
+      if (err) {
+        utils.handleMongooseError(res, err);
+      }
+      res.send(restResp.success(filters));
+    });
+});
+
+router.post('/filter', utils.authChk('/login'), function (req, res, next) {
+  var data = req.body;
+  var filter  = data.filter;
+  if (filter._id != null) {
+    return res.send(restResp.error(restResp.CODE_ERROR, 'A new record should not have a pre-set id'));
+  }
+  addOrUpdateAnalyticsFieldFilter(res, filter);
+});
+
+router.put('/filter', utils.authChk('/login'), function (req, res, next) {
+  var data = req.body;
+  var filter  = data.filter;
+  addOrUpdateAnalyticsFieldFilter(res, filter);
+});
+
+router.delete('/filter', utils.authChk('/login'), function (req, res, next) {
+  var data = req.query;
+  var filterId = data._id;
+  AnalyticsFieldFilter.remove({
+    _id: filterId
+  }, function (err, result) {
+    if(err){
+      utils.handleMongooseError(res, err);
+    }
+    res.send(restResp.success(true));
+  });
+});
+
 // analysis request
 
 router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
@@ -153,16 +203,16 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
     // query the target AnalyticsCompareSet
     function (callback) {
       AnalyticsCompareSet.findOne({
-        _id: data.compareSetId,
-        hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
-      })
-      .populate('compareField')
-      .populate('groupField')
-      .populate({
-        path: 'compareConditions.field',
-        select: 'name'
-      })
-      .exec(callback);
+            _id: data.compareSetId,
+            hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
+          })
+          .populate('compareField')
+          .populate('groupField')
+          .populate({
+            path: 'compareConditions.field',
+            select: 'name filterName'
+          })
+          .exec(callback);
     },
     function (compareSet, callback) {
       if (compareSet == null) {
@@ -296,9 +346,9 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
 module.exports = router;
 
 
-function addOrUpdateAnalyticsField(res, _id, fieldName, valueSet, status) {
+function addOrUpdateAnalyticsField(res, field) {
   AnalyticsField.findOne({
-    _id: _id,
+    _id: field._id,
     hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
   }).exec(function (err, obj) {
     if (err) {
@@ -307,9 +357,13 @@ function addOrUpdateAnalyticsField(res, _id, fieldName, valueSet, status) {
     }
     if (obj) {
       // update
-      obj.name = fieldName || obj.name;
-      obj.valueSet = valueSet || obj.valueSet;
-      obj.status = typeof status === 'undefined' ? obj.status : status;
+      if (typeof field.filterName === 'undefined' || /^\s*$/.test(field.filterName)){
+        field.filterName = null;
+      }
+      obj.name = field.name;
+      obj.valueSet = field.valueSet;
+      obj.status = field.status;
+      obj.filterName = field.filterName;
       obj.save(function (err, data) {
         if (err) {
           utils.handleMongooseError(res, err);
@@ -317,12 +371,13 @@ function addOrUpdateAnalyticsField(res, _id, fieldName, valueSet, status) {
         }
         res.send(restResp.success(data));
       });
-    } else if (!_id){
+    } else if (!field._id){
       // add
       var newItem = new AnalyticsField({
-        name: fieldName,        
+        name: field.name,
+        filterName: field.filterName,
         hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
-        valueSet: valueSet,
+        valueSet: field.valueSet,
         status: 1,
       });
       newItem.save(function (err, data) {
@@ -400,6 +455,9 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
         res.send(restResp.error('Invalid compareField'));
         return;
       }
+
+      compareSet.strategy = compareSet.strategy == null || typeof compareSet.strategy === 'undefined' ? AppEnum.CompareStrategy.Group : compareSet.strategy;
+
       if (compareSet.strategy == AppEnum.CompareStrategy.Group && !result.groupField) {
         res.send(restResp.error('Invalid groupField'));
         return;
@@ -408,7 +466,7 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
         res.send(restResp.error('Invalid conditionField'));
         return;
       }
-      
+
       if (existedSet) {
         // update 
         existedSet.name = compareSet.name || existedSet.name;
@@ -424,8 +482,10 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
             existedSet.groupField = result.groupField._id;
           }
           existedSet.compareConditions = [];
+        } else {
+          res.send(restResp.error(restResp.CODE_ERROR, `Invalid compare strategy ${compareSet.strategy}`));
+          return;
         }
-
         existedSet.chartType = compareSet.chartType || existedSet.chartType;
         existedSet.strategy = parseInt(compareSet.strategy);
         existedSet.status = compareSet.status;
@@ -442,8 +502,10 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
           name: compareSet.name,
           hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
           compareField: result.compareField._id,
+          compareConditions: result.conditionField instanceof Array ? result.conditionField : null,
           groupField: result.groupField === true ? null : result.groupField._id,
           chartType: compareSet.chartType,
+          strategy: parseInt(compareSet.strategy),
           status: 1,
         });
         newSet.save(function (err, result) {
@@ -480,12 +542,52 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
   }
 }
 
+function addOrUpdateAnalyticsFieldFilter(res, filter) {
+  AnalyticsFieldFilter.findOne({
+    _id: filter._id
+  }).exec(function (err, obj) {
+    if (err) {
+      return utils.handleMongooseError(res, err);
+    }
+    if (obj) {
+      // update
+      obj.name = filter.name;
+      obj.interpretations = filter.interpretations;
+      obj.status = filter.status;
+      obj.save(function (err, data) {
+        if (err) {
+          utils.handleMongooseError(res, err);
+          return;
+        }
+        res.send(restResp.success(data));
+      });
+    } else if (!filter._id){
+      // add
+      var newItem = new AnalyticsFieldFilter({
+        name: filter.name,
+        interpretations: filter.interpretations,
+        status: 1,
+      });
+      newItem.save(function (err, data) {
+        if (err) {
+          utils.handleMongooseError(res, err);
+          return;
+        }
+        res.send(restResp.success(data));
+      });
+    } else {
+      res.send(restResp.error(restResp.CODE_ERROR, 'invalid item'));
+    }
+  });
+}
+
 function buildConditionQuery(compareSet) {
   var q = '';
   compareSet.compareConditions.forEach(function (cond, index) {
     var sub = `( ${buildLogSearchQuery(cond.field.name, cond.value)} )`;
     q += ( index > 0 ? ` and ${sub}` : sub );
   });
+  return q;
 }
 
 function buildLogSearchQuery(fieldName, fieldValue) {

@@ -1,0 +1,89 @@
+//
+   Created by Roman Lo on 5/5/2016.
+
+div.row
+    div.col-md-12
+        p
+            a(href='', ng-click='vm.actions.toggleToolPanel()') {{ vm.showManagementTools ? 'Hide' : 'Show' }} Management Panel
+        div(uib-collapse='!vm.showManagementTools')
+            div.row
+                div.col-sm-12
+                    div.panel.panel-info
+                        div.panel-heading
+                            a(href='', ng-click='vm.states.showCompareSet = !vm.states.showCompareSet') Compare Set
+                        div.panel-body(uib-collapse='!vm.states.showCompareSet')
+                            button.btn.btn-primary(ng-click='vm.actions.addOrUpdateCompareSetModel()') Add Analytics Compare Set
+                        table.table.table-bordered(uib-collapse='!vm.states.showCompareSet')
+                            thead
+                                tr
+                                    th Name
+                                    th Compare Field
+                                    th Group Field
+                                    th Condition Field
+                                    th.col-action Actions
+                            tbody
+                                tr(ng-repeat='set in vm.compareSets')
+                                    td {{ set.name }}
+                                    td {{ set.compareField.name }}
+                                    td {{ set.groupField != null ? set.groupField.name : "(None)" }}
+                                    td
+                                        ul.list-inline
+                                            li(ng-repeat='cond in set.compareConditions') {{ cond.field.name }}:{{ vm.interpretFieldValue(cond.value, cond.field) }}
+                                    td
+                                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateCompareSetModel(set)') Edit
+                                        | &nbsp;&nbsp;
+                                        button.btn.btn-warning.btn-sm(ng-click='vm.actions.copyAddCompareSetModel(set)') Copy
+                                        | &nbsp;&nbsp;
+                                        button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeCompareSetModel(set)') Remove
+
+            div.row
+                div.col-sm-12
+                    div.panel.panel-info
+                        div.panel-heading
+                            a(href='', ng-click='vm.states.showAnalyticsField = !vm.states.showAnalyticsField') Analytics Field
+                        div.panel-body(uib-collapse='!vm.states.showAnalyticsField')
+                            button.btn.btn-primary(ng-click='vm.actions.addOrUpdateFieldModel()') Add Analytics Field
+                        table.table.table-bordered(uib-collapse='!vm.states.showAnalyticsField')
+                            thead
+                                tr
+                                    th Name
+                                    th Values
+                                    th Filter Name
+                                    th.col-action Actions
+                            tbody
+                                tr(ng-repeat='field in vm.anaFields')
+                                    td {{ field.name }}
+                                    td
+                                        ul.list-inline
+                                            li(ng-repeat="val in field.valueSet") {{ vm.interpretFieldValue(val, field) }}{{ $last ? '' : ',' }}
+                                    td {{ field.filterName != null ? field.filterName : '(None)' }}
+                                    td
+                                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateFieldModel(field)') Edit
+                                        | &nbsp;&nbsp;
+                                        button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeFieldModel(field)') Remove
+
+            div.row
+                div.col-sm-12
+                    div.panel.panel-info
+                        div.panel-heading
+                            a(href='', ng-click='vm.states.showFilters = !vm.states.showFilters') Analytics Field Filter
+                        div.panel-body(uib-collapse='!vm.states.showFilters')
+                            button.btn.btn-primary(ng-click='vm.actions.addOrUpdateFieldFilterModel()') Add Analytics Field Filter
+                        table.table.table-bordered(uib-collapse='!vm.states.showFilters')
+                            thead
+                                tr
+                                    th Name
+                                    th Interpretations
+                                    th.col-action Actions
+                            tbody
+                                tr(ng-repeat='filter in vm.anaFieldFilters')
+                                    td {{ filter.name }}
+                                    td
+                                        ul.list-inline
+                                            li(ng-repeat="inter in filter.interpretations") {{ inter.key }}:{{ inter.value }}{{ $last ? '' : ',' }}
+                                    td
+                                        button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateFieldFilterModel(filter)') Edit
+                                        | &nbsp;&nbsp;
+                                        button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeFieldFilterModel(filter)') Remove
+
+
