@@ -71,7 +71,7 @@ define([
       analyze: analyze,
     };
 
-    vm.filterField = filterField;
+    vm.interpretFieldValue = interpretFieldValue;
 
     reloadFieldsAndSets();
 
@@ -86,7 +86,7 @@ define([
         resolve: {
           fieldObj: function () {
             return fieldObj;
-          },
+          }
         },
       });
       fieldModalInst.result.then(function (obj, cmd) {
@@ -140,6 +140,9 @@ define([
           },
           analyticsFields: function () {
             return logAnalyticsService.field.get();
+          },
+          interpreter: function () {
+            return vm.interpretFieldValue
           }
         },
       });
@@ -297,7 +300,8 @@ define([
     function buildPieChartConfig (compareSet, board, options) {
       var title = `${compareSet.name}`;
       if (compareSet.strategy == 0 && compareSet.groupField != null) {
-        title += ` - ${compareSet.groupField.name} [${board.groupKey}]`;
+        var interpretedGroupKey = interpretFieldValue(board.groupKey, compareSet.groupField);
+        title += ` - ${compareSet.groupField.name} [${interpretedGroupKey}]`;
       }
       return {
         options: {
@@ -335,8 +339,9 @@ define([
             var dataArr = [];
             var fullCnt = brd.full;
             angular.forEach(brd.sub, function (subItem, key) {
+              var interpretedTxt = interpretFieldValue(key, compareSet.compareField);
               dataArr.push({
-                name: `${compareSet.compareField.name} - ${key}`,
+                name: `${compareSet.compareField.name} - ${interpretedTxt}`,
                 y: subItem / fullCnt
               });
             });
@@ -392,10 +397,15 @@ define([
       return arr;
     }
 
-    function filterField (fieldValue, field) {
+    function interpretFieldValue (fieldValue, field) {
+      if (!field){
+        return fieldValue;
+      }
       if (field.filterName && filterDict[field.filterName]) {
         var filter = filterDict[field.filterName];
-        return filter.interDict[fieldValue];
+        var interpretation = filter.interDict[fieldValue];
+        if (typeof interpretation === 'undefined') return fieldValue;
+        return interpretation;
       }
       return fieldValue;
     }
@@ -443,7 +453,7 @@ define([
 
   }
 
-  function compareSetModalController($scope, $uibModalInstance, compareSet, analyticsFields) {
+  function compareSetModalController($scope, $uibModalInstance, compareSet, analyticsFields, interpreter) {
     var vm = this;
     var presetField = new AnalyticsField();
     var fieldDict = {};
@@ -454,6 +464,9 @@ define([
     vm.cFields = Array.prototype.concat(compareSet ? [] : [ presetField ], analyticsFields.success ? analyticsFields.data : []);
     vm.gFields = Array.prototype.concat([ presetField ], analyticsFields.success ? analyticsFields.data : []);
     vm.condFields = Array.prototype.concat([], analyticsFields.success ? analyticsFields.data : []);
+
+    vm.interpretFieldValue = interpreter;
+
     init();
     //reloadFields();
 

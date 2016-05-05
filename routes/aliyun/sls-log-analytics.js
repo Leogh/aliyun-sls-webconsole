@@ -210,7 +210,7 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
           .populate('groupField')
           .populate({
             path: 'compareConditions.field',
-            select: 'name'
+            select: 'name filterName'
           })
           .exec(callback);
     },

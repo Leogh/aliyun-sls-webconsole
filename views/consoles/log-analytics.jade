@@ -35,7 +35,7 @@ block content
             td(ng-show='!vm.compareSetOption.strategy') {{ vm.compareSetOption.groupField != null ? vm.compareSetOption.groupField.name : "(None)" }}
             td(ng-show='vm.compareSetOption.strategy == 1')
               ul.list-inline
-                li(ng-repeat='field in vm.compareSetOption.compareConditions') {{ field.field.name }}:{{ field.value }}
+                li(ng-repeat='field in vm.compareSetOption.compareConditions') {{ field.field.name }}:{{ vm.interpretFieldValue(field.value, field.field) }}
 
       div.col-xs-12(ng-repeat='board in vm.dashboards')
         div.row
@@ -57,7 +57,7 @@ block content
                 th Count
                 th Percentage
               tr(ng-repeat='(key, count) in board.sub')
-                th {{ key }}
+                th {{ vm.interpretFieldValue(key, vm.compareSetOption.compareField) }}
                 td {{ count }}
                 td {{ (count / board.full) | percentage }}%
               tr

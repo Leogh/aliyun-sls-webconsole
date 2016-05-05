@@ -20,7 +20,7 @@ div.row
                                     th Compare Field
                                     th Group Field
                                     th Condition Field
-                                    th Actions
+                                    th.col-action Actions
                             tbody
                                 tr(ng-repeat='set in vm.compareSets')
                                     td {{ set.name }}
@@ -28,7 +28,7 @@ div.row
                                     td {{ set.groupField != null ? set.groupField.name : "(None)" }}
                                     td
                                         ul.list-inline
-                                            li(ng-repeat='cond in set.compareConditions') {{ cond.field.name }}:{{ cond.value }}
+                                            li(ng-repeat='cond in set.compareConditions') {{ cond.field.name }}:{{ vm.interpretFieldValue(cond.value, cond.field) }}
                                     td
                                         button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateCompareSetModel(set)') Edit
                                         | &nbsp;&nbsp;
@@ -49,13 +49,13 @@ div.row
                                     th Name
                                     th Values
                                     th Filter Name
-                                    th Actions
+                                    th.col-action Actions
                             tbody
                                 tr(ng-repeat='field in vm.anaFields')
                                     td {{ field.name }}
                                     td
                                         ul.list-inline
-                                            li(ng-repeat="val in field.valueSet") {{ val | filter:vm.filterField(val, field) }}{{ $last ? '' : ',' }}
+                                            li(ng-repeat="val in field.valueSet") {{ vm.interpretFieldValue(val, field) }}{{ $last ? '' : ',' }}
                                     td {{ field.filterName != null ? field.filterName : '(None)' }}
                                     td
                                         button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateFieldModel(field)') Edit
@@ -74,7 +74,7 @@ div.row
                                 tr
                                     th Name
                                     th Interpretations
-                                    th Actions
+                                    th.col-action Actions
                             tbody
                                 tr(ng-repeat='filter in vm.anaFieldFilters')
                                     td {{ filter.name }}

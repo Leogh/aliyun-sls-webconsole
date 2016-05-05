@@ -51,3 +51,7 @@ hr.xs {
 .panel-heading-link {
   color: #fff;
 }
+
+.col-action {
+  width: 300px;
+}
