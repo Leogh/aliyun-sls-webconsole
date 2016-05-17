@@ -37,6 +37,11 @@ hr.xs {
   padding: 0;
 }
 
+.code-container .code-pre-wrapper {
+  width: 900px;
+  max-width: 100%;
+}
+
 .code-container .syntaxhighlighter { 
   max-height: 600px; 
   margin: 0 !important; 

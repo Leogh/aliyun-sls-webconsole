@@ -48,7 +48,7 @@ div.row.search-option-section
                     br
                     .form-group
                         label Compare Set:&nbsp;
-                        select.form-control(ng-options='set._id as set.name for set in vm.compareSets', ng-model='vm.options.compareSetId', ng-change='vm.actions.onCompareSetChange()')
+                        select.form-control(ng-options='set._id as set.name for set in vm.compareSets | orderBy:"name"', ng-model='vm.options.compareSetId', ng-change='vm.actions.onCompareSetChange()')
                     .form-group
                         button.btn.btn-primary(ng-click='vm.actions.analyze()') Analyze
 

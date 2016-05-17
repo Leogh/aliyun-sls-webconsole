@@ -27,7 +27,9 @@
       <uib-tab index="$index" heading="{{ fieldName }}" ng-repeat="fieldName in vm.extraFields">
         <div class="panel panel-default code-container">
           <div class="panel-body">
-            <pre class="{{ vm.getCodeBrush(vm.doc[fieldName]) }}"></pre>
+            <div class="code-pre-wrapper">
+              <pre class="{{ vm.getCodeBrush(vm.doc[fieldName]) }}"></pre>
+            </div>
             <div class="codeblock hidden">{{ vm.getFormattedCode(vm.doc[fieldName]) }}</div>
           </div>
         </div>
