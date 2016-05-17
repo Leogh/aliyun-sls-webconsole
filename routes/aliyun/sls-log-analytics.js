@@ -246,6 +246,9 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
               }
               // retrieve log count
               var count = data.headers['x-log-count'];
+              if (count == 0) {
+                // console.log(count, fullRecordQuery);
+              }
               callBack(null, count);
             });
           };
@@ -278,6 +281,7 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
             async.every(compareSet.compareField.valueSet, function (fieldValue, cbFieldValue) {
               var fQ = buildLogSearchQuery(compareSet.compareField.name, fieldValue);
               var subQ = preQuery ? `${preQuery} and ( ${fQ} )` : fQ;
+              // console.log(fieldValue, subQ, ' ~~ ', preQuery);
               sls.getHistograms({
                 //必选字段
                 projectName: 'didamonitor',//data.projectName,
@@ -306,8 +310,9 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
             async.every(compareSet.groupField.valueSet, function (groupFieldValue, groupFieldValueCb) {
               // build field query for each of the group field values
               var groupFieldValueQuery = buildLogSearchQuery(compareSet.groupField.name, groupFieldValue);
+              var preQuery = (conditionQuery && conditionQuery.length > 0) ? `${conditionQuery} and ( ${groupFieldValueQuery} )` : groupFieldValueQuery;
               // execute compare field tasks
-              batchCompareField(groupFieldValueQuery, function (err, result) {
+              batchCompareField(preQuery, function (err, result) {
                 subDict[groupFieldValue] = result;
                 groupFieldValueCb(err, result);
               });
