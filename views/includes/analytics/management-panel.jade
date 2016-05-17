@@ -22,7 +22,7 @@ div.row
                                     th Condition Field
                                     th.col-action Actions
                             tbody
-                                tr(ng-repeat='set in vm.compareSets')
+                                tr(ng-repeat='set in vm.compareSets | orderBy:"name"')
                                     td {{ set.name }}
                                     td {{ set.compareField.name }}
                                     td {{ set.groupField != null ? set.groupField.name : "(None)" }}
@@ -51,7 +51,7 @@ div.row
                                     th Filter Name
                                     th.col-action Actions
                             tbody
-                                tr(ng-repeat='field in vm.anaFields')
+                                tr(ng-repeat='field in vm.anaFields | orderBy:"name"')
                                     td {{ field.name }}
                                     td
                                         ul.list-inline
@@ -76,7 +76,7 @@ div.row
                                     th Interpretations
                                     th.col-action Actions
                             tbody
-                                tr(ng-repeat='filter in vm.anaFieldFilters')
+                                tr(ng-repeat='filter in vm.anaFieldFilters | orderBy:"name"')
                                     td {{ filter.name }}
                                     td
                                         ul.list-inline
