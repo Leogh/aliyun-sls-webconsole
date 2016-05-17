@@ -4,4 +4,5 @@
 exports.CompareStrategy = {
     Group: 0,
     Condition: 1,
+    ConditionGroup: 2,
 };

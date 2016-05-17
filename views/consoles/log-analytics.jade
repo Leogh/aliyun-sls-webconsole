@@ -24,16 +24,14 @@ block content
         table.table.table-bordered
           tr
             th Name
-            th Strategy
             th Compare Field
-            th(ng-show='!vm.compareSetOption.strategy') Group Field
-            th(ng-show='vm.compareSetOption.strategy == 1') Condition Field
+            th Group Field
+            th Condition Field
           tr
             td {{ vm.compareSetOption.name }}
-            td {{ vm.compareSetOption.strategy | strategy }}
             td {{ vm.compareSetOption.compareField.name }}
-            td(ng-show='!vm.compareSetOption.strategy') {{ vm.compareSetOption.groupField != null ? vm.compareSetOption.groupField.name : "(None)" }}
-            td(ng-show='vm.compareSetOption.strategy == 1')
+            td {{ vm.compareSetOption.groupField != null ? vm.compareSetOption.groupField.name : "(None)" }}
+            td
               ul.list-inline
                 li(ng-repeat='field in vm.compareSetOption.compareConditions') {{ field.field.name }}:{{ vm.interpretFieldValue(field.value, field.field) }}
 

@@ -11,9 +11,9 @@ div.row
                     div.panel.panel-info
                         div.panel-heading
                             a(href='', ng-click='vm.states.showCompareSet = !vm.states.showCompareSet') Compare Set
-                        div.panel-body(uib-collapse='!vm.states.showCompareSet')
+                        div.panel-body(ng-hide='!vm.states.showCompareSet')
                             button.btn.btn-primary(ng-click='vm.actions.addOrUpdateCompareSetModel()') Add Analytics Compare Set
-                        table.table.table-bordered(uib-collapse='!vm.states.showCompareSet')
+                        table.table.table-bordered(ng-hide='!vm.states.showCompareSet')
                             thead
                                 tr
                                     th Name
@@ -41,9 +41,9 @@ div.row
                     div.panel.panel-info
                         div.panel-heading
                             a(href='', ng-click='vm.states.showAnalyticsField = !vm.states.showAnalyticsField') Analytics Field
-                        div.panel-body(uib-collapse='!vm.states.showAnalyticsField')
+                        div.panel-body(ng-hide='!vm.states.showAnalyticsField')
                             button.btn.btn-primary(ng-click='vm.actions.addOrUpdateFieldModel()') Add Analytics Field
-                        table.table.table-bordered(uib-collapse='!vm.states.showAnalyticsField')
+                        table.table.table-bordered(ng-hide='!vm.states.showAnalyticsField')
                             thead
                                 tr
                                     th Name
@@ -67,9 +67,9 @@ div.row
                     div.panel.panel-info
                         div.panel-heading
                             a(href='', ng-click='vm.states.showFilters = !vm.states.showFilters') Analytics Field Filter
-                        div.panel-body(uib-collapse='!vm.states.showFilters')
+                        div.panel-body(ng-hide='!vm.states.showFilters')
                             button.btn.btn-primary(ng-click='vm.actions.addOrUpdateFieldFilterModel()') Add Analytics Field Filter
-                        table.table.table-bordered(uib-collapse='!vm.states.showFilters')
+                        table.table.table-bordered(ng-hide='!vm.states.showFilters')
                             thead
                                 tr
                                     th Name
