@@ -15,8 +15,7 @@ define([
     .controller('compareSetModalController', compareSetModalController)
     .controller('filterModalController', filterModalController)
     .filter('timestamp', timestampFilter)
-    .filter('percentage', percentageFilter)
-    .filter('strategy', strategyFilter);
+    .filter('percentage', percentageFilter);
 
   function logAnalyticsController($scope, logAnalyticsService, $uibModal, $filterProvider) {
     console.log($filterProvider);
@@ -259,7 +258,7 @@ define([
         .success(function (data) {
           console.log(data);
           var set = data.compareSet;
-          if (set.strategy == 0 && set.groupField != null) {  // grouping
+          if (set.groupField != null) {  // grouping
             angular.forEach(data.dashboard.sub, function (subBoard, key) {
               var board = {
                 groupKey: key,
@@ -299,7 +298,7 @@ define([
 
     function buildPieChartConfig (compareSet, board, options) {
       var title = `${compareSet.name}`;
-      if (compareSet.strategy == 0 && compareSet.groupField != null) {
+      if (compareSet.groupField != null) {
         var interpretedGroupKey = interpretFieldValue(board.groupKey, compareSet.groupField);
         title += ` - ${compareSet.groupField.name} [${interpretedGroupKey}]`;
       }
@@ -492,15 +491,10 @@ define([
 
     function save() {
       vm.cpSet.compareField = fieldDict[vm.cpSet.compareField._id];
-      if (vm.cpSet.strategy == 0){   // group
-        vm.cpSet.groupField = vm.cpSet.groupField._id == null ? null : fieldDict[vm.cpSet.groupField._id];
-        vm.cpSet.compareConditions = [];  // reset compare conditions
-      } else if (vm.cpSet.strategy == 1 ){ // cond
-        angular.forEach(vm.cpSet.compareConditions, function (item) {
-          item.field = fieldDict[item.field._id];
-        });
-        this.groupField = null; // reset group field
-      }
+      vm.cpSet.groupField = vm.cpSet.groupField._id == null ? null : fieldDict[vm.cpSet.groupField._id];
+      angular.forEach(vm.cpSet.compareConditions, function (item) {
+        item.field = fieldDict[item.field._id];
+      });
       $uibModalInstance.close(vm.cpSet);
     }
 
@@ -656,20 +650,6 @@ define([
       var date = new Date();
       date.setTime(UNIX_TIME_START.getTime() + stamp * 1000);
       return date;
-    };
-  }
-
-  function strategyFilter() {
-    return function (strategy) {
-      if (strategy === null || typeof strategy === 'undefined') {
-        return 'Group';
-      }
-      var num = parseInt(strategy);
-      switch (num) {
-        case 0: return 'Group';
-        case 1: return 'Condition';
-        default: return 'Unknown';
-      }
     };
   }
 

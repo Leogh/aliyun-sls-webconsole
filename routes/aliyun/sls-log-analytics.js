@@ -214,8 +214,10 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
           })
           .exec(callback);
     },
+    // execute log analysis
     function (compareSet, callback) {
       if (compareSet == null) {
+        // no compare set is found
         callback(null, null);
         return;
       }
@@ -224,49 +226,50 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
       var to = utils.calculateUNIXTimestamp(new Date(data.to));
       dateRange.from = from;
       dateRange.to = to;
-      var q = null;
-      if (compareSet.strategy == AppEnum.CompareStrategy.Condition){
-        q = buildConditionQuery(compareSet);
-      }
+      var conditionQuery = buildConditionQuery(compareSet);
+
       async.parallel({
         full: function (cbHisParallel) {
-          var fullRecordTask = function (fRecQ, callBack) {
+          var fullRecordTask = function (fullRecordQuery, callBack) {
             sls.getHistograms({
               //必选字段
-              projectName: 'didamonitor',//data.projectName,
-              logStoreName:  'monitor', //data.logStoreName,
-              from: from, //开始时间(精度为秒,从 1970-1-1 00:00:00 UTC 计算起的秒数)
-              to: to,    //结束时间(精度为秒,从 1970-1-1 00:00:00 UTC 计算起的秒数)
-
-              //以下为可选字段
-              topic: 'Monitoring', //topic,      //指定日志主题(用户所有主题可以通过listTopics获得)
-              query: fRecQ,
+              projectName: 'didamonitor',
+              logStoreName:  'monitor',
+              from: from,
+              to: to,
+              topic: 'Monitoring',
+              query: fullRecordQuery,
             }, function (err, data) {
               if (err) {
                 logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
                 return callBack(err, false);
               }
+              // retrieve log count
               var count = data.headers['x-log-count'];
               callBack(null, count);
             });
           };
-          if (compareSet.strategy == AppEnum.CompareStrategy.Group && compareSet.groupField != null) {
+          // check if group query enabled.
+          if (compareSet.groupField != null) {
             var fullDict = {};
-            async.every(compareSet.groupField.valueSet, function (gFieldValue, gFieldCb) {
-              var gFQ = buildLogSearchQuery(compareSet.groupField.name, gFieldValue);
-              var fRecQ = q ? `${q} and ( ${gFQ} )` : gFQ;
-              fullRecordTask(fRecQ, function (err, result) {
+            async.every(compareSet.groupField.valueSet, function (groupFieldValue, groupFieldCb) {
+              // build group field query
+              var groupFieldQuery = buildLogSearchQuery(compareSet.groupField.name, groupFieldValue);
+              // build full record query
+              var fullRecordQuery = (conditionQuery && conditionQuery.length > 0) ? `${conditionQuery} and ( ${groupFieldQuery} )` : groupFieldQuery;
+              // execute full record task
+              fullRecordTask(fullRecordQuery, function (err, result) {
                 if (err) {
-                  return gFieldCb(err, false);
+                  return groupFieldCb(err, false);
                 }
-                fullDict[gFieldValue] = result;
-                gFieldCb(null, true);
+                fullDict[groupFieldValue] = result;
+                groupFieldCb(null, true);
               });
             }, function (err, result) {
               cbHisParallel(err, fullDict);
             });
           } else {
-            fullRecordTask(q, cbHisParallel);
+            fullRecordTask(conditionQuery, cbHisParallel);
           }
         },
         sub: function (cbHisParallel) {
@@ -274,7 +277,6 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
             var dict = {};
             async.every(compareSet.compareField.valueSet, function (fieldValue, cbFieldValue) {
               var fQ = buildLogSearchQuery(compareSet.compareField.name, fieldValue);
-              // var subQ = q ? `${q} and ( ${fQ} )` : fQ; // build sub query
               var subQ = preQuery ? `${preQuery} and ( ${fQ} )` : fQ;
               sls.getHistograms({
                 //必选字段
@@ -299,19 +301,22 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
               batchCmdCallback(err, dict);
             });
           };
-          if (compareSet.strategy == AppEnum.CompareStrategy.Group && compareSet.groupField != null) {
+          if (compareSet.groupField != null) {
             var subDict = {};
-            async.every(compareSet.groupField.valueSet, function (gFieldValue, cbGFieldValue) {
-              var fQ = buildLogSearchQuery(compareSet.groupField.name, gFieldValue);
-              batchCompareField(fQ, function (err, result) {
-                subDict[gFieldValue] = result;
-                cbGFieldValue(err, result);
+            async.every(compareSet.groupField.valueSet, function (groupFieldValue, groupFieldValueCb) {
+              // build field query for each of the group field values
+              var groupFieldValueQuery = buildLogSearchQuery(compareSet.groupField.name, groupFieldValue);
+              // execute compare field tasks
+              batchCompareField(groupFieldValueQuery, function (err, result) {
+                subDict[groupFieldValue] = result;
+                groupFieldValueCb(err, result);
               });
             }, function (err, result) {
               cbHisParallel(err, subDict);
             });
           } else {
-            batchCompareField(q, function (err, result) {
+            // execute compare field tasks
+            batchCompareField(conditionQuery, function (err, result) {
               cbHisParallel(err, result);
             });
           }
@@ -323,7 +328,7 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
         callback(null, {
           full: result.full,
           sub: result.sub,
-        })
+        });
       });
     }
   ], function (err, results){
@@ -406,9 +411,6 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
           .exec(cb);
       },
       groupField: function (cb) {
-        if (compareSet.strategy != AppEnum.CompareStrategy.Group){
-          return cb(null, false);
-        }
         if (compareSet.groupField == null || typeof compareSet.groupField === 'undefined') {
           compareSet.groupField = '';
         }
@@ -424,27 +426,31 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
         }
       },
       conditionField: function (cb) {
-        if (compareSet.strategy != AppEnum.CompareStrategy.Condition) {
-          return cb(null, false);
+        if (compareSet.compareConditions == null || typeof compareSet.compareConditions === 'undefined') {
+          compareSet.compareConditions = [];
         }
         var fieldIds = [];
         compareSet.compareConditions.forEach(function (item) {
           fieldIds.push(item.field);
         });
-        AnalyticsField
-          .find({ hashing: ALY_LOG_ANALYTICS_ACCESS_HASH, status: 1 })
-          .where('_id').in(fieldIds)
-          .exec(function (err, result) {
-            if (err) {
-              cb(err, null);
-              return;
-            }
-            if (result.length != compareSet.compareConditions.length) {
-              cb('some conditions not found', null);
-              return;
-            }
-            cb(null, compareSet.compareConditions);
-          });
+        if (fieldIds.length == 0){
+          cb(null, true);
+        } else {
+          AnalyticsField
+              .find({ hashing: ALY_LOG_ANALYTICS_ACCESS_HASH, status: 1 })
+              .where('_id').in(fieldIds)
+              .exec(function (err, result) {
+                if (err) {
+                  cb(err, null);
+                  return;
+                }
+                if (result.length != compareSet.compareConditions.length) {
+                  cb('some conditions not found', null);
+                  return;
+                }
+                cb(null, compareSet.compareConditions);
+              });
+        }
       },
     }, function (err, result) {
       if (err) {
@@ -455,14 +461,11 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
         res.send(restResp.error('Invalid compareField'));
         return;
       }
-
-      compareSet.strategy = compareSet.strategy == null || typeof compareSet.strategy === 'undefined' ? AppEnum.CompareStrategy.Group : compareSet.strategy;
-
-      if (compareSet.strategy == AppEnum.CompareStrategy.Group && !result.groupField) {
+      if (!result.groupField) {
         res.send(restResp.error('Invalid groupField'));
         return;
       }
-      if (compareSet.strategy == AppEnum.CompareStrategy.Condition && !result.conditionField) {
+      if (!result.conditionField) {
         res.send(restResp.error('Invalid conditionField'));
         return;
       }
@@ -471,20 +474,11 @@ function addOrUpdateAnalyticsCompareSet(res, compareSet) {
         // update 
         existedSet.name = compareSet.name || existedSet.name;
         existedSet.compareField = result.compareField === true ? existedSet.compareField._id : result.compareField._id;
-        // handle compare conditions and group field
-        if (compareSet.strategy == AppEnum.CompareStrategy.Condition) {
-          existedSet.compareConditions = result.conditionField;
-          existedSet.groupField = null;
-        } else if (compareSet.strategy == AppEnum.CompareStrategy.Group){
-          if (result.groupField === true) {
-            existedSet.groupField =  existedSet.groupField ?  existedSet.groupField._id : null;
-          } else {
-            existedSet.groupField = result.groupField._id;
-          }
-          existedSet.compareConditions = [];
+        existedSet.compareConditions = result.conditionField === true ? [] : result.conditionField;
+        if (result.groupField === true) {
+          existedSet.groupField =  existedSet.groupField ? existedSet.groupField._id : null;
         } else {
-          res.send(restResp.error(restResp.CODE_ERROR, `Invalid compare strategy ${compareSet.strategy}`));
-          return;
+          existedSet.groupField = result.groupField._id;
         }
         existedSet.chartType = compareSet.chartType || existedSet.chartType;
         existedSet.strategy = parseInt(compareSet.strategy);
@@ -583,10 +577,12 @@ function addOrUpdateAnalyticsFieldFilter(res, filter) {
 
 function buildConditionQuery(compareSet) {
   var q = '';
-  compareSet.compareConditions.forEach(function (cond, index) {
-    var sub = `( ${buildLogSearchQuery(cond.field.name, cond.value)} )`;
-    q += ( index > 0 ? ` and ${sub}` : sub );
-  });
+  if (compareSet.compareConditions && compareSet.compareConditions.length > 0){
+    compareSet.compareConditions.forEach(function (cond, index) {
+      var sub = `( ${buildLogSearchQuery(cond.field.name, cond.value)} )`;
+      q += ( index > 0 ? ` and ${sub}` : sub );
+    });
+  }
   return q;
 }
 

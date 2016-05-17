@@ -11,7 +11,6 @@ var AnalyticsCompareSet = new Schema({
     field: { type: Schema.Types.ObjectId, ref: 'Analytics.Field' }, // object id for analytics-field
     value: String,
   }],
-  strategy: Number,
   chartType: String,
   createTime: { type: Date, default: Date.now },
   status: Number

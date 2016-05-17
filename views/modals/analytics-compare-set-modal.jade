@@ -12,27 +12,30 @@ script(type='text/ng-template', id='analytics-compare-set-modal.html')
         div.col-md-10
           input.form-control(ng-model='vm.cpSet.name', placeholder='Set name')
 
-      div.form-group
-        label.control-label.col-md-2 Compare Strategy
-        div.col-md-10
-          label.radio-inline
-            input(type='radio', ng-model='vm.cpSet.strategy', value='0')
-            | Group
-          label.radio-inline
-            input(type='radio', ng-model='vm.cpSet.strategy', value='1')
-            | Condition
+      //div.form-group
+      //  label.control-label.col-md-2 Compare Strategy
+      //  div.col-md-10
+      //    label.radio-inline
+      //      input(type='radio', ng-model='vm.cpSet.strategy', value='0')
+      //      | Group
+      //    label.radio-inline
+      //      input(type='radio', ng-model='vm.cpSet.strategy', value='1')
+      //      | Condition
+      //    label.radio-inline
+      //      input(type='radio', ng-model='vm.cpSet.strategy', value='2')
+      //      | Condition Group
 
       div.form-group
         label.control-label.col-md-2 Compare Field
         div.col-md-10
           select.form-control(ng-model='vm.cpSet.compareField._id', ng-change='vm.actions.onFieldChanged("c")', ng-options='field._id as field.name for field in vm.cFields')
 
-      div.form-group(ng-if='vm.cpSet.strategy == 0')
+      div.form-group
         label.control-label.col-md-2 Group Field
         div.col-md-10
           select.form-control(ng-model='vm.cpSet.groupField._id', ng-change='vm.actions.onFieldChanged("g")', ng-options='field._id as field.name for field in vm.gFields')
 
-      div.form-group(ng-if='vm.cpSet.strategy == 1')
+      div.form-group
         label.control-label.col-md-2 Condition Field
         div.col-md-10.form-inline
           div.row
