@@ -5,28 +5,24 @@ var async = require('async');
 var express = require('express');
 var passport = require('passport');
 var crypto = require("crypto");
-var shasum = crypto.createHash('sha1');
 var merge = require("merge");
+var log4js = require('log4js');
+var ALY = require("aliyun-sdk");
 var config = require("../../../common/config");
 var restResp = require("../../../common/rest-response");
 var utils = require('../../../common/utils');
-var log4js = require('log4js');
-var ALY = require("aliyun-sdk");
-var logger = log4js.getLogger("aliyun.sls");
-var AppEnum = require('../../../common/app-enum-types');
-
 var AnalyticsField = require("../../../models/analytics-field");
 var AnalyticsCompareSet = require("../../../models/analytics-compare-set");
 var AnalyticsFieldFilter = require("../../../models/analytics-field-filter");
 
-
-var router = express.Router();
-
-var sls = new ALY.SLS(config.aliyun.logAnalytics);
-
+var logger = log4js.getLogger("aliyun.sls");
+var shasum = crypto.createHash('sha1');
 shasum.update(config.aliyun.logAnalytics.accessKeyId);
 const ALY_LOG_ANALYTICS_ACCESS_HASH = shasum.digest('hex');
 
+var sls = new ALY.SLS(config.aliyun.logAnalytics);
+
+var router = express.Router();
 
 // analyticsField
 
@@ -224,115 +220,7 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
             var to = utils.calculateUNIXTimestamp(new Date(data.to));
             dateRange.from = from;
             dateRange.to = to;
-            var conditionQuery = buildConditionQuery(compareSet);
-
-            async.parallel({
-                full: function (cbHisParallel) {
-                    var fullRecordTask = function (fullRecordQuery, callBack) {
-                        sls.getHistograms({
-                            //必选字段
-                            projectName: 'didamonitor',
-                            logStoreName:  'monitor',
-                            from: from,
-                            to: to,
-                            topic: 'Monitoring',
-                            query: fullRecordQuery,
-                        }, function (err, data) {
-                            if (err) {
-                                logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
-                                return callBack(err, false);
-                            }
-                            // retrieve log count
-                            var count = data.headers['x-log-count'];
-                            if (count == 0) {
-                                // console.log(count, fullRecordQuery);
-                            }
-                            callBack(null, count);
-                        });
-                    };
-                    // check if group query enabled.
-                    if (compareSet.groupField != null) {
-                        var fullDict = {};
-                        async.every(compareSet.groupField.valueSet, function (groupFieldValue, groupFieldCb) {
-                            // build group field query
-                            var groupFieldQuery = buildLogSearchQuery(compareSet.groupField.name, groupFieldValue);
-                            // build full record query
-                            var fullRecordQuery = (conditionQuery && conditionQuery.length > 0) ? `${conditionQuery} and ( ${groupFieldQuery} )` : groupFieldQuery;
-                            // execute full record task
-                            fullRecordTask(fullRecordQuery, function (err, result) {
-                                if (err) {
-                                    return groupFieldCb(err, false);
-                                }
-                                fullDict[groupFieldValue] = result;
-                                groupFieldCb(null, true);
-                            });
-                        }, function (err, result) {
-                            cbHisParallel(err, fullDict);
-                        });
-                    } else {
-                        fullRecordTask(conditionQuery, cbHisParallel);
-                    }
-                },
-                sub: function (cbHisParallel) {
-                    var batchCompareField = function (preQuery, batchCmdCallback) {
-                        var dict = {};
-                        async.every(compareSet.compareField.valueSet, function (fieldValue, cbFieldValue) {
-                            var fQ = buildLogSearchQuery(compareSet.compareField.name, fieldValue);
-                            var subQ = preQuery ? `${preQuery} and ( ${fQ} )` : fQ;
-                            // console.log(fieldValue, subQ, ' ~~ ', preQuery);
-                            sls.getHistograms({
-                                //必选字段
-                                projectName: 'didamonitor',//data.projectName,
-                                logStoreName:  'monitor', //data.logStoreName,
-                                from: from, //开始时间(精度为秒,从 1970-1-1 00:00:00 UTC 计算起的秒数)
-                                to: to,    //结束时间(精度为秒,从 1970-1-1 00:00:00 UTC 计算起的秒数)
-
-                                //以下为可选字段
-                                topic: 'Monitoring', //topic,      //指定日志主题(用户所有主题可以通过listTopics获得)
-                                query: subQ    //查询的关键词,不输入关键词,则查询全部日志数据
-                            }, function (err, data) {
-                                if (err) {
-                                    logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
-                                    return cbFieldValue(err, false);
-                                }
-                                var count = data.headers['x-log-count'];
-                                dict[fieldValue] = count;
-                                cbFieldValue(null, count);
-                            });
-                        }, function (err, result) {
-                            batchCmdCallback(err, dict);
-                        });
-                    };
-                    if (compareSet.groupField != null) {
-                        var subDict = {};
-                        async.every(compareSet.groupField.valueSet, function (groupFieldValue, groupFieldValueCb) {
-                            // build field query for each of the group field values
-                            var groupFieldValueQuery = buildLogSearchQuery(compareSet.groupField.name, groupFieldValue);
-                            var preQuery = (conditionQuery && conditionQuery.length > 0) ? `${conditionQuery} and ( ${groupFieldValueQuery} )` : groupFieldValueQuery;
-                            // execute compare field tasks
-                            batchCompareField(preQuery, function (err, result) {
-                                subDict[groupFieldValue] = result;
-                                groupFieldValueCb(err, result);
-                            });
-                        }, function (err, result) {
-                            cbHisParallel(err, subDict);
-                        });
-                    } else {
-                        // execute compare field tasks
-                        batchCompareField(conditionQuery, function (err, result) {
-                            cbHisParallel(err, result);
-                        });
-                    }
-                }
-            }, function (err, result) {
-                if (err) {
-                    return callback(err, false);
-                }
-                callback(null, {
-                    full: result.full,
-                    sub: result.sub,
-                });
-            });
+            dashboardTask(compareSet, dateRange, callback);
         }
     ], function (err, results){
         if (err) {
@@ -575,6 +463,110 @@ function addOrUpdateAnalyticsFieldFilter(res, filter) {
         } else {
             res.send(restResp.error(restResp.CODE_ERROR, 'invalid item'));
         }
+    });
+}
+
+function histogramTask(proj, store, topic, dateRange, query, callback) {
+    sls.getHistograms({
+        //必选字段
+        projectName: proj,
+        logStoreName: store,
+        from: dateRange.from,
+        to: dateRange.to,
+        topic: topic,
+        query: query,
+    }, function (err, data) {
+        if (err) {
+            logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
+            return callback(err, false);
+        }
+        // retrieve log count
+        var count = data.headers['x-log-count'];
+        if (count == 0) {
+            // console.log(count, fullRecordQuery);
+        }
+        callback(null, count);
+    });
+}
+
+function dashboardTask(compareSet, dateRange, taskCallback) {
+    var proj = 'didamonitor';
+    var store = 'monitor';
+    var topic = 'Monitoring';
+    var conditionQuery = buildConditionQuery(compareSet);
+    async.parallel({
+        full: function (cbHisParallel) {
+            // check if group query enabled.
+            if (compareSet.groupField != null) {
+                var fullDict = {};
+                async.every(compareSet.groupField.valueSet, function (groupFieldValue, groupFieldCb) {
+                    // build group field query
+                    var groupFieldQuery = buildLogSearchQuery(compareSet.groupField.name, groupFieldValue);
+                    // build full record query
+                    var fullRecordQuery = (conditionQuery && conditionQuery.length > 0) ? `${conditionQuery} and ( ${groupFieldQuery} )` : groupFieldQuery;
+                    // execute full record task
+                    histogramTask(proj, store, topic, dateRange, fullRecordQuery,  function (err, count) {
+                        if (err) {
+                            return groupFieldCb(err, false);
+                        }
+                        fullDict[groupFieldValue] = count;
+                        groupFieldCb(null, true);
+                    });
+                }, function (err, result) {
+                    cbHisParallel(err, fullDict);
+                });
+            } else {
+                histogramTask(proj, store, topic, dateRange, conditionQuery, cbHisParallel);
+            }
+        },
+        sub: function (cbHisParallel) {
+            var batchCompareField = function (preQuery, batchCmdCallback) {
+                var dict = {};
+                async.every(compareSet.compareField.valueSet, function (fieldValue, cbFieldValue) {
+                    var fQ = buildLogSearchQuery(compareSet.compareField.name, fieldValue);
+                    var subQ = preQuery ? `${preQuery} and ( ${fQ} )` : fQ;
+                    // console.log(fieldValue, subQ, ' ~~ ', preQuery);
+                    histogramTask(proj, store, topic, dateRange, subQ, function (err, count) {
+                        if (err) {
+                            logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
+                            return cbFieldValue(err, false);
+                        }
+                        dict[fieldValue] = count;
+                        cbFieldValue(null, count);
+                    });
+                }, function (err, result) {
+                    batchCmdCallback(err, dict);
+                });
+            };
+            if (compareSet.groupField != null) {
+                var subDict = {};
+                async.every(compareSet.groupField.valueSet, function (groupFieldValue, groupFieldValueCb) {
+                    // build field query for each of the group field values
+                    var groupFieldValueQuery = buildLogSearchQuery(compareSet.groupField.name, groupFieldValue);
+                    var preQuery = (conditionQuery && conditionQuery.length > 0) ? `${conditionQuery} and ( ${groupFieldValueQuery} )` : groupFieldValueQuery;
+                    // execute compare field tasks
+                    batchCompareField(preQuery, function (err, result) {
+                        subDict[groupFieldValue] = result;
+                        groupFieldValueCb(err, result);
+                    });
+                }, function (err, result) {
+                    cbHisParallel(err, subDict);
+                });
+            } else {
+                // execute compare field tasks
+                batchCompareField(conditionQuery, function (err, result) {
+                    cbHisParallel(err, result);
+                });
+            }
+        }
+    }, function (err, result) {
+        if (err) {
+            return taskCallback(err, false);
+        }
+        taskCallback(null, {
+            full: result.full,
+            sub: result.sub,
+        });
     });
 }
 
