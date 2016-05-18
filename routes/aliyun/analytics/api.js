@@ -239,6 +239,10 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
     });
 });
 
+router.get('/report', utils.authChk('/login'), function (req, res, next) {
+
+});
+
 module.exports = router;
 
 
@@ -466,10 +470,10 @@ function addOrUpdateAnalyticsFieldFilter(res, filter) {
     });
 }
 
-function histogramTask(proj, store, topic, dateRange, query, callback) {
+function histogramTask(project, store, topic, dateRange, query, callback) {
     sls.getHistograms({
         //必选字段
-        projectName: proj,
+        projectName: project,
         logStoreName: store,
         from: dateRange.from,
         to: dateRange.to,
@@ -490,7 +494,7 @@ function histogramTask(proj, store, topic, dateRange, query, callback) {
 }
 
 function dashboardTask(compareSet, dateRange, taskCallback) {
-    var proj = 'didamonitor';
+    var project = 'didamonitor';
     var store = 'monitor';
     var topic = 'Monitoring';
     var conditionQuery = buildConditionQuery(compareSet);
@@ -505,7 +509,7 @@ function dashboardTask(compareSet, dateRange, taskCallback) {
                     // build full record query
                     var fullRecordQuery = (conditionQuery && conditionQuery.length > 0) ? `${conditionQuery} and ( ${groupFieldQuery} )` : groupFieldQuery;
                     // execute full record task
-                    histogramTask(proj, store, topic, dateRange, fullRecordQuery,  function (err, count) {
+                    histogramTask(project, store, topic, dateRange, fullRecordQuery,  function (err, count) {
                         if (err) {
                             return groupFieldCb(err, false);
                         }
@@ -526,7 +530,7 @@ function dashboardTask(compareSet, dateRange, taskCallback) {
                     var fQ = buildLogSearchQuery(compareSet.compareField.name, fieldValue);
                     var subQ = preQuery ? `${preQuery} and ( ${fQ} )` : fQ;
                     // console.log(fieldValue, subQ, ' ~~ ', preQuery);
-                    histogramTask(proj, store, topic, dateRange, subQ, function (err, count) {
+                    histogramTask(project, store, topic, dateRange, subQ, function (err, count) {
                         if (err) {
                             logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
                             return cbFieldValue(err, false);
