@@ -5,10 +5,16 @@
 define([
     'angular',
     'webapp',
-    'models/analytics-field',
-    'models/analytics-compare-set',
-    'models/analytics-field-filter',
     'services/log-analytics-service',
-], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter) {
+], function (angular, webapp) {
+    // injections
+    analyticsReportController.$inject = ['$scope' , 'services.log-analytics-service'];
 
-})
+    return webapp
+        .controller('AnalyticsReportController', analyticsReportController);
+
+    function analyticsReportController($scope, logAnalyticsService) {
+        // TODO : Pending ... 
+    }
+
+});
