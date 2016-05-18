@@ -4,8 +4,12 @@ define([
   'models/analytics-field',
   'models/analytics-compare-set',
   'models/analytics-field-filter',
+  'models/analytics-report',
   'services/log-analytics-service',
-], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter) {
+], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter, AnalyticsReport) {
+
+  "use strict";
+
   // injections
   analyticsManagementController.$inject = ['$scope', 'services.log-analytics-service', '$uibModal'];
 
@@ -14,6 +18,7 @@ define([
     .controller('fieldModalController', fieldModalController)
     .controller('compareSetModalController', compareSetModalController)
     .controller('filterModalController', filterModalController)
+    .controller('reportModalController', reportModalController)
     .filter('timestamp', timestampFilter)
     .filter('percentage', percentageFilter);
 
@@ -22,21 +27,27 @@ define([
     var filterDict = {};
     vm.states = {
       showManagementTools: true,
+      showReports: true,
       showCompareSet: true,
     };
+
     vm.anaFields = [];
     vm.compareSets = [];
     vm.anaFieldFilters = [];
+    vm.anaReports = [];
     vm.compareSetOption = null;
 
     vm.actions = {
       addOrUpdateFieldModel: addOrUpdateFieldModel,
       addOrUpdateCompareSetModel: addOrUpdateCompareSetModel,
       addOrUpdateFieldFilterModel: addOrUpdateFieldFilterModel,
+      addOrUpdateReportModel: addOrUpdateReportModel,
       removeFieldModel: removeFieldModel,
       removeCompareSetModel: removeCompareSetModel,
       removeFieldFilterModel: removeFieldFilterModel,
-      copyAddCompareSetModel: copyAddCompareSetModel
+      removeReportModel: removeReportModel,
+      copyAddCompareSetModel: copyAddCompareSetModel,
+      copyAddReportModel: copyAddReportModel,
     };
 
     vm.interpretFieldValue = interpretFieldValue;
@@ -93,6 +104,7 @@ define([
         });
       }
     }
+
 
     function addOrUpdateCompareSetModel(compareSet) {
       var fieldModalInst = $uibModal.open({
@@ -152,6 +164,7 @@ define([
       }
     }
 
+
     function addOrUpdateFieldFilterModel(filter) {
       var filterModalInst = $uibModal.open({
         animation: true,
@@ -204,6 +217,38 @@ define([
       }
     }
 
+
+    function addOrUpdateReportModel(report) {
+      var filterModalInst = $uibModal.open({
+        animation: true,
+        backdrop: 'static',
+        keyboard: false,
+        templateUrl: 'analytics-report-modal.html',
+        controller: 'reportModalController',
+        controllerAs: 'vm',
+        resolve: {
+          reportObj: function () {
+            return report;
+          },
+          compareSets: function () {
+            return logAnalyticsService.compareSet.get();
+          }
+        },
+      });
+      filterModalInst.result.then(function (report, cmd) {
+        // TODO : add or update report
+        reloadFieldsAndSets();
+      }, function () {
+        // closed
+        reloadFieldsAndSets();
+      });
+    }
+
+    function removeReportModel(report) {
+      // TODO : remove report
+    }
+
+
     function copyAddCompareSetModel(baseSet) {
       var newSet = angular.merge(new AnalyticsCompareSet(), baseSet);
       newSet._id = null;
@@ -211,17 +256,25 @@ define([
       vm.actions.addOrUpdateCompareSetModel(newSet);
     }
 
+    function copyAddReportModel(baseReport) {
+      // TODO : copy add report
+    }
+
+
     function reloadFieldsAndSets() {
       vm.anaFields = [];
       vm.compareSets = [];
       vm.anaFieldFilters = [];
+      vm.anaReports = [];
       filterDict = {};
+
       logAnalyticsService
         .field
         .get()
         .success(function (fields) {
           vm.anaFields = fields;
         });
+
       logAnalyticsService
         .filter.get()
         .success(function (filters) {
@@ -234,11 +287,18 @@ define([
             filterDict[f.name] = f;
           });
         });
+
       logAnalyticsService
         .compareSet.get()
         .success(function (sets) {
           vm.compareSets = sets;
         });
+
+      logAnalyticsService
+        .report.get()
+        .success(function (reports) {
+          vm.anaReports = reports;
+        })
     }
 
     function interpretFieldValue(fieldValue, field) {
@@ -399,7 +459,7 @@ define([
   function filterModalController($scope, $uibModalInstance, filterObj) {
     var vm = this;
 
-    vm.filter = angular.merge(new AnalyticsFieldFilter(), filterObj);
+    vm.filter = angular.merge(new AnalyticsFieldFilter(), filterObj || new AnalyticsFieldFilter());
     vm.planText = getInterpretationPlanText();
     vm.bulkMode = 0;
 
@@ -476,6 +536,40 @@ define([
     function removeInterpretation(index) {
       vm.filter.interpretations.splice(index, 1);
     }
+  }
+
+  function reportModalController($scope, $uibModalInstance, reportObj, compareSets) {
+    var vm = this;
+    var presetCompareSet = new AnalyticsCompareSet();
+    var compareSetDict = {};
+
+    presetCompareSet.name = '(None)';
+    vm.processing = true;
+    vm.report = angular.merge(new AnalyticsReport(), reportObj || new AnalyticsReport());
+    vm.actions = {
+      addCompareSet: addCompareSet,
+      removeCompareSet: removeCompareSet,
+      save: save,
+      dismiss: dismiss,
+    };
+
+    function addCompareSet() {
+      // TODO : append compare set
+    }
+
+    function removeCompareSet() {
+      // TODO : detach compare set
+    }
+
+    function save() {
+      // TODO : report object validations
+      $uibModalInstance.close(vm.report);
+    }
+
+    function dismiss() {
+      $uibModalInstance.dismiss('cancel');
+    }
+
   }
 
   function percentageFilter() {

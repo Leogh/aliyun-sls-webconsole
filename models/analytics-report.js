@@ -12,6 +12,8 @@ var AnalyticsReport = new Schema({
     compareSets: [
         { type: Schema.Types.ObjectId, ref: 'Analytics.CompareSet' }, // object id for analytics-compareSet
     ],
+    period: Number,
+    periodUnit: Number,
     chartType: String,
     createTime: { type: Date, default: Date.now },
     status: Number

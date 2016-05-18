@@ -7,9 +7,10 @@ define([
   'models/analytics-field',
   'models/analytics-compare-set',
   'models/analytics-field-filter',
+  'models/analytics-report',
   'utils/http-client'
-], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter) {
-
+], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter, AnalyticsReport) {
+  "use strict";
   webapp.factory('services.log-analytics-service', logAnalyticsService);
 
   logAnalyticsService.$inject = ['utils.http-client', '$q'];
@@ -35,9 +36,16 @@ define([
         update: updateAnalyticsFieldFilter,
         remove: removeAnalyticsFieldFilter,
       },
+      report: {
+        get: getAnalyticsReport,
+        add: addAnalyticsReport,
+        update: updateAnalyticsReport,
+        remove: removeAnalyticsReport,
+        build: buildAnalyticsReport,
+      },
       dashboard: {
         build: buildCompareSetDashboard,
-      }
+      },
     };
 
 
@@ -180,6 +188,64 @@ define([
       });
     }
 
+
+
+    function getAnalyticsReport() {
+      return http.send({
+        url: '/analytics/api/report',
+        method: 'get'
+      });
+    }
+
+    function addAnalyticsReport(report) {
+      if (!(filter instanceof AnalyticsReport)) {
+        throw Error('filter is not an instance of AnalyticsReport.');
+      }
+      return http.send({
+        url: '/analytics/api/report',
+        data: {
+          report: report
+        },
+        method: 'post'
+      });
+    }
+
+    function updateAnalyticsReport(report) {
+      if (!(filter instanceof AnalyticsReport)) {
+        throw Error('filter is not an instance of AnalyticsReport.');
+      }
+      return http.send({
+        url: '/analytics/api/report',
+        data: {
+          report: report
+        },
+        method: 'put'
+      });
+    }
+
+    function removeAnalyticsReport(id) {
+      return http.send({
+        url: '/analytics/api/report',
+        params: {
+          _id: id
+        },
+        method: 'delete'
+      });
+    }
+
+    function buildAnalyticsReport(options) {
+      return http.send({
+        url: '/analytics/api/report',
+        params: {
+          reportId: options.reportId,
+          from: options.from,
+          to: options.to,
+          period: options.period,
+          periodUnit: options.periodUnit,
+        },
+        method: 'get'
+      });
+    }
 
     function buildCompareSetDashboard(options) {
       if (options.timeOptions.enabled) {

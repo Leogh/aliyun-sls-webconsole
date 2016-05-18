@@ -8,6 +8,34 @@ div.row
         div.col-sm-12
           div.panel.panel-info
             div.panel-heading
+              a(href='', ng-click='vm.states.showReports = !vm.states.showReports') Analytics Report
+            div.panel-body
+              button.btn.btn-primary(ng-click='vm.actions.addOrUpdateReportModel()') Add Analytics Report
+            table.table.table-bordered(ng-hide='!vm.states.showReports')
+              thead
+                tr
+                  th Name
+                  th CompareSets
+                  th Period
+                  th.col-action Actions
+              tbody
+                tr(ng-repeat='report in vm.anaReports | orderBy:"name"')
+                  td {{ report.name }}
+                  td
+                    ul.list-inline
+                      li(ng-repeat="set in report.compareSets") {{ set.name }}{{ $last ? '' : ',' }}
+                  td {{ report.period }} {{ report.periodUnit }}
+                  td
+                    button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateReportModel(set)') Edit
+                    | &nbsp;&nbsp;
+                    button.btn.btn-warning.btn-sm(ng-click='vm.actions.copyAddReportModel(set)') Copy
+                    | &nbsp;&nbsp;
+                    button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeReportModel(set)') Remove
+
+      div.row
+        div.col-sm-12
+          div.panel.panel-info
+            div.panel-heading
               a(href='', ng-click='vm.states.showCompareSet = !vm.states.showCompareSet') Compare Set
             div.panel-body(ng-hide='!vm.states.showCompareSet')
               button.btn.btn-primary(ng-click='vm.actions.addOrUpdateCompareSetModel()') Add Analytics Compare Set

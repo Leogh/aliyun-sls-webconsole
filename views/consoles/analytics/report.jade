@@ -19,5 +19,40 @@ block content
 
   div(ng-controller='AnalyticsReportController as vm')
 
-    h2 Analytics Report
-    hr
+    div.row
+      div.col-md-12
+        h2 Analytics Report
+        hr
+
+    div.row
+      div.col-md-12
+        div.panel.panel-default
+          div.panel-body
+            div.form-inline
+              div.form-group
+                label Report &nbsp;
+                  a(href='', ng-click='vm.actions.reloadReports()', title='refresh report')
+                    span.glyphicon.glyphicon-refresh
+                  | &nbsp;:&nbsp;
+                select.form-control(ng-model='vm.options.reportId')
+                  option(value='1') First
+                  option(value='2') Second
+              div.form-group
+                label Period:&nbsp;
+                div.input-group
+                  input.form-control(type='number',ng-model='vm.options.period')
+                  span.input-group-btn(uib-dropdown='')
+                    button.btn.btn-default(uib-dropdown-toggle='')
+                      b {{ vm.options.periodUnit }} &nbsp;
+                      span.caret
+                    ul.dropdown-menu(uib-dropdown-menu='')
+                      li(role='menuitem', ng-repeat='item in vm.periodUnits', ng-click='vm.options.periodUnit = item')
+                        a(href='') {{ item }}
+
+              div.form-group
+                button.btn.btn-primary(ng-click='vm.actions.showReport()', ng-disabled='vm.states.processing') Build Report
+
+    div.row
+      div.col-md-12
+        p(ng-if='vm.states.processing') Report is under construction, pls wait...
+        div.report-container(ng-hide='vm.states.processing')

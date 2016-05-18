@@ -1,6 +1,7 @@
 /**
  * Created by Roman Lo on 5/18/2016.
  */
+"use strict";
 var async = require('async');
 var express = require('express');
 var passport = require('passport');
@@ -14,6 +15,7 @@ var utils = require('../../../common/utils');
 var AnalyticsField = require("../../../models/analytics-field");
 var AnalyticsCompareSet = require("../../../models/analytics-compare-set");
 var AnalyticsFieldFilter = require("../../../models/analytics-field-filter");
+var AnalyticsReport = require("../../../models/analytics-report");
 
 var logger = log4js.getLogger("aliyun.sls");
 var shasum = crypto.createHash('sha1');
@@ -129,7 +131,7 @@ router.delete('/analyticsCompareSet', utils.authChk('/login'), function (req, re
   var compareSetId = data._id;
   AnalyticsCompareSet.remove({
     _id: compareSetId
-  }, function (err, result) {
+  }, function (err) {
     if (err) {
       utils.handleMongooseError(res, err);
     }
@@ -176,6 +178,49 @@ router.delete('/filter', utils.authChk('/login'), function (req, res, next) {
   AnalyticsFieldFilter.remove({
     _id: filterId
   }, function (err, result) {
+    if (err) {
+      utils.handleMongooseError(res, err);
+    }
+    res.send(restResp.success(true));
+  });
+});
+
+// analytics report models
+
+router.get('/report', utils.authChk('/login'), function (req, res, next) {
+  var data = req.query;
+  var queryOptions = {};
+  if (data.name) {
+    queryOptions.name = data.name;
+  }
+  AnalyticsReport
+    .find(queryOptions)
+    .exec(function (err, reports) {
+      if (err) {
+        utils.handleMongooseError(res, err);
+      }
+      res.send(restResp.success(reports));
+    });
+});
+
+router.post('/report', utils.authChk('/login'), function (req, res, next) {
+  var data = req.body;
+  var report = data.report;
+  addOrUpdateAnalyticsReport(res, report);
+});
+
+router.put('/report', utils.authChk('/login'), function (req, res, next) {
+  var data = req.body;
+  var report = data.report;
+  addOrUpdateAnalyticsReport(res, report);
+});
+
+router.delete('/report', utils.authChk('/login'), function (req, res, next) {
+  var data = req.query;
+  var reportId = data._id;
+  AnalyticsReport.remove({
+    _id: reportId
+  }, function (err) {
     if (err) {
       utils.handleMongooseError(res, err);
     }
@@ -455,6 +500,45 @@ function addOrUpdateAnalyticsFieldFilter(res, filter) {
       var newItem = new AnalyticsFieldFilter({
         name: filter.name,
         interpretations: filter.interpretations,
+        status: 1,
+      });
+      newItem.save(function (err, data) {
+        if (err) {
+          utils.handleMongooseError(res, err);
+          return;
+        }
+        res.send(restResp.success(data));
+      });
+    } else {
+      res.send(restResp.error(restResp.CODE_ERROR, 'invalid item'));
+    }
+  });
+}
+
+function addOrUpdateAnalyticsReport(res, report) {
+  AnalyticsReport.findOne({
+    _id: report._id
+  }).exec(function (err, obj) {
+    if (err) {
+      return utils.handleMongooseError(res, err);
+    }
+    if (obj) {
+      // update
+      obj.name = report.name;
+      obj.compareSets = report.compareSets;
+      obj.status = report.status;
+      obj.save(function (err, data) {
+        if (err) {
+          utils.handleMongooseError(res, err);
+          return;
+        }
+        res.send(restResp.success(data));
+      });
+    } else if (!report._id) {
+      // add
+      var newItem = new AnalyticsReport({
+        name: report.name,
+        compareSets: report.compareSets,
         status: 1,
       });
       newItem.save(function (err, data) {
