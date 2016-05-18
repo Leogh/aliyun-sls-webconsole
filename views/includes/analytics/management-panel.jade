@@ -3,9 +3,7 @@
 
 div.row
     div.col-md-12
-        p
-            a(href='', ng-click='vm.actions.toggleToolPanel()') {{ vm.showManagementTools ? 'Hide' : 'Show' }} Management Panel
-        div(uib-collapse='!vm.showManagementTools')
+        div(uib-collapse='!vm.states.showManagementTools')
             div.row
                 div.col-sm-12
                     div.panel.panel-info

@@ -21,7 +21,7 @@ router.post('/login', function (req, res, next) {
       res.render('login', { title: 'Login', fromUrl: req.body.fromUrl, username: username, hasError: true, errMessage: info.message });
       return;
     }
-    req.logIn(user, function(err) {
+    req.login(user, function(err) {
       if (err) { return next(err); }
       var url = '/'
       if (req.body.fromUrl) {

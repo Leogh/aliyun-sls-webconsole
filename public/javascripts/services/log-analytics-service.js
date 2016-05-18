@@ -43,7 +43,7 @@ define([
 
     function getAnalyticsCompareSet(name, status) {
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        url: '/analytics/api/analyticsCompareSet',
         params: {
           compareSetName: name,
           status: status
@@ -57,7 +57,7 @@ define([
         throw Error('compareSet is not an instance of AnalyticsCompareSet.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        url: '/analytics/api/analyticsCompareSet',
         data: {
           compareSet: compareSet
         },
@@ -70,7 +70,7 @@ define([
         throw Error('compareSet is not an instance of AnalyticsCompareSet.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        url: '/analytics/api/analyticsCompareSet',
         data: {
           compareSet: compareSet
         },
@@ -80,7 +80,7 @@ define([
 
     function removeAnalyticsCompareSet(id) {
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        url: '/analytics/api/analyticsCompareSet',
         params: {
           _id: id
         },
@@ -91,7 +91,7 @@ define([
 
     function getAnalyticsField(name, status){
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsField',
+        url: '/analytics/api/analyticsField',
         params: {
           fieldName: name,
           status: status
@@ -105,7 +105,7 @@ define([
         throw Error('field is not an instance of AnalyticsField.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsField',
+        url: '/analytics/api/analyticsField',
         data: {
           field: field,
         },
@@ -118,7 +118,7 @@ define([
         throw Error('field is not an instance of AnalyticsField.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsField',
+        url: '/analytics/api/analyticsField',
         data: {
           field: field,
         },
@@ -128,7 +128,7 @@ define([
 
     function removeAnalyticsField(id){
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsField',
+        url: '/analytics/api/analyticsField',
         params: {
           _id: id
         },
@@ -139,7 +139,7 @@ define([
 
     function getAnalyticsFieldFilter(){
       return http.send({
-        url: '/aliyun-sls-analytics/filter',
+        url: '/analytics/api/filter',
         method: 'get'
       });
     }
@@ -149,7 +149,7 @@ define([
         throw Error('filter is not an instance of AnalyticsFieldFilter.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/filter',
+        url: '/analytics/api/filter',
         data: {
           filter: filter
         },
@@ -162,7 +162,7 @@ define([
         throw Error('filter is not an instance of AnalyticsFieldFilter.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/filter',
+        url: '/analytics/api/filter',
         data: {
           filter: filter
         },
@@ -172,7 +172,7 @@ define([
 
     function removeAnalyticsFieldFilter(id){
       return http.send({
-        url: '/aliyun-sls-analytics/filter',
+        url: '/analytics/api/filter',
         params: {
           _id: id
         },
@@ -188,7 +188,7 @@ define([
         initDateHours(options.to, options.timeOptions.to);
       }
       return http.send({
-        url: '/aliyun-sls-analytics/dashboard',
+        url: '/analytics/api/dashboard',
         params: {
           compareSetId: options.compareSetId,
           from: options.from,

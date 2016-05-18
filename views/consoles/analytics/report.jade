@@ -1,0 +1,23 @@
+//
+   Created by Roman Lo on 5/18/2016.
+
+extends ../../layout
+
+block stylesheets
+
+
+block scripts
+
+
+block content
+
+    //- indicates the controller path
+
+    input#controllerPath(type='hidden', value='consoles/analytics/report-controller')
+
+    //- use 'controller as' to distinguish properties in $rootScope and the current controller scope
+
+    div(ng-controller='AnalyticsReportController as vm')
+
+        h2 Analytics Report
+        hr
