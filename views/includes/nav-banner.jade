@@ -5,13 +5,13 @@ nav.navbar.navbar-default.navbar-fixed-top.navbar-inverse
       span.icon-bar
       span.icon-bar
       span.icon-bar
-    
+
     div.navbar-header
       a.navbar-brand(href="/") Aliyun SLS WebConsole
         sup &reg;
 
     - var user = locals.user
-    div#admin-navbar-collapse.collapse.navbar-collapse  
+    div#admin-navbar-collapse.collapse.navbar-collapse
       if (user)
         ul.nav.navbar-nav
           li
@@ -34,7 +34,7 @@ nav.navbar.navbar-default.navbar-fixed-top.navbar-inverse
             a #{ user.username }
           li
             a(href="/logout") Logout
-            
+
         if (!user)
           li
             a(href="/login") Login

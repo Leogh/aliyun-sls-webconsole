@@ -35,20 +35,20 @@ requirejs.config({
     'angular-sanitize': ['angular'],
     "angular-animate": ['angular'],
     'bootstrap': ['jquery'],
-    'angular-bootstrap-tpls': ['bootstrap', 'angular'],    
+    'angular-bootstrap-tpls': ['bootstrap', 'angular'],
     'shCore': {
-        'deps': ['syntax-highlighter-xregexp'],
-        'exports': 'SyntaxHighlighter',
-        'init': function () {
-            // proxy the SyntaxHighlighter as exports
-            return {
-                SyntaxHighlighter: this.SyntaxHighlighter
-            };
-        }
+      'deps': ['syntax-highlighter-xregexp'],
+      'exports': 'SyntaxHighlighter',
+      'init': function () {
+        // proxy the SyntaxHighlighter as exports
+        return {
+          SyntaxHighlighter: this.SyntaxHighlighter
+        };
+      }
     },
     'syntax-highlighter-brush-jscript': ['shCore'],
     'syntax-highlighter-brush-xml': ['shCore'],
-    
+
     'highcharts-ng': ['highcharts', 'angular'],
     //'angular-bootstrap': ['bootstrap', 'angular-bootstrap-tpls']
   },

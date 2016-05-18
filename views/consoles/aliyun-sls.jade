@@ -139,10 +139,10 @@ block content
                       p.form-control-static(ng-if='vm.searchOptions.keywordArr.length == 0') {{ vm.searchOptions.keyword }}
                       div(ng-if='vm.searchOptions.keywordArr.length > 0')
                         span.condition-label.label.label-default(ng-repeat='opt in vm.searchOptions.keywordArr') 
-                          {{ opt | keywordFilter:($index != 0) }} &nbsp;
+                          | {{ opt | keywordFilter:($index != 0) }} &nbsp;
                           a.text-danger(href='', ng-click='vm.removeKeywordCondition($index)') X
                         span.condition-label.label.label-default 
-                          {{ vm.orOperation ? 'or' : 'and' }} ( "{{ vm.searchOptions.keyword }}" )
+                          | {{ vm.orOperation ? 'or' : 'and' }} ( "{{ vm.searchOptions.keyword }}" )
     
     .row.chart-row(ng-show='vm.projectReady && vm.showChart == "1"')
       highchart#logSpanChart(config='vm.chartConfig')

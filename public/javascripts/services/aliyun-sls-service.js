@@ -1,11 +1,11 @@
 define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
-      
+
   webapp.factory('services.aliyun-sls-service', aliyunSLSService);
-  
+
   aliyunSLSService.$inject = ['utils.http-client', '$q'];
-  
+
   function aliyunSLSService(http, $q) {
-    
+
     return {
       getLogStores: getLogStores,
       getTopics: getTopics,
@@ -14,12 +14,12 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
       favorProject: favorProject,
       getFavorProject: getFavorProject,
     };
-    
+
     function getLogStores(projectName) {
       return slsApiRequest({
         url: '/aliyun-sls/logstores',
         params: {
-            projectName: projectName
+          projectName: projectName
         },
         method: 'GET',
       });
@@ -29,17 +29,17 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
       return slsApiRequest({
         url: '/aliyun-sls/topics',
         params: {
-            projectName: projectName,
-            logStoreName: logStoreName,
+          projectName: projectName,
+          logStoreName: logStoreName,
         },
         method: 'GET',
       });
     }
-    
+
     function getHistograms(options, queryBuilder) {
       var query = options.keyword;
       if (typeof queryBuilder === 'function') {
-          query = queryBuilder(options);
+        query = queryBuilder(options);
       }
       if (options.timeOptions.enabled) {
         initDateHours(options.from, options.timeOptions.from);
@@ -59,11 +59,11 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
         },
       });
     }
-    
+
     function getLogs(options, queryBuilder) {
       var query = options.keyword;
       if (typeof queryBuilder === 'function') {
-          query = queryBuilder(options);
+        query = queryBuilder(options);
       }
       if (options.timeOptions.enabled) {
         initDateHours(options.from, options.timeOptions.from);
@@ -83,12 +83,12 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
         },
       });
     }
-    
-    function initDateHours(date, timeOption){
+
+    function initDateHours(date, timeOption) {
       date.setHours(parseInt(timeOption.h), parseInt(timeOption.m), parseInt(timeOption.s), 0);
     }
-    
-    
+
+
     function favorProject(projectName, isFavor) {
       return http.send({
         url: '/aliyun-sls/favor-project',
@@ -99,33 +99,33 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
         method: 'put'
       });
     }
-    
+
     function getFavorProject() {
       return http.send({
-        url: '/aliyun-sls/favor-project',       
+        url: '/aliyun-sls/favor-project',
         method: 'get'
       });
     }
-    
-    
+
+
     function slsApiRequest(options) {
       var deferred = $q.defer();
       var promise = deferred.promise;
-      
+
       promise.success = function (callback) {
         promise.then(function (data) {
           callback(data.body, data.headers);
         });
         return promise;
       };
-      
+
       promise.error = function (callback) {
-        promise["catch"](function(arr){
+        promise["catch"](function (arr) {
           callback(arr[0], arr[1]);
         });
         return promise;
       };
-      
+
       http
         .send(options)
         .success(function (data) {
@@ -134,7 +134,7 @@ define(['angular', 'webapp', 'utils/http-client'], function (angular, webapp) {
         .error(function (code, msg) {
           deferred.reject([code, msg]);
         });
-      
+
       return promise;
     }
   }

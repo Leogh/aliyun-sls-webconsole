@@ -3,18 +3,18 @@
  */
 
 define([
-    'angular',
-    'webapp',
-    'services/log-analytics-service',
+  'angular',
+  'webapp',
+  'services/log-analytics-service',
 ], function (angular, webapp) {
-    // injections
-    analyticsReportController.$inject = ['$scope' , 'services.log-analytics-service'];
+  // injections
+  analyticsReportController.$inject = ['$scope', 'services.log-analytics-service'];
 
-    return webapp
-        .controller('AnalyticsReportController', analyticsReportController);
+  return webapp
+    .controller('AnalyticsReportController', analyticsReportController);
 
-    function analyticsReportController($scope, logAnalyticsService) {
-        // TODO : Pending ... 
-    }
+  function analyticsReportController($scope, logAnalyticsService) {
+    // TODO : Pending ...
+  }
 
 });

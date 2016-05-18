@@ -1,9 +1,9 @@
 /**
  * Created by roman on 4/28/16.
  */
-define(['base'],function (Base) {
+define(['base'], function (Base) {
 
-  var AnalyticsField = function() {
+  var AnalyticsField = function () {
     this.name = '';
     this.filterName = '';
     this.valueSet = [];

@@ -11,21 +11,21 @@ block scripts
 
 block content
 
-    //- indicates the controller path
+  //- indicates the controller path
 
-    input#controllerPath(type='hidden', value='consoles/analytics/management-controller')
+  input#controllerPath(type='hidden', value='consoles/analytics/management-controller')
 
-    //- use 'controller as' to distinguish properties in $rootScope and the current controller scope
+  //- use 'controller as' to distinguish properties in $rootScope and the current controller scope
 
-    div(ng-controller='AnalyticsManagementController as vm')
+  div(ng-controller='AnalyticsManagementController as vm')
 
-        h2 Analytics Management Tool
-        hr
+    h2 Analytics Management Tool
+    hr
 
-        include ../../includes/analytics/management-panel
+    include ../../includes/analytics/management-panel
 
-        include ../../modals/analytics-field-modal
+    include ../../modals/analytics-field-modal
 
-        include ../../modals/analytics-compare-set-modal
+    include ../../modals/analytics-compare-set-modal
 
-        include ../../modals/analytics-field-filter-modal
+    include ../../modals/analytics-field-filter-modal

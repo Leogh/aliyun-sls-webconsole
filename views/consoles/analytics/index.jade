@@ -11,61 +11,61 @@ block scripts
 
 block content
 
-    //- indicates the controller path
+  //- indicates the controller path
 
-    input#controllerPath(type='hidden', value='consoles/analytics/index-controller')
+  input#controllerPath(type='hidden', value='consoles/analytics/index-controller')
 
-    //- use 'controller as' to distinguish properties in $rootScope and the current controller scope
+  //- use 'controller as' to distinguish properties in $rootScope and the current controller scope
 
-    div(ng-controller='LogAnalyticsController as vm')
+  div(ng-controller='LogAnalyticsController as vm')
 
-        h2 Analytics
-        hr
+    h2 Analytics
+    hr
 
-        include ../../includes/analytics/search-panel
+    include ../../includes/analytics/search-panel
 
-        div.row.dashboard-section
-            div.col-xs-12(ng-if='vm.compareSetOption != null')
-                h3 Compare Set Option Detail
-                table.table.table-bordered
-                    tr
-                        th Name
-                        th Compare Field
-                        th Group Field
-                        th Condition Field
-                    tr
-                        td {{ vm.compareSetOption.name }}
-                        td {{ vm.compareSetOption.compareField.name }}
-                        td {{ vm.compareSetOption.groupField != null ? vm.compareSetOption.groupField.name : "(None)" }}
-                        td
-                            ul.list-inline
-                                li(ng-repeat='field in vm.compareSetOption.compareConditions') {{ field.field.name }}:{{ vm.interpretFieldValue(field.value, field.field) }}
+    div.row.dashboard-section
+      div.col-xs-12(ng-if='vm.compareSetOption != null')
+        h3 Compare Set Option Detail
+        table.table.table-bordered
+          tr
+            th Name
+            th Compare Field
+            th Group Field
+            th Condition Field
+          tr
+            td {{ vm.compareSetOption.name }}
+            td {{ vm.compareSetOption.compareField.name }}
+            td {{ vm.compareSetOption.groupField != null ? vm.compareSetOption.groupField.name : "(None)" }}
+            td
+              ul.list-inline
+                li(ng-repeat='field in vm.compareSetOption.compareConditions') {{ field.field.name }}:{{ vm.interpretFieldValue(field.value, field.field) }}
 
-            div.col-xs-12(ng-repeat='board in vm.dashboards')
-                div.row
-                    div.col-sm-6.pie-chart
-                        highchart(config='board.chartConfig')
-                    div.col-sm-6
-                        h3 Chart Options
-                        table.table.table-bordered.table-striped
-                            tr
-                                th From
-                                td {{ board.dateRange.from | timestamp | date:'yyyy-MM-dd HH:mm:ss' }}
-                            tr
-                                th To
-                                td {{ board.dateRange.to | timestamp | date:'yyyy-MM-dd HH:mm:ss' }}
-                        h3 Chart Data
-                        table.table.table-striped
-                            tr
-                                th {{ board.cpFieldName }}
-                                th Count
-                                th Percentage
-                            tr(ng-repeat='(key, count) in board.sub')
-                                th {{ vm.interpretFieldValue(key, vm.compareSetOption.compareField) }}
-                                td {{ count }}
-                                td {{ (count / board.full) | percentage }}%
-                            tr
-                                th(colspan='3') Total Amount: {{ board.full }}
-                    div.col-md-12
-                        hr
+      div.col-xs-12(ng-repeat='board in vm.dashboards')
+        div.row
+          div.col-sm-6.pie-chart
+            highchart(config='board.chartConfig')
+          div.col-sm-6
+            h3 Chart Options
+            table.table.table-bordered.table-striped
+              tr
+                th From
+                td {{ board.dateRange.from | timestamp | date:'yyyy-MM-dd HH:mm:ss' }}
+              tr
+                th To
+                td {{ board.dateRange.to | timestamp | date:'yyyy-MM-dd HH:mm:ss' }}
+            h3 Chart Data
+            table.table.table-striped
+              tr
+                th {{ board.cpFieldName }}
+                th Count
+                th Percentage
+              tr(ng-repeat='(key, count) in board.sub')
+                th {{ vm.interpretFieldValue(key, vm.compareSetOption.compareField) }}
+                td {{ count }}
+                td {{ (count / board.full) | percentage }}%
+              tr
+                th(colspan='3') Total Amount: {{ board.full }}
+          div.col-md-12
+            hr
 

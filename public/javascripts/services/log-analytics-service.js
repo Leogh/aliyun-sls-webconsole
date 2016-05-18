@@ -35,7 +35,7 @@ define([
         update: updateAnalyticsFieldFilter,
         remove: removeAnalyticsFieldFilter,
       },
-      dashboard:{
+      dashboard: {
         build: buildCompareSetDashboard,
       }
     };
@@ -53,7 +53,7 @@ define([
     }
 
     function addAnalyticsCompareSet(compareSet) {
-      if (!compareSet instanceof  AnalyticsCompareSet) {
+      if (!compareSet instanceof AnalyticsCompareSet) {
         throw Error('compareSet is not an instance of AnalyticsCompareSet.');
       }
       return http.send({
@@ -66,7 +66,7 @@ define([
     }
 
     function updateAnalyticsCompareSet(compareSet) {
-      if (!compareSet instanceof  AnalyticsCompareSet) {
+      if (!compareSet instanceof AnalyticsCompareSet) {
         throw Error('compareSet is not an instance of AnalyticsCompareSet.');
       }
       return http.send({
@@ -89,7 +89,7 @@ define([
     }
 
 
-    function getAnalyticsField(name, status){
+    function getAnalyticsField(name, status) {
       return http.send({
         url: '/analytics/api/analyticsField',
         params: {
@@ -100,8 +100,8 @@ define([
       });
     }
 
-    function addAnalyticsField(field){
-      if (!field instanceof  AnalyticsField) {
+    function addAnalyticsField(field) {
+      if (!field instanceof AnalyticsField) {
         throw Error('field is not an instance of AnalyticsField.');
       }
       return http.send({
@@ -113,8 +113,8 @@ define([
       });
     }
 
-    function updateAnalyticsField(field){
-      if (!field instanceof  AnalyticsField) {
+    function updateAnalyticsField(field) {
+      if (!field instanceof AnalyticsField) {
         throw Error('field is not an instance of AnalyticsField.');
       }
       return http.send({
@@ -126,7 +126,7 @@ define([
       });
     }
 
-    function removeAnalyticsField(id){
+    function removeAnalyticsField(id) {
       return http.send({
         url: '/analytics/api/analyticsField',
         params: {
@@ -137,15 +137,15 @@ define([
     }
 
 
-    function getAnalyticsFieldFilter(){
+    function getAnalyticsFieldFilter() {
       return http.send({
         url: '/analytics/api/filter',
         method: 'get'
       });
     }
 
-    function addAnalyticsFieldFilter(filter){
-      if (!(filter instanceof  AnalyticsFieldFilter)) {
+    function addAnalyticsFieldFilter(filter) {
+      if (!(filter instanceof AnalyticsFieldFilter)) {
         throw Error('filter is not an instance of AnalyticsFieldFilter.');
       }
       return http.send({
@@ -157,8 +157,8 @@ define([
       });
     }
 
-    function updateAnalyticsFieldFilter(filter){
-      if (!(filter instanceof  AnalyticsFieldFilter)) {
+    function updateAnalyticsFieldFilter(filter) {
+      if (!(filter instanceof AnalyticsFieldFilter)) {
         throw Error('filter is not an instance of AnalyticsFieldFilter.');
       }
       return http.send({
@@ -170,7 +170,7 @@ define([
       });
     }
 
-    function removeAnalyticsFieldFilter(id){
+    function removeAnalyticsFieldFilter(id) {
       return http.send({
         url: '/analytics/api/filter',
         params: {
@@ -181,8 +181,7 @@ define([
     }
 
 
-
-    function buildCompareSetDashboard(options){
+    function buildCompareSetDashboard(options) {
       if (options.timeOptions.enabled) {
         initDateHours(options.from, options.timeOptions.from);
         initDateHours(options.to, options.timeOptions.to);
@@ -198,7 +197,7 @@ define([
       });
     }
 
-    function initDateHours(date, timeOption){
+    function initDateHours(date, timeOption) {
       date.setHours(parseInt(timeOption.h), parseInt(timeOption.m), parseInt(timeOption.s), 0);
     }
 

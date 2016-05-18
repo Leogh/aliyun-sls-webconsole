@@ -1,13 +1,13 @@
 var gulp = require("gulp"),
-    jade = require("gulp-jade"),
-    eslint = require("gulp-eslint"),
-    paths = {
-      'scripts': [
-        'public/javascripts/**/*.js',
-        '!node_modules/**',
-        '!public/javascripts/libs/**'
-      ],
-    };
+  jade = require("gulp-jade"),
+  eslint = require("gulp-eslint"),
+  paths = {
+    'scripts': [
+      'public/javascripts/**/*.js',
+      '!node_modules/**',
+      '!public/javascripts/libs/**'
+    ],
+  };
 
 gulp.task('lint', function () {
   return gulp.src(paths.scripts)
