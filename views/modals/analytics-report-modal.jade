@@ -16,12 +16,32 @@ script(type='text/ng-template', id='analytics-report-modal.html')
       div.form-group
         label.control-label.col-md-2 CompareSets
         div.col-md-10
-          div.input-group
-            select.form-control(ng-model='vm.pendingSet', ng-options='')
+          p.form-control-static(ng-repeat='set in vm.report.compareSets') {{ set.name }} &nbsp;
+            a(href='', ng-click='vm.actions.removeCompareSet($index)') &times;
+          div.input-group(ng-show='vm.compareSets.length > 0')
+            select.form-control(ng-model='vm.selectedCompareSet', ng-options='set._id as set.name for set in vm.compareSets')
             span.input-group-btn
-              button.btn.btn-success
+              button.btn(ng-click='vm.actions.addCompareSet()', ng-class='vm.selectedCompareSet == null ? "btn-default" : "btn-success"', ng-disabled='vm.selectedCompareSet == null')
                 span.glyphicon.glyphicon-plus
 
+      div.form-group
+        label.control-label.col-md-2 Period
+        div.col-md-10
+          div.btn-group
+            label.btn(uib-btn-radio='1', ng-model='vm.enablePresetPeriod', ng-class='vm.enablePresetPeriod == 1 ? "btn-success" : "btn-default"') Enable
+            label.btn(uib-btn-radio='0', ng-model='vm.enablePresetPeriod', ng-class='vm.enablePresetPeriod == 0 ? "btn-danger" : "btn-default"') Disable
+
+      div.form-group(ng-if='vm.enablePresetPeriod')
+        div.col-md-10.col-md-push-2
+          div.input-group
+            input.form-control(type='number',ng-model='vm.report.period')
+            span.input-group-btn(uib-dropdown='')
+              button.btn.btn-default(uib-dropdown-toggle='')
+                b {{ vm.report.periodUnit | periodUnit }} &nbsp;
+                span.caret
+              ul.dropdown-menu(uib-dropdown-menu='')
+                li(role='menuitem', ng-repeat='item in vm.periodUnitOptions', ng-click='vm.report.periodUnit = item')
+                  a(href='') {{ item | periodUnit }}
 
       //- status
       div.form-group

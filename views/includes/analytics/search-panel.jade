@@ -7,45 +7,7 @@ div.row.search-option-section
     div.panel.panel-default
       div.panel-body
         .form-inline
-          //- From Date Options
-          .form-group
-            label From:&nbsp;
-            .input-group
-              input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.fromIsOpen", ng-model='vm.options.from')
-              span.input-group-btn
-                button.btn.btn-default(ng-click='vm.fromIsOpen = true')
-                  i.glyphicon.glyphicon-calendar
-          //- Advanced time select
-          .form-group(ng-show='vm.options.timeOptions.enabled')
-            select.form-control(ng-model='vm.options.timeOptions.from.h',ng-options='hr for hr in vm.hours')
-            label &nbsp;:&nbsp;
-            select.form-control(ng-model='vm.options.timeOptions.from.m',ng-options='min for min in vm.minutes')
-            label &nbsp;:&nbsp;
-            select.form-control(ng-model='vm.options.timeOptions.from.s',ng-options='sec for sec in vm.seconds')
-          br(ng-if='vm.options.timeOptions.enabled')
-          //- To Date Options
-          .form-group
-            label
-              span(ng-if='vm.options.timeOptions.enabled') &nbsp;&nbsp;&nbsp;&nbsp;
-              | To:&nbsp;
-            .input-group
-              input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.toIsOpen", ng-model='vm.options.to')
-              span.input-group-btn
-                button.btn.btn-default(ng-click='vm.options.toIsOpen = true')
-                  i.glyphicon.glyphicon-calendar
-          //- Advanced time select
-          .form-group(ng-show='vm.options.timeOptions.enabled')
-            select.form-control(ng-model='vm.options.timeOptions.to.h',ng-options='hr for hr in vm.hours')
-            label &nbsp;:&nbsp;
-            select.form-control(ng-model='vm.options.timeOptions.to.m',ng-options='min for min in vm.minutes')
-            label &nbsp;:&nbsp;
-            select.form-control(ng-model='vm.options.timeOptions.to.s',ng-options='sec for sec in vm.seconds')
-
-          .form-group
-            a(ng-click='vm.options.timeOptions.enabled = !vm.options.timeOptions.enabled', href='')
-              i.glyphicon.glyphicon-time(ng-show='!vm.options.timeOptions.enabled')
-              | &nbsp;{{ vm.options.timeOptions.enabled ? 'Hide' : 'Show' }} time options
-          br
+          include ../common/datetime-range-select
           .form-group
             label Compare Set:&nbsp;
             select.form-control(ng-options='set._id as set.name for set in vm.compareSets | orderBy:"name"', ng-model='vm.options.compareSetId', ng-change='vm.actions.onCompareSetChange()')

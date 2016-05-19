@@ -6,8 +6,8 @@ define(['base'], function (Base) {
   var AnalyticsReport = function () {
     this.name = '';
     this.compareSets = [];
-    this.period = 1;
-    this.periodUnit = 1;
+    this.period = null;
+    this.periodUnit = null;
     this.createTime = new Date();
     this.status = 1;
   };

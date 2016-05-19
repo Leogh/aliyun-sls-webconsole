@@ -34,5 +34,5 @@ exports.authChk = function (failRedirect) {
 };
 
 exports.handleMongooseError = function (res, err) {
-  res.send(restResp.error(restResp.CODE_ERROR, err.errmsg));
+  res.send(restResp.error(restResp.CODE_ERROR, err.message));
 };

@@ -6,7 +6,7 @@ var AnalyticsField = new Schema({
   name: String,
   hashing: String,
   filterName: String,
-  valueSet: [ { type: String, unique: true} ],
+  valueSet: [ { type: String } ],
   createTime: { type: Date, default: Date.now },
   status: Number
 });

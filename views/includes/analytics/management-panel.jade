@@ -24,13 +24,15 @@ div.row
                   td
                     ul.list-inline
                       li(ng-repeat="set in report.compareSets") {{ set.name }}{{ $last ? '' : ',' }}
-                  td {{ report.period }} {{ report.periodUnit }}
                   td
-                    button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateReportModel(set)') Edit
+                    span(ng-if='report.period') {{ report.period }} {{ report.periodUnit | periodUnit }}
+                    span(ng-if='!report.period') (Not Specified)
+                  td
+                    button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateReportModel(report)') Edit
                     | &nbsp;&nbsp;
-                    button.btn.btn-warning.btn-sm(ng-click='vm.actions.copyAddReportModel(set)') Copy
+                    button.btn.btn-warning.btn-sm(ng-click='vm.actions.copyAddReportModel(report)') Copy
                     | &nbsp;&nbsp;
-                    button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeReportModel(set)') Remove
+                    button.btn.btn-danger.btn-sm(ng-click='vm.actions.removeReportModel(report)') Remove
 
       div.row
         div.col-sm-12

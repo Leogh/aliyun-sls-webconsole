@@ -198,7 +198,7 @@ define([
     }
 
     function addAnalyticsReport(report) {
-      if (!(filter instanceof AnalyticsReport)) {
+      if (!(report instanceof AnalyticsReport)) {
         throw Error('filter is not an instance of AnalyticsReport.');
       }
       return http.send({
@@ -211,7 +211,7 @@ define([
     }
 
     function updateAnalyticsReport(report) {
-      if (!(filter instanceof AnalyticsReport)) {
+      if (!(report instanceof AnalyticsReport)) {
         throw Error('filter is not an instance of AnalyticsReport.');
       }
       return http.send({
@@ -234,10 +234,14 @@ define([
     }
 
     function buildAnalyticsReport(options) {
+      if (options.timeOptions.enabled) {
+        initDateHours(options.from, options.timeOptions.from);
+        initDateHours(options.to, options.timeOptions.to);
+      }
       return http.send({
-        url: '/analytics/api/report',
+        url: '/analytics/api/reporting',
         params: {
-          reportId: options.reportId,
+          reportId: options.report._id,
           from: options.from,
           to: options.to,
           period: options.period,

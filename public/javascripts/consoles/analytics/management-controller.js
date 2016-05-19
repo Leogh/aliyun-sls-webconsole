@@ -5,8 +5,9 @@ define([
   'models/analytics-compare-set',
   'models/analytics-field-filter',
   'models/analytics-report',
+  'filters/period-unit-filter',
   'services/log-analytics-service',
-], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter, AnalyticsReport) {
+], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter, AnalyticsReport, periodUnitFilter) {
 
   "use strict";
 
@@ -19,8 +20,7 @@ define([
     .controller('compareSetModalController', compareSetModalController)
     .controller('filterModalController', filterModalController)
     .controller('reportModalController', reportModalController)
-    .filter('timestamp', timestampFilter)
-    .filter('percentage', percentageFilter);
+    .filter('periodUnit', periodUnitFilter);
 
   function analyticsManagementController($scope, logAnalyticsService, $uibModal) {
     var vm = this;
@@ -232,11 +232,36 @@ define([
           },
           compareSets: function () {
             return logAnalyticsService.compareSet.get();
-          }
+          },
+          periodUnitOptions: function () {
+            var options = [];
+            angular.forEach(periodUnitFilter.PeriodUnit, function (unit) {
+              options.push(unit);
+            });
+            return options;
+          },
         },
       });
       filterModalInst.result.then(function (report, cmd) {
-        // TODO : add or update report
+        var promise = null;
+        var isAdd = true;
+        if (report._id) {
+          isAdd = false;
+          promise = logAnalyticsService.report.update(report);
+        } else {
+          isAdd = false;
+          promise = logAnalyticsService.report.add(report);
+        }
+        promise.success(function () {
+          if (isAdd) {
+            alert(`analytics report added!`);
+          }
+        }).error(function (code, msg) {
+          alert(`[${code}] - ${msg}`);
+          console.error(code, msg);
+        })['finally'](function () {
+          reloadFieldsAndSets();
+        });
         reloadFieldsAndSets();
       }, function () {
         // closed
@@ -246,6 +271,15 @@ define([
 
     function removeReportModel(report) {
       // TODO : remove report
+      if (report._id && confirm(`You are going to remove report "${report.name}", please confirm.`)) {
+        var promise = logAnalyticsService.report.remove(report._id);
+        promise.error(function (code, msg) {
+          alert(`${code} - ${msg}`);
+          console.error(code, msg);
+        })['finally'](function () {
+          reloadFieldsAndSets();
+        });
+      }
     }
 
 
@@ -257,7 +291,10 @@ define([
     }
 
     function copyAddReportModel(baseReport) {
-      // TODO : copy add report
+      var newReport = angular.merge(new AnalyticsReport(), baseReport);
+      newReport._id = null;
+      newReport.name += '_Copy';
+      vm.actions.addOrUpdateReportModel(newReport);
     }
 
 
@@ -538,14 +575,17 @@ define([
     }
   }
 
-  function reportModalController($scope, $uibModalInstance, reportObj, compareSets) {
+  function reportModalController($scope, $uibModalInstance, reportObj, compareSets, periodUnitOptions) {
     var vm = this;
-    var presetCompareSet = new AnalyticsCompareSet();
     var compareSetDict = {};
+    var watcher = null;
 
-    presetCompareSet.name = '(None)';
     vm.processing = true;
     vm.report = angular.merge(new AnalyticsReport(), reportObj || new AnalyticsReport());
+    vm.periodUnitOptions = periodUnitOptions;
+    vm.compareSets = compareSets.success ? compareSets.data : [];
+    vm.enablePresetPeriod = vm.report.period ? 1 : 0;
+    vm.selectedCompareSet = null;
     vm.actions = {
       addCompareSet: addCompareSet,
       removeCompareSet: removeCompareSet,
@@ -553,16 +593,43 @@ define([
       dismiss: dismiss,
     };
 
+    init();
+
     function addCompareSet() {
-      // TODO : append compare set
+      if (vm.selectedCompareSet != null) {
+        vm.report.compareSets.push(angular.merge({}, compareSetDict[vm.selectedCompareSet]));
+        removeCompareSetOptionById(vm.selectedCompareSet);
+        if (vm.compareSets.length > 0) {
+          vm.selectedCompareSet = vm.compareSets[0]._id;
+        }
+      }
     }
 
-    function removeCompareSet() {
-      // TODO : detach compare set
+    function removeCompareSet(idx) {
+      var target = vm.report.compareSets.splice(idx, 1);
+      vm.compareSets.push(target[0]);
+      if (vm.compareSets.length > 0) {
+        vm.selectedCompareSet = vm.compareSets[0]._id;
+      }
     }
 
     function save() {
-      // TODO : report object validations
+      if (!vm.report.name || vm.report.name == '') {
+        alert(`Please enter a name for this report.`);
+        return;
+      }
+      if (vm.report.compareSets.length == 0) {
+        alert(`No CompareSet is selected.`);
+        return;
+      }
+      if (vm.enablePresetPeriod && (!vm.report.period || vm.report.period <= 0)) {
+        alert(`Peroid field should be a positive integer.`);
+        return;
+      }
+      if (!vm.enablePresetPeriod) {
+        vm.report.periodUnit = null;
+        vm.report.period = null;
+      }
       $uibModalInstance.close(vm.report);
     }
 
@@ -570,24 +637,44 @@ define([
       $uibModalInstance.dismiss('cancel');
     }
 
-  }
+    function init() {
+      // init compare set dictionary
+      angular.forEach(vm.compareSets, function (set) {
+        compareSetDict[set._id] = angular.merge({}, set);
+      });
+      // remove existed compare sets
+      angular.forEach(vm.report.compareSets, function (set){
+        removeCompareSetOptionById(set._id);
+      });
+      // set default selected compare set
+      if (vm.compareSets.length > 0) {
+        vm.selectedCompareSet = vm.compareSets[0]._id;
+      }
+      // init watchers
+      if (watcher) {
+        watcher();
+      }
+      watcher = $scope.$watch('vm.enablePresetPeriod', function (newValue, oldValue) {
+        if (newValue != oldValue) {
+          if (newValue == 1 && !vm.report.periodUnit) {
+            vm.report.periodUnit = vm.periodUnitOptions[0];
+          }
+        }
+      });
+    }
 
-  function percentageFilter() {
-    return function (num) {
-      var tmp = num * 10000;
-      tmp = Math.ceil(tmp);
-      return tmp / 100;
-    };
-  }
+    function removeCompareSetOptionById(id) {
+      var tar = null;
+      for(var i = 0; i < vm.compareSets.length; i++) {
+        var set = vm.compareSets[i];
+        if (set._id == id){
+          tar = vm.compareSets.splice(i, 1);
+          break;
+        }
+      }
+      return tar;
+    }
 
-  function timestampFilter() {
-    var UNIX_TIME_START = new Date(1970, 0, 1, 0, 0, 0);
-    return function (timestamp) {
-      var stamp = parseInt(timestamp) + (8 * 3600);
-      var date = new Date();
-      date.setTime(UNIX_TIME_START.getTime() + stamp * 1000);
-      return date;
-    };
   }
 
 });

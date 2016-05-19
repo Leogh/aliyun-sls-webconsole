@@ -24,7 +24,7 @@ block content
         h2 Analytics Report
         hr
 
-    div.row
+    div.row(ng-if='vm.reports.length > 0')
       div.col-md-12
         div.panel.panel-default
           div.panel-body
@@ -34,20 +34,21 @@ block content
                   a(href='', ng-click='vm.actions.reloadReports()', title='refresh report')
                     span.glyphicon.glyphicon-refresh
                   | &nbsp;:&nbsp;
-                select.form-control(ng-model='vm.options.reportId')
-                  option(value='1') First
-                  option(value='2') Second
+                select.form-control(ng-model='vm.options.report', ng-options='report as report.name for report in vm.reports', ng-change='vm.actions.onReportChange()')
+
+              include ../../includes/common/datetime-range-select
+
               div.form-group
                 label Period:&nbsp;
                 div.input-group
                   input.form-control(type='number',ng-model='vm.options.period')
                   span.input-group-btn(uib-dropdown='')
                     button.btn.btn-default(uib-dropdown-toggle='')
-                      b {{ vm.options.periodUnit }} &nbsp;
+                      b {{ vm.options.periodUnit | periodUnit }} &nbsp;
                       span.caret
                     ul.dropdown-menu(uib-dropdown-menu='')
                       li(role='menuitem', ng-repeat='item in vm.periodUnits', ng-click='vm.options.periodUnit = item')
-                        a(href='') {{ item }}
+                        a(href='') {{ item | periodUnit }}
 
               div.form-group
                 button.btn.btn-primary(ng-click='vm.actions.showReport()', ng-disabled='vm.states.processing') Build Report

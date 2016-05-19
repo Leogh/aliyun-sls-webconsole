@@ -1,8 +1,9 @@
 define([
   'angular',
   'webapp',
+  'utils/form-utils',
   'services/log-analytics-service',
-], function (angular, webapp) {
+], function (angular, webapp, formUtils) {
   // injections
   logAnalyticsController.$inject = ['$scope', 'services.log-analytics-service'];
 
@@ -37,9 +38,9 @@ define([
       compareSetId: null,
       chartType: ''
     };
-    vm.hours = genTimeRange(0, 23);
-    vm.minutes = genTimeRange(0, 59);
-    vm.seconds = genTimeRange(0, 59);
+    vm.hours = formUtils.genTimeRange(0, 23);
+    vm.minutes = formUtils.genTimeRange(0, 59);
+    vm.seconds = formUtils.genTimeRange(0, 59);
     vm.fromIsOpen = false;
     vm.toIsOpen = false;
 
@@ -189,18 +190,6 @@ define([
             vm.options.compareSetId = sets[0]._id;
           }
         });
-    }
-
-    function genTimeRange(s, e) {
-      var arr = [];
-      for (var i = s; i <= e; i++) {
-        var str = i.toString();
-        if (i < 10) {
-          str = '0' + str;
-        }
-        arr.push(str);
-      }
-      return arr;
     }
 
     function interpretFieldValue(fieldValue, field) {

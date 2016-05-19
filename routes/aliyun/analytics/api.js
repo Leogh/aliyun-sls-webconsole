@@ -16,6 +16,9 @@ var AnalyticsField = require("../../../models/analytics-field");
 var AnalyticsCompareSet = require("../../../models/analytics-compare-set");
 var AnalyticsFieldFilter = require("../../../models/analytics-field-filter");
 var AnalyticsReport = require("../../../models/analytics-report");
+var AnalyticsReportPeriodModel = require("../../../models/analytics/analytics-report-period-model");
+var AppEnum = require("../../../common/app-enum-types");
+
 
 var logger = log4js.getLogger("aliyun.sls");
 var shasum = crypto.createHash('sha1');
@@ -195,6 +198,7 @@ router.get('/report', utils.authChk('/login'), function (req, res, next) {
   }
   AnalyticsReport
     .find(queryOptions)
+    .populate('compareSets')
     .exec(function (err, reports) {
       if (err) {
         utils.handleMongooseError(res, err);
@@ -284,7 +288,79 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
   });
 });
 
-router.get('/report', utils.authChk('/login'), function (req, res, next) {
+router.get('/reporting', utils.authChk('/login'), function (req, res, next) {
+  var data = req.query;
+  if (data.reportId == null) {
+    res.send(restResp.error(restResp.CODE_ERROR, 'unknown report'));
+    return;
+  }
+  var report = null;
+  var period = data.period;
+  var periodUnit = data.periodUnit;
+  var dateRange = {from: null, to: null};
+
+  async.waterfall([
+    // load AnalyticsReport
+    function (cb) {
+      AnalyticsReport
+        .findOne({
+          _id: data.reportId,
+          hashing: ALY_LOG_ANALYTICS_ACCESS_HASH
+        })
+        .populate({
+          path: 'compareSets',
+          populate: [
+            'compareField',
+            'groupField',
+            {
+              path: 'compareConditions.field',
+              select: 'name filterName'
+            }
+          ]
+        })
+        .exec(function (err, report) {
+          if (err) {
+            cb(err, null);
+          }
+          if (!report) {
+            cb('no report found', null);
+          }
+          cb(null, report);
+        });
+    },
+    // construct report
+    function (report, cb) {
+      var from = utils.calculateUNIXTimestamp(new Date(data.from));
+      var to = utils.calculateUNIXTimestamp(new Date(data.to));
+      dateRange.from = from;
+      dateRange.to = to;
+      var intervalArr = calculatePeriodArray(dateRange, period, periodUnit);
+      reportTask(intervalArr, report.compareSets, function (err, intervals) {
+        if (err) {
+          return cb(err, null);
+        }
+        cb(null, intervals);
+      });
+    }
+  ], function (err, results) {
+    if (err) {
+      if (err.message) {
+        utils.handleMongooseError(res, err);
+      } else {
+        res.send(restResp.error(restResp.CODE_ERROR, err));
+      }
+      return;
+    }
+    res.send(restResp.success({
+      options: {
+        report: report,
+        dateRange: dateRange,
+        period: period,
+        periodUnit: periodUnit
+      },
+      report: results,
+    }));
+  });
 
 });
 
@@ -516,45 +592,96 @@ function addOrUpdateAnalyticsFieldFilter(res, filter) {
 }
 
 function addOrUpdateAnalyticsReport(res, report) {
-  AnalyticsReport.findOne({
-    _id: report._id
-  }).exec(function (err, obj) {
-    if (err) {
-      return utils.handleMongooseError(res, err);
-    }
-    if (obj) {
-      // update
-      obj.name = report.name;
-      obj.compareSets = report.compareSets;
-      obj.status = report.status;
-      obj.save(function (err, data) {
-        if (err) {
-          utils.handleMongooseError(res, err);
-          return;
-        }
-        res.send(restResp.success(data));
-      });
-    } else if (!report._id) {
-      // add
-      var newItem = new AnalyticsReport({
-        name: report.name,
-        compareSets: report.compareSets,
-        status: 1,
-      });
-      newItem.save(function (err, data) {
-        if (err) {
-          utils.handleMongooseError(res, err);
-          return;
-        }
-        res.send(restResp.success(data));
-      });
-    } else {
-      res.send(restResp.error(restResp.CODE_ERROR, 'invalid item'));
-    }
-  });
+  var isForAdd = report._id == null;
+  var updateTsk = function (existedReport) {
+    async.waterfall([
+      function (cb) {
+        var compareSetIds = [];
+        report.compareSets.forEach(function (item) {
+          compareSetIds.push(item._id);
+        });
+        AnalyticsCompareSet
+          .find({hashing: ALY_LOG_ANALYTICS_ACCESS_HASH, status: 1})
+          .where('_id').in(compareSetIds)
+          .exec(function (err, result) {
+            if (err) {
+              cb(err, null);
+              return;
+            }
+            if (result.length != report.compareSets.length) {
+              cb('some compare sets not found', null);
+              return;
+            }
+            cb(null, report.compareSets);
+          });
+      }
+    ], function (err, compareSets) {
+      if (err) {
+        utils.handleMongooseError(res, err);
+        return;
+      }
+      if (compareSets.length == 0) {
+        res.send(restResp.error(restResp.CODE_ERROR, 'Compare set is empty'));
+        return;
+      }
+      if (existedReport) {
+        // update
+        existedReport.name = report.name;
+        existedReport.compareSets = compareSets;
+        existedReport.period = report.period;
+        existedReport.periodUnit = report.periodUnit;
+        existedReport.status = report.status;
+        existedReport.save(function (err, data) {
+          if (err) {
+            utils.handleMongooseError(res, err);
+            return;
+          }
+          res.send(restResp.success(data));
+        });
+      } else {
+        // add
+        var newItem = new AnalyticsReport({
+          name: report.name,
+          hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
+          compareSets: report.compareSets,
+          period: report.period,
+          periodUnit: report.periodUnit,
+          status: 1,
+        });
+        newItem.save(function (err, data) {
+          if (err) {
+            utils.handleMongooseError(res, err);
+            return;
+          }
+          res.send(restResp.success(data));
+        });
+      }
+    });
+  };
+  if (!isForAdd) {
+    AnalyticsReport.findOne({
+      _id: report._id,
+      hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
+    }).exec(function (err, target) {
+      if (err) {
+        utils.handleMongooseError(res, err);
+        return;
+      }
+      if (target == null) {
+        res.send(restResp.error(restResp.CODE_ERROR, 'invalid analytics report'));
+        return;
+      }
+      updateTsk(target);
+    });
+  } else {
+    updateTsk(null);
+  }
 }
 
+var cnt = 0;
 function histogramTask(project, store, topic, dateRange, query, callback) {
+  var cur = cnt++;
+  console.log(cur, `searching - ${query}`);
   sls.getHistograms({
     //必选字段
     projectName: project,
@@ -565,7 +692,7 @@ function histogramTask(project, store, topic, dateRange, query, callback) {
     query: query,
   }, function (err, data) {
     if (err) {
-      logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
+      logger.warn(cur, 'error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
       return callback(err, false);
     }
     // retrieve log count
@@ -658,6 +785,36 @@ function dashboardTask(compareSet, dateRange, taskCallback) {
   });
 }
 
+function reportTask(intervals, compareSets, taskCallback) {
+  var cnt = 0;
+  async.every(intervals, function (interval, intervalTaskCallback) {
+    async.every(compareSets, function (compareSet, intervalCompareSetTaskCallback) {
+      var dashboardDateRange = {
+        from: interval.from,
+        to: interval.to
+      };
+      dashboardTask(compareSet, dashboardDateRange, function (err, results) {
+        if (err) {
+          return intervalCompareSetTaskCallback(err, null);
+        }
+        interval.addDashboard(compareSet.name, results);
+        intervalCompareSetTaskCallback(null, true);
+      });
+    }, function (err, results) {
+      if (err) {
+        return intervalTaskCallback(err, null);
+      }
+      intervalTaskCallback(null, true);
+    });
+  }, function (err, results) {
+    if (err) {
+      return taskCallback(err, null);
+    }
+    taskCallback(null, intervals);
+  });
+}
+
+
 function buildConditionQuery(compareSet) {
   var q = '';
   if (compareSet.compareConditions && compareSet.compareConditions.length > 0) {
@@ -671,4 +828,43 @@ function buildConditionQuery(compareSet) {
 
 function buildLogSearchQuery(fieldName, fieldValue) {
   return `"${fieldName}":"${fieldValue.replace(/"/g, '\\"').replace(/:/g, '\\:')}"`;
+}
+
+function calculatePeriodArray(dateRange, period, periodUnit) {
+  var base = period; // second
+  var unit = parseInt(periodUnit);
+  var multiplier = 0;
+  var interval = 0;
+  var periodArr = [];
+  switch (unit) {
+    case AppEnum.PeriodUnit.Minute:
+      multiplier = 60;
+      break;
+    case AppEnum.PeriodUnit.Hour:
+      multiplier = 60 * 60;
+      break;
+    case AppEnum.PeriodUnit.Day:
+      multiplier = 60 * 60 * 24;
+      break;
+    case AppEnum.PeriodUnit.Week:
+      multiplier = 60 * 60 * 24 * 7;
+      break;
+    case AppEnum.PeriodUnit.Month:
+    default:
+      throw Error(`Not supported unit ${periodUnit}`);
+  }
+  interval = base * multiplier;
+
+  for (var i = dateRange.from; ; i += interval) {
+    var pDateRange = {
+      from: i,
+      to: i + interval
+    };
+    var period = new AnalyticsReportPeriodModel(pDateRange);
+    periodArr.push(period);
+    if (pDateRange.to >= dateRange.to) {
+      break;
+    }
+  }
+  return periodArr;
 }
