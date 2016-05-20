@@ -1,4 +1,4 @@
-
+var merge = require('merge');
 var restResp = require("../common/rest-response");
 var authEnabled = require("../common/config").auth.authEnable;
 
@@ -35,4 +35,8 @@ exports.authChk = function (failRedirect) {
 
 exports.handleMongooseError = function (res, err) {
   res.send(restResp.error(restResp.CODE_ERROR, err.message));
+};
+
+exports._extend = function (ori, ext) {
+  return merge.recursive(true, ori, ext);
 };

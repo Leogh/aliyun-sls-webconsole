@@ -60,3 +60,15 @@ hr.xs {
 .col-action {
   width: 300px;
 }
+
+.no-padding {
+  padding: 0 !important;
+}
+
+.locked-report-state-table .compare-set-state-container {
+  margin: 8px;
+}
+
+.locked-report-state-table .group-field-state-table {
+  margin: 0;
+}

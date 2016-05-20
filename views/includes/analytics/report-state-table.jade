@@ -1,0 +1,39 @@
+//
+   Created by Roman on 5/20/2016.
+
+table.table.table-bordered.locked-report-state-table
+  thead
+    tr
+      th Compare Set
+      th Details
+      th Batch Actions
+  tbody
+    tr(ng-repeat='(name, tskConsole) in vm.lockedOptions.tasksConsole')
+      td {{ name }}
+      td.no-padding(ng-if='tskConsole.groupField != null')
+        //- Group Field Layout
+        table.table.group-field-state-table
+          tbody
+            tr(ng-repeat='(value, groupStatusDict) in tskConsole.groupFieldStatusDict')
+              td {{ vm.interpretFieldValue(value, tskConsole.groupField) }}
+              td
+                p
+                  strong State:&nbsp;
+                  span.label(ng-class='groupStatusDict.loaded ? "label-success" : "label-warning"') {{ groupStatusDict.loaded ? "Ready" : "Not Ready" }}
+                  | &nbsp;&nbsp;&nbsp;&nbsp;
+                  button.btn.btn-sm.btn-primary(ng-click='vm.actions.loadCompareSetData()', ng-disabled='groupStatusDict.processing') {{ groupStatusDict.loaded ? "Reload" : "Load" }}
+
+      td(ng-if='tskConsole.groupField == null')
+        p
+          strong State:&nbsp;
+          span.label(ng-class='tskConsole.loaded ? "label-success" : "label-warning"') {{ tskConsole.loaded ? "Ready" : "Not Ready" }}
+          | &nbsp;&nbsp;&nbsp;&nbsp;
+          button.btn.btn-sm.btn-primary(ng-click='vm.actions.loadCompareSetData()', ng-disabled='tskConsole.processing') {{ tskConsole.loaded ? "Reload" : "Load" }}
+
+      td
+        p
+          button.btn.btn-primary(ng-click='vm.actions.addCompareSetToChart()') Add All To Chart
+        p
+          button.btn.btn-primary(ng-click='vm.actions.removeCompareSetFromChart()') Remove All From Chart
+        p(ng-if='tskConsole.groupField != null') 0 / {{ tskConsole.groupField.valueSet.length }}
+

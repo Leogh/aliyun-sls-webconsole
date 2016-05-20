@@ -41,7 +41,10 @@ define([
         add: addAnalyticsReport,
         update: updateAnalyticsReport,
         remove: removeAnalyticsReport,
-        build: buildAnalyticsReport,
+      },
+      reporting: {
+        build: buildReportingTasks,
+        exec: execReportingTasks,
       },
       dashboard: {
         build: buildCompareSetDashboard,
@@ -233,13 +236,13 @@ define([
       });
     }
 
-    function buildAnalyticsReport(options) {
+    function buildReportingTasks(options) {
       if (options.timeOptions.enabled) {
         initDateHours(options.from, options.timeOptions.from);
         initDateHours(options.to, options.timeOptions.to);
       }
       return http.send({
-        url: '/analytics/api/reporting',
+        url: '/analytics/api/reporting-task',
         params: {
           reportId: options.report._id,
           from: options.from,
@@ -248,6 +251,16 @@ define([
           periodUnit: options.periodUnit,
         },
         method: 'get'
+      });
+    }
+
+    function execReportingTasks(tasks) {
+      return http.send({
+        url: '/analytics/api/reporting',
+        data: {
+          tasks: tasks
+        },
+        method: 'post'
       });
     }
 

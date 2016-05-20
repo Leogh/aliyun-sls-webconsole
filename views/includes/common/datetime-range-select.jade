@@ -6,17 +6,17 @@ div.datetime-option-container.form-group
   .form-group
     label From:&nbsp;
     .input-group
-      input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.fromIsOpen", ng-model='vm.options.from')
+      input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.fromIsOpen", ng-model='vm.options.from',ng-disabled='vm.states.processing || vm.states.reportLocked')
       span.input-group-btn
-        button.btn.btn-default(ng-click='vm.fromIsOpen = true')
+        button.btn.btn-default(ng-click='vm.fromIsOpen = true',ng-disabled='vm.states.processing || vm.states.reportLocked')
           i.glyphicon.glyphicon-calendar
   //- Advanced time select
   .form-group(ng-show='vm.options.timeOptions.enabled')
-    select.form-control(ng-model='vm.options.timeOptions.from.h',ng-options='hr for hr in vm.hours')
+    select.form-control(ng-model='vm.options.timeOptions.from.h',ng-options='hr for hr in vm.hours',ng-disabled='vm.states.processing || vm.states.reportLocked')
     label &nbsp;:&nbsp;
-    select.form-control(ng-model='vm.options.timeOptions.from.m',ng-options='min for min in vm.minutes')
+    select.form-control(ng-model='vm.options.timeOptions.from.m',ng-options='min for min in vm.minutes',ng-disabled='vm.states.processing || vm.states.reportLocked')
     label &nbsp;:&nbsp;
-    select.form-control(ng-model='vm.options.timeOptions.from.s',ng-options='sec for sec in vm.seconds')
+    select.form-control(ng-model='vm.options.timeOptions.from.s',ng-options='sec for sec in vm.seconds',ng-disabled='vm.states.processing || vm.states.reportLocked')
   br(ng-if='vm.options.timeOptions.enabled')
   //- To Date Options
   .form-group
@@ -24,17 +24,17 @@ div.datetime-option-container.form-group
       span(ng-if='vm.options.timeOptions.enabled') &nbsp;&nbsp;&nbsp;&nbsp;
       | To:&nbsp;
     .input-group
-      input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.toIsOpen", ng-model='vm.options.to')
+      input.form-control(type='text', uib-datepicker-popup="yyyy-MM-dd", is-open="vm.toIsOpen", ng-model='vm.options.to',ng-disabled='vm.states.processing || vm.states.reportLocked')
       span.input-group-btn
-        button.btn.btn-default(ng-click='vm.options.toIsOpen = true')
+        button.btn.btn-default(ng-click='vm.options.toIsOpen = true',ng-disabled='vm.states.processing || vm.states.reportLocked')
           i.glyphicon.glyphicon-calendar
   //- Advanced time select
   .form-group(ng-show='vm.options.timeOptions.enabled')
-    select.form-control(ng-model='vm.options.timeOptions.to.h',ng-options='hr for hr in vm.hours')
+    select.form-control(ng-model='vm.options.timeOptions.to.h',ng-options='hr for hr in vm.hours',ng-disabled='vm.states.processing || vm.states.reportLocked')
     label &nbsp;:&nbsp;
-    select.form-control(ng-model='vm.options.timeOptions.to.m',ng-options='min for min in vm.minutes')
+    select.form-control(ng-model='vm.options.timeOptions.to.m',ng-options='min for min in vm.minutes',ng-disabled='vm.states.processing || vm.states.reportLocked')
     label &nbsp;:&nbsp;
-    select.form-control(ng-model='vm.options.timeOptions.to.s',ng-options='sec for sec in vm.seconds')
+    select.form-control(ng-model='vm.options.timeOptions.to.s',ng-options='sec for sec in vm.seconds',ng-disabled='vm.states.processing || vm.states.reportLocked')
 
   .form-group
     a(ng-click='vm.options.timeOptions.enabled = !vm.options.timeOptions.enabled', href='')

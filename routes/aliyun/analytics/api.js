@@ -288,17 +288,16 @@ router.get('/dashboard', utils.authChk('/login'), function (req, res, next) {
   });
 });
 
-router.get('/reporting', utils.authChk('/login'), function (req, res, next) {
+router.get('/reporting-task', utils.authChk('/login'), function (req, res, next) {
   var data = req.query;
   if (data.reportId == null) {
     res.send(restResp.error(restResp.CODE_ERROR, 'unknown report'));
     return;
   }
-  var report = null;
+  var reportObj = null;
   var period = data.period;
   var periodUnit = data.periodUnit;
   var dateRange = {from: null, to: null};
-
   async.waterfall([
     // load AnalyticsReport
     function (cb) {
@@ -330,19 +329,16 @@ router.get('/reporting', utils.authChk('/login'), function (req, res, next) {
     },
     // construct report
     function (report, cb) {
+      reportObj = report;
       var from = utils.calculateUNIXTimestamp(new Date(data.from));
       var to = utils.calculateUNIXTimestamp(new Date(data.to));
       dateRange.from = from;
       dateRange.to = to;
       var intervalArr = calculatePeriodArray(dateRange, period, periodUnit);
-      reportTask(intervalArr, report.compareSets, function (err, intervals) {
-        if (err) {
-          return cb(err, null);
-        }
-        cb(null, intervals);
-      });
+      var lineTaskSet = buildReportTasks(intervalArr, report.compareSets);
+      cb(null, lineTaskSet);
     }
-  ], function (err, results) {
+  ], function (err, tasks) {
     if (err) {
       if (err.message) {
         utils.handleMongooseError(res, err);
@@ -353,15 +349,28 @@ router.get('/reporting', utils.authChk('/login'), function (req, res, next) {
     }
     res.send(restResp.success({
       options: {
-        report: report,
+        report: reportObj,
         dateRange: dateRange,
         period: period,
         periodUnit: periodUnit
       },
-      report: results,
+      tasks: tasks,
     }));
   });
+});
 
+router.post('/reporting', utils.authChk('/login'), function (req, res, next) {
+  var data = req.body;
+  var tasks = data.tasks;
+  execReportTasks(tasks, function (err, results) {
+    if (err) {
+      return res.send(restResp.error(restResp.CODE_ERROR, err));
+    }
+    var extDict = buildReportExtDict(results);
+    res.send(restResp.success({
+      report: extDict
+    }));
+  });
 });
 
 module.exports = router;
@@ -678,10 +687,8 @@ function addOrUpdateAnalyticsReport(res, report) {
   }
 }
 
-var cnt = 0;
 function histogramTask(project, store, topic, dateRange, query, callback) {
-  var cur = cnt++;
-  console.log(cur, `searching - ${query}`);
+  // console.log(`searching - ${query}`);
   sls.getHistograms({
     //必选字段
     projectName: project,
@@ -692,7 +699,7 @@ function histogramTask(project, store, topic, dateRange, query, callback) {
     query: query,
   }, function (err, data) {
     if (err) {
-      logger.warn(cur, 'error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
+      logger.warn('error occurs when calling Aliyun SLS API.', err.code, err.errorMessage || err.message);
       return callback(err, false);
     }
     // retrieve log count
@@ -785,9 +792,60 @@ function dashboardTask(compareSet, dateRange, taskCallback) {
   });
 }
 
-function reportTask(intervals, compareSets, taskCallback) {
-  var cnt = 0;
-  async.every(intervals, function (interval, intervalTaskCallback) {
+function buildReportTasks(intervals, compareSets){
+  var total = 0;
+  var lineSetTasks = {};
+  compareSets.forEach(function (compareSet) {
+    var intervalTasks = [];
+    intervals.forEach(function (interval) {
+      var dashboardDateRange = {
+        from: interval.from,
+        to: interval.to
+      };
+      total++;
+      intervalTasks.push({
+        set: compareSet,
+        range: dashboardDateRange,
+        interval: interval,
+        callback: null,
+      });
+    });
+    lineSetTasks[compareSet.name] = intervalTasks;
+  });
+  console.log(`tasks ready! Total ${total} tasks, will take more than ${total * 0.5} seconds`);
+  return lineSetTasks;
+}
+
+function execReportTasks(tasks, taskCallback) {
+  var executed = 0;
+  var total = tasks.length;
+  var timeouts = [];
+  var stopExecute = function () {
+    timeouts.forEach(function (t) {
+      clearTimeout(t);
+    });
+  };
+  tasks.forEach(function (task, index) {
+    var timeout = setTimeout(function (t) {
+      var compareSet = t.set;
+      var dashboardDateRange = t.range;
+      var interval = t.interval;
+      dashboardTask(compareSet, dashboardDateRange, function (err, results) {
+        executed++;
+        if (err) {
+          stopExecute();
+          taskCallback(err, null);
+          return;
+        }
+        interval.dashboards[compareSet.name] = results;
+        if (executed == total) {
+          taskCallback(null, tasks);
+        }
+      });
+    }, index * 500, task);
+    timeouts.push(timeout);
+  });
+  /*async.every(intervals, function (interval, intervalTaskCallback) {
     async.every(compareSets, function (compareSet, intervalCompareSetTaskCallback) {
       var dashboardDateRange = {
         from: interval.from,
@@ -811,9 +869,21 @@ function reportTask(intervals, compareSets, taskCallback) {
       return taskCallback(err, null);
     }
     taskCallback(null, intervals);
-  });
+  });*/
 }
 
+function buildReportExtDict(tasks) {
+  var intervalDict = {};
+  tasks.forEach(function (task) {
+    var interval = task.interval;
+    if (intervalDict[interval.from]) {
+      intervalDict[interval.from].dashboards = utils._extend(intervalDict[interval.from].dashboards, interval.dashboards);
+    } else {
+      intervalDict[interval.from] = utils._extend({}, interval);
+    }
+  });
+  return intervalDict;
+}
 
 function buildConditionQuery(compareSet) {
   var q = '';

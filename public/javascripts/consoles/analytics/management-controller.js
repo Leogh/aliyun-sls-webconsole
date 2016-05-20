@@ -270,7 +270,6 @@ define([
     }
 
     function removeReportModel(report) {
-      // TODO : remove report
       if (report._id && confirm(`You are going to remove report "${report.name}", please confirm.`)) {
         var promise = logAnalyticsService.report.remove(report._id);
         promise.error(function (code, msg) {

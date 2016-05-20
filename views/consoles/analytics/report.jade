@@ -34,16 +34,18 @@ block content
                   a(href='', ng-click='vm.actions.reloadReports()', title='refresh report')
                     span.glyphicon.glyphicon-refresh
                   | &nbsp;:&nbsp;
-                select.form-control(ng-model='vm.options.report', ng-options='report as report.name for report in vm.reports', ng-change='vm.actions.onReportChange()')
+                select.form-control(ng-model='vm.options.report',
+                ng-disabled='vm.states.processing || vm.states.reportLocked'
+                ng-options='report as report.name for report in vm.reports', ng-change='vm.actions.onReportChange()')
 
               include ../../includes/common/datetime-range-select
 
               div.form-group
                 label Period:&nbsp;
                 div.input-group
-                  input.form-control(type='number',ng-model='vm.options.period')
+                  input.form-control(type='number',ng-model='vm.options.period',ng-disabled='vm.states.processing || vm.states.reportLocked')
                   span.input-group-btn(uib-dropdown='')
-                    button.btn.btn-default(uib-dropdown-toggle='')
+                    button.btn.btn-default(uib-dropdown-toggle='', ng-disabled='vm.states.processing || vm.states.reportLocked')
                       b {{ vm.options.periodUnit | periodUnit }} &nbsp;
                       span.caret
                     ul.dropdown-menu(uib-dropdown-menu='')
@@ -51,7 +53,15 @@ block content
                         a(href='') {{ item | periodUnit }}
 
               div.form-group
-                button.btn.btn-primary(ng-click='vm.actions.showReport()', ng-disabled='vm.states.processing') Build Report
+                button.btn.btn-primary(ng-click='vm.actions.showReport()', ng-disabled='vm.states.processing || vm.states.reportLocked') Build Report
+
+    div.row(ng-if='vm.states.reportLocked && !vm.states.processing')
+      div.col-md-12
+        button.btn.btn-primary(ng-click='vm.states.reportLocked = false') Unlock Report
+        include ../../includes/analytics/report-state-table
+
+
+
 
     div.row
       div.col-md-12

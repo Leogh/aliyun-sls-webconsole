@@ -24,11 +24,13 @@ define([
     var now = new Date();
     var yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    var filterDict = {};
 
     vm.reports = [];
     vm.periodUnits = periodUnitFilter.PeriodUnit;
     vm.states = {
       processing: false,
+      reportLocked: false,
     };
 
     vm.options = {
@@ -52,6 +54,9 @@ define([
       period: '',
       periodUnit: vm.periodUnits.Minute,
     };
+    vm.lockedOptions = {
+
+    };
 
     vm.hours = formUtils.genTimeRange(0, 23);
     vm.minutes = formUtils.genTimeRange(0, 59);
@@ -66,6 +71,8 @@ define([
       showReport: showReport,
     };
 
+    vm.interpretFieldValue = interpretFieldValue;
+
     reloadReports();
 
     function onReportChange() {
@@ -77,6 +84,7 @@ define([
 
     function reloadReports() {
       vm.reports = [];
+      filterDict = {};
       var oriReport = vm.options.report;
       logAnalyticsService
         .report
@@ -107,6 +115,17 @@ define([
             onReportChange();
           }
         });
+      logAnalyticsService
+        .filter.get()
+        .success(function (filters) {
+          angular.forEach(filters, function (f) {
+            f.interDict = {};
+            angular.forEach(f.interpretations, function (inter) {
+              f.interDict[inter.key] = inter.value;
+            });
+            filterDict[f.name] = f;
+          });
+        });
     }
 
     function showReport() {
@@ -115,18 +134,65 @@ define([
         return;
       }
       vm.states.processing = true;
+      vm.states.reportLocked = false;
+      vm.lockedOptions = {};
+      var hasErr = false;
       logAnalyticsService
-        .report
+        .reporting
         .build(vm.options)
         .success(function (data) {
-          console.log(data);
+          var options = data.options;
+          var tasks = data.tasks;
+          var tasksConsole = {};
+          angular.forEach(options.report.compareSets, function (compareSet) {
+            var obj = {
+              groupField: compareSet.groupField,
+              groupFieldStatusDict: {},
+              name: compareSet.name,
+              loaded: false,
+              processing: false,
+              compareSet: compareSet
+            };
+            if (compareSet.groupField) {
+              angular.forEach(compareSet.groupField.valueSet, function (value) {
+                obj.groupFieldStatusDict[value] = {
+                  val: value,
+                  loaded: false,
+                  processing: false,
+                  results: null,
+                };
+              });
+            }
+            tasksConsole[compareSet.name] = obj;
+          });
+          vm.lockedOptions = {
+            tasksConsole: tasksConsole,
+            options: options,
+            tasks: tasks,
+          };
+          console.log(vm.lockedOptions);
         })
         .error(function (code, msg) {
           alert(`${code} - ${msg}`);
+          hasErr = true;
         })
         .finally(function () {
           vm.states.processing = false;
+          vm.states.reportLocked = !hasErr;
         });
+    }
+
+    function interpretFieldValue(fieldValue, field) {
+      if (!field) {
+        return fieldValue;
+      }
+      if (field.filterName && filterDict[field.filterName]) {
+        var filter = filterDict[field.filterName];
+        var interpretation = filter.interDict[fieldValue];
+        if (typeof interpretation === 'undefined') return fieldValue;
+        return interpretation;
+      }
+      return fieldValue;
     }
 
   }
