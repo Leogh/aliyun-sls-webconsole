@@ -3,7 +3,7 @@
  */
 define(function () {
 
-  var Base = function Base () {
+  var Base = function Base() {
     this.__super = this;
 
     this._id = null;

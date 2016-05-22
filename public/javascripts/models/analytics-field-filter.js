@@ -1,9 +1,9 @@
 /**
  * Created by roman on 4/28/16.
  */
-define(['base'],function (Base) {
+define(['base'], function (Base) {
 
-  var AnalyticsFieldFilter = function() {
+  var AnalyticsFieldFilter = function () {
     this.name = '';
     this.interpretations = [];
     this.createTime = new Date();

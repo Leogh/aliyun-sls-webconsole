@@ -42,9 +42,9 @@ hr.xs {
   max-width: 100%;
 }
 
-.code-container .syntaxhighlighter { 
-  max-height: 600px; 
-  margin: 0 !important; 
+.code-container .syntaxhighlighter {
+  max-height: 600px;
+  margin: 0 !important;
 }
 
 .condition-label {
@@ -59,4 +59,42 @@ hr.xs {
 
 .col-action {
   width: 300px;
+}
+
+.no-padding {
+  padding: 0 !important;
+}
+
+.locked-report-state-table .compare-set-state-container {
+  margin: 8px;
+}
+
+.locked-report-state-table .group-field-state-table-container {
+  overflow-y: scroll;
+  max-height: 200px;
+}
+
+.locked-report-state-table .group-field-state-table {
+  margin: 0;
+}
+
+.locked-report-state-table .column-compare-set {
+  width: 130px;
+}
+.locked-report-state-table .column-batch-actions {
+  width: 130px;
+}
+
+
+.group-field-state-table .column-group-field-value {
+  width: 150px;
+}
+
+.group-field-state-table .column-state {
+  width: 80px;
+}
+
+.group-field-state-table .column-action {
+  width: 220px;
+  text-align: center;
 }

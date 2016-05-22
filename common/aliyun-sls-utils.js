@@ -1,5 +1,8 @@
 
 var restResp = require("../common/rest-response");
+var log4js = require('log4js');
+var logger = log4js.getLogger("aliyun.sls");
+
 /**
  * Aliyun SLS SDK general callback handler
  * @param err

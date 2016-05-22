@@ -1,0 +1,64 @@
+//
+   Created by Roman on 5/20/2016.
+
+table.table.table-bordered.locked-report-state-table
+  thead
+    tr
+      th.column-compare-set Compare Set
+      th Details
+      th.column-batch-actions Batch Actions
+  tbody
+    tr(ng-repeat='(name, tskConsole) in vm.lockedOptions.tasksConsole')
+      td {{ name }}
+      td.no-padding(ng-if='tskConsole.groupField != null')
+        //- Group Field Layout
+        table.table.group-field-state-table.head
+          colgroup
+            col.column-group-field-value
+            col.column-state
+            col
+            col.column-action
+          thead
+            tr
+              th Group Field Value
+              th State
+              th
+              th.column-action Actions
+        div.group-field-state-table-container
+          table.table.group-field-state-table
+            colgroup
+              col.column-group-field-value
+              col.column-state
+              col
+              col.column-action
+            tbody
+              tr(ng-repeat='(value, groupStatusDict) in tskConsole.groupFieldStatusDict')
+                td {{ vm.interpretFieldValue(value, tskConsole.groupField) }}
+                td
+                  span.label(ng-class='groupStatusDict.loaded ? "label-success" : "label-warning"') {{ groupStatusDict.loaded ? "Ready" : "Not Ready" }}
+                td
+                  uib-progressbar.progress-striped.active(type='info', ng-if='groupStatusDict.processing') loading...
+                  p(ng-if='groupStatusDict.error') {{ groupStatusDict.error }}
+                td.column-action
+                  button.btn.btn-sm.btn-primary(ng-click='vm.actions.loadTaskConsoleData(tskConsole, value)', ng-disabled='groupStatusDict.processing') {{ groupStatusDict.loaded ? "Reload" : "Load" }}
+                  | &nbsp;&nbsp;
+                  button.btn.btn-sm.btn-primary(ng-click='vm.actions.openAddToChartModal(tskConsole, value)', ng-disabled='!groupStatusDict.loaded') Add To Chart
+
+
+
+      td(ng-if='tskConsole.groupField == null')
+        p
+          strong State:&nbsp;
+          span.label(ng-class='tskConsole.loaded ? "label-success" : "label-warning"') {{ tskConsole.loaded ? "Ready" : "Not Ready" }}
+        p(ng-if='tskConsole.processing')
+          uib-progressbar.progress-striped.active(type='info') loading...
+        p(ng-if='tskConsole.error') {{ tskConsole.error }}
+
+      td
+        p
+          button.btn.btn-primary(ng-click='vm.actions.loadTaskConsoleData(tskConsole)') Load
+        p
+          button.btn.btn-primary(ng-click='vm.actions.openAddToChartModal(tskConsole)', ng-disabled='!tskConsole.loaded') Add To Chart
+
+p.text-center
+  button.btn.btn-danger(ng-click='vm.states.reportLocked = false') Unlock Report

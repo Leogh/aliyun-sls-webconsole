@@ -3,9 +3,9 @@ html
   include ./includes/head.jade
 
   body#applicationScope
-    
+
     include ./includes/nav-banner.jade
-    
+
     .container.main#loadingContainer
       p Page is loading...
 
@@ -19,7 +19,7 @@ html
     script(type='text/javascript', src='//cdn.bootcss.com/require.js/2.1.22/require.js')
     script(type='text/javascript').
       // getting the controller path
-      
+
       var mainContainer = document.getElementById('mainContainer');
       var loadingContainer = document.getElementById('loadingContainer');
       var controllerPathEl = document.getElementById('controllerPath');
@@ -33,7 +33,7 @@ html
         if (controllerPath) {
           require([
             controllerPath
-          ], function(webapp){
+          ], function (webapp) {
             // hide the loading message
             loadingContainer.className = 'hidden';
             // show the main container after everything is done.
@@ -48,6 +48,6 @@ html
             mainContainer.className = 'container-fluid main';
             mainContainer.removeAttribute('ng-cloak');
             $('.dropdown-toggle').dropdown();
-          });          
-        }        
+          });
+        }
       });

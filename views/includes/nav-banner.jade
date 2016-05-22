@@ -5,19 +5,28 @@ nav.navbar.navbar-default.navbar-fixed-top.navbar-inverse
       span.icon-bar
       span.icon-bar
       span.icon-bar
-    
+
     div.navbar-header
       a.navbar-brand(href="/") Aliyun SLS WebConsole
         sup &reg;
 
     - var user = locals.user
-    div#admin-navbar-collapse.collapse.navbar-collapse  
+    div#admin-navbar-collapse.collapse.navbar-collapse
       if (user)
         ul.nav.navbar-nav
           li
             a(href="/aliyun-sls/") SLS Console
-          li
-            a(href='/aliyun-sls-analytics/') Analytics
+          li.dropdown
+            a.dropdown-toggle(href="#", data-toggle="dropdown") Analytics&nbsp;
+              span.caret
+            ul.dropdown-menu
+              li(role="menuitem")
+                a(href="/analytics/") CompareSet
+              li(role="menuitem")
+                a(href="/analytics/report") Report
+              li.divider(role="separator")
+              li(role="menuitem")
+                a(href="/analytics/management") Management Tool
 
       ul.nav.navbar-nav.navbar-right
         if (user)
@@ -25,7 +34,7 @@ nav.navbar.navbar-default.navbar-fixed-top.navbar-inverse
             a #{ user.username }
           li
             a(href="/logout") Logout
-            
+
         if (!user)
           li
             a(href="/login") Login

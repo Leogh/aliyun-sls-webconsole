@@ -1,22 +1,30 @@
-extends ../layout
+//
+   Created by Roman on 5/18/2016.
+
+extends ../../layout
 
 block stylesheets
-  
+
 
 block scripts
-  
+
 
 block content
 
   //- indicates the controller path
 
-  input#controllerPath(type='hidden', value='consoles/log-analytics-controller')
+  input#controllerPath(type='hidden', value='consoles/analytics/index-controller')
 
-  //- use 'controller as' to distiguish properties in $rootScope and the current controller scope
+  //- use 'controller as' to distinguish properties in $rootScope and the current controller scope
 
   div(ng-controller='LogAnalyticsController as vm')
-    include ../includes/analytics/management-panel
-    include ../includes/analytics/search-panel
+
+    div.row
+      div.col-md-12
+        h2 Analytics
+        hr
+
+    include ../../includes/analytics/search-panel
 
     div.row.dashboard-section
       div.col-xs-12(ng-if='vm.compareSetOption != null')
@@ -62,11 +70,4 @@ block content
                 th(colspan='3') Total Amount: {{ board.full }}
           div.col-md-12
             hr
-
-
-    include ../modals/analytics-field-modal
-
-    include ../modals/analytics-compare-set-modal
-
-    include ../modals/analytics-field-filter-modal
 

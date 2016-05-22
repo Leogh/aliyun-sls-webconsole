@@ -13,7 +13,8 @@ var User = require('./models/user');
 
 var routes = require('./routes/index');
 var aliyunSLS = require('./routes/aliyun/sls');
-var aliyunSLSLogAnalytics = require('./routes/aliyun/sls-log-analytics');
+var aliyunSLSLogAnalytics = require('./routes/aliyun/analytics/route');
+var aliyunSLSLogAnalyticsAPIs = require('./routes/aliyun/analytics/api');
 
 var app = express();
 
@@ -32,7 +33,7 @@ app.use(log4js.connectLogger(log4js.getLogger('dateFileLog'), {
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -49,9 +50,9 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 // pass user info to locals
-app.use(function(req,res,next){
-    res.locals.user = req.user;
-    next();
+app.use(function (req, res, next) {
+  res.locals.user = req.user;
+  next();
 });
 
 // mongoose setup
@@ -60,10 +61,11 @@ mongoose.connect(config.db.mongo.connectionString);
 // routes setup
 app.use('/', routes);
 app.use('/aliyun-sls', aliyunSLS);
-app.use('/aliyun-sls-analytics', aliyunSLSLogAnalytics);
+app.use('/analytics', aliyunSLSLogAnalytics);
+app.use('/analytics/api', aliyunSLSLogAnalyticsAPIs);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
@@ -74,7 +76,7 @@ app.use(function(req, res, next) {
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
+  app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
       message: err.message,
@@ -85,7 +87,7 @@ if (app.get('env') === 'development') {
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error', {
     message: err.message,

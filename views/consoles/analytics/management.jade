@@ -1,0 +1,35 @@
+//
+   Created by Roman Lo on 5/18/2016.
+
+extends ../../layout
+
+block stylesheets
+
+
+block scripts
+
+
+block content
+
+  //- indicates the controller path
+
+  input#controllerPath(type='hidden', value='consoles/analytics/management-controller')
+
+  //- use 'controller as' to distinguish properties in $rootScope and the current controller scope
+
+  div(ng-controller='AnalyticsManagementController as vm')
+
+    div.row
+      div.col-md-12
+        h2 Analytics Management Tool
+        hr
+
+    include ../../includes/analytics/management-panel
+
+    include ../../modals/analytics-field-modal
+
+    include ../../modals/analytics-compare-set-modal
+
+    include ../../modals/analytics-field-filter-modal
+
+    include ../../modals/analytics-report-modal

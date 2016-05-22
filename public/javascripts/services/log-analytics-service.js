@@ -7,9 +7,10 @@ define([
   'models/analytics-field',
   'models/analytics-compare-set',
   'models/analytics-field-filter',
+  'models/analytics-report',
   'utils/http-client'
-], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter) {
-
+], function (angular, webapp, AnalyticsField, AnalyticsCompareSet, AnalyticsFieldFilter, AnalyticsReport) {
+  "use strict";
   webapp.factory('services.log-analytics-service', logAnalyticsService);
 
   logAnalyticsService.$inject = ['utils.http-client', '$q'];
@@ -35,15 +36,25 @@ define([
         update: updateAnalyticsFieldFilter,
         remove: removeAnalyticsFieldFilter,
       },
-      dashboard:{
+      report: {
+        get: getAnalyticsReport,
+        add: addAnalyticsReport,
+        update: updateAnalyticsReport,
+        remove: removeAnalyticsReport,
+      },
+      reporting: {
+        build: buildReportingTasks,
+        exec: execReportingTasks,
+      },
+      dashboard: {
         build: buildCompareSetDashboard,
-      }
+      },
     };
 
 
     function getAnalyticsCompareSet(name, status) {
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        url: '/analytics/api/analyticsCompareSet',
         params: {
           compareSetName: name,
           status: status
@@ -53,11 +64,11 @@ define([
     }
 
     function addAnalyticsCompareSet(compareSet) {
-      if (!compareSet instanceof  AnalyticsCompareSet) {
+      if (!compareSet instanceof AnalyticsCompareSet) {
         throw Error('compareSet is not an instance of AnalyticsCompareSet.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        url: '/analytics/api/analyticsCompareSet',
         data: {
           compareSet: compareSet
         },
@@ -66,11 +77,11 @@ define([
     }
 
     function updateAnalyticsCompareSet(compareSet) {
-      if (!compareSet instanceof  AnalyticsCompareSet) {
+      if (!compareSet instanceof AnalyticsCompareSet) {
         throw Error('compareSet is not an instance of AnalyticsCompareSet.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        url: '/analytics/api/analyticsCompareSet',
         data: {
           compareSet: compareSet
         },
@@ -80,7 +91,7 @@ define([
 
     function removeAnalyticsCompareSet(id) {
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsCompareSet',
+        url: '/analytics/api/analyticsCompareSet',
         params: {
           _id: id
         },
@@ -89,9 +100,9 @@ define([
     }
 
 
-    function getAnalyticsField(name, status){
+    function getAnalyticsField(name, status) {
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsField',
+        url: '/analytics/api/analyticsField',
         params: {
           fieldName: name,
           status: status
@@ -100,12 +111,12 @@ define([
       });
     }
 
-    function addAnalyticsField(field){
-      if (!field instanceof  AnalyticsField) {
+    function addAnalyticsField(field) {
+      if (!field instanceof AnalyticsField) {
         throw Error('field is not an instance of AnalyticsField.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsField',
+        url: '/analytics/api/analyticsField',
         data: {
           field: field,
         },
@@ -113,12 +124,12 @@ define([
       });
     }
 
-    function updateAnalyticsField(field){
-      if (!field instanceof  AnalyticsField) {
+    function updateAnalyticsField(field) {
+      if (!field instanceof AnalyticsField) {
         throw Error('field is not an instance of AnalyticsField.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsField',
+        url: '/analytics/api/analyticsField',
         data: {
           field: field,
         },
@@ -126,9 +137,9 @@ define([
       });
     }
 
-    function removeAnalyticsField(id){
+    function removeAnalyticsField(id) {
       return http.send({
-        url: '/aliyun-sls-analytics/analyticsField',
+        url: '/analytics/api/analyticsField',
         params: {
           _id: id
         },
@@ -137,19 +148,19 @@ define([
     }
 
 
-    function getAnalyticsFieldFilter(){
+    function getAnalyticsFieldFilter() {
       return http.send({
-        url: '/aliyun-sls-analytics/filter',
+        url: '/analytics/api/filter',
         method: 'get'
       });
     }
 
-    function addAnalyticsFieldFilter(filter){
-      if (!(filter instanceof  AnalyticsFieldFilter)) {
+    function addAnalyticsFieldFilter(filter) {
+      if (!(filter instanceof AnalyticsFieldFilter)) {
         throw Error('filter is not an instance of AnalyticsFieldFilter.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/filter',
+        url: '/analytics/api/filter',
         data: {
           filter: filter
         },
@@ -157,12 +168,12 @@ define([
       });
     }
 
-    function updateAnalyticsFieldFilter(filter){
-      if (!(filter instanceof  AnalyticsFieldFilter)) {
+    function updateAnalyticsFieldFilter(filter) {
+      if (!(filter instanceof AnalyticsFieldFilter)) {
         throw Error('filter is not an instance of AnalyticsFieldFilter.');
       }
       return http.send({
-        url: '/aliyun-sls-analytics/filter',
+        url: '/analytics/api/filter',
         data: {
           filter: filter
         },
@@ -170,9 +181,9 @@ define([
       });
     }
 
-    function removeAnalyticsFieldFilter(id){
+    function removeAnalyticsFieldFilter(id) {
       return http.send({
-        url: '/aliyun-sls-analytics/filter',
+        url: '/analytics/api/filter',
         params: {
           _id: id
         },
@@ -182,13 +193,84 @@ define([
 
 
 
-    function buildCompareSetDashboard(options){
+    function getAnalyticsReport() {
+      return http.send({
+        url: '/analytics/api/report',
+        method: 'get'
+      });
+    }
+
+    function addAnalyticsReport(report) {
+      if (!(report instanceof AnalyticsReport)) {
+        throw Error('filter is not an instance of AnalyticsReport.');
+      }
+      return http.send({
+        url: '/analytics/api/report',
+        data: {
+          report: report
+        },
+        method: 'post'
+      });
+    }
+
+    function updateAnalyticsReport(report) {
+      if (!(report instanceof AnalyticsReport)) {
+        throw Error('filter is not an instance of AnalyticsReport.');
+      }
+      return http.send({
+        url: '/analytics/api/report',
+        data: {
+          report: report
+        },
+        method: 'put'
+      });
+    }
+
+    function removeAnalyticsReport(id) {
+      return http.send({
+        url: '/analytics/api/report',
+        params: {
+          _id: id
+        },
+        method: 'delete'
+      });
+    }
+
+    function buildReportingTasks(options) {
       if (options.timeOptions.enabled) {
         initDateHours(options.from, options.timeOptions.from);
         initDateHours(options.to, options.timeOptions.to);
       }
       return http.send({
-        url: '/aliyun-sls-analytics/dashboard',
+        url: '/analytics/api/reporting-task',
+        params: {
+          reportId: options.report._id,
+          from: options.from,
+          to: options.to,
+          period: options.period,
+          periodUnit: options.periodUnit,
+        },
+        method: 'get'
+      });
+    }
+
+    function execReportingTasks(tasks) {
+      return http.send({
+        url: '/analytics/api/reporting',
+        data: {
+          tasks: tasks
+        },
+        method: 'post'
+      });
+    }
+
+    function buildCompareSetDashboard(options) {
+      if (options.timeOptions.enabled) {
+        initDateHours(options.from, options.timeOptions.from);
+        initDateHours(options.to, options.timeOptions.to);
+      }
+      return http.send({
+        url: '/analytics/api/dashboard',
         params: {
           compareSetId: options.compareSetId,
           from: options.from,
@@ -198,7 +280,7 @@ define([
       });
     }
 
-    function initDateHours(date, timeOption){
+    function initDateHours(date, timeOption) {
       date.setHours(parseInt(timeOption.h), parseInt(timeOption.m), parseInt(timeOption.s), 0);
     }
 

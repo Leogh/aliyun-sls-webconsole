@@ -22,10 +22,10 @@ shasum.update(config.aliyun.sls.accessKeyId);
 const ALY_SLS_ACCESS_HASH = shasum.digest('hex');
 
 /* GET sls console home page. */
-router.get('/', utils.authChk('/login'), function(req, res, next) {
+router.get('/', utils.authChk('/login'), function (req, res, next) {
   var userId = req.user ? req.user._doc._id : null;
   User
-    .findOne({ _id : userId })
+    .findOne({_id: userId})
     .exec(function (err, user) {
       var favoredProj = null;
       if (!err && user) {
@@ -40,16 +40,16 @@ router.get('/', utils.authChk('/login'), function(req, res, next) {
         isProjectFavored: favoredProj != null
       });
     });
-    
+
 });
 
 /* GET get the project */
 router.get('/project', utils.authChk('/login'), function (req, res, next) {
   AliyunSLSProject
-    .find({ hashing: ALY_SLS_ACCESS_HASH })
-    .sort({ name: -1 })
+    .find({hashing: ALY_SLS_ACCESS_HASH})
+    .sort({name: -1})
     .exec(function (err, projects) {
-      if(err){
+      if (err) {
         console.error(err);
       }
       res.send(projects);
@@ -77,7 +77,7 @@ router.post('/project', utils.authChk('/login'), function (req, res, next) {
 
 router.get('/favor-project', utils.authChk('/login'), function (req, res, next) {
   User
-    .findOne({ _id : req.user._doc._id })
+    .findOne({_id: req.user._doc._id})
     .exec(function (err, user) {
       if (err) {
         res.send(restResp.error(0, 'user not found'));
@@ -97,7 +97,7 @@ router.put('/favor-project', utils.authChk('/login'), function (req, res, next) 
   var isFavor = req.query.isFavor == 'true';
   var result = null;
   User
-    .findOne({ _id : req.user._doc._id })
+    .findOne({_id: req.user._doc._id})
     .exec(function (err, user) {
       if (err) {
         res.send(restResp.error(0, 'user not found'));
@@ -130,7 +130,7 @@ router.get('/logstores', utils.authChk('/login'), function (req, res, next) {
   sls.listLogStores(req.query, function (err, data) {
     if (!err) {
       AliyunSLSProject
-        .findOne({ hashing: ALY_SLS_ACCESS_HASH, name: req.query.projectName })
+        .findOne({hashing: ALY_SLS_ACCESS_HASH, name: req.query.projectName})
         .exec(function (err, proj) {
           if (proj == null) {
             var project = new AliyunSLSProject({
