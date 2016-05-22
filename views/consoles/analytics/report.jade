@@ -39,7 +39,7 @@ block content
                 ng-options='report as report.name for report in vm.reports', ng-change='vm.actions.onReportChange()')
 
               include ../../includes/common/datetime-range-select
-
+              br
               div.form-group
                 label Period:&nbsp;
                 div.input-group
@@ -55,15 +55,60 @@ block content
               div.form-group
                 button.btn.btn-primary(ng-click='vm.actions.showReport()', ng-disabled='vm.states.processing || vm.states.reportLocked') Build Report
 
+    //- Chart Section
+    div.row(ng-if='vm.states.reportLocked && vm.lockedOptions.dashboards.length > 0')
+      div.col-md-12
+        div.chart-container(ng-repeat='dashboard in vm.lockedOptions.dashboards | orderBy:"name"')
+          highchart(config='dashboard.config')
+
     div.row(ng-if='vm.states.reportLocked && !vm.states.processing')
       div.col-md-12
-        button.btn.btn-primary(ng-click='vm.states.reportLocked = false') Unlock Report
         include ../../includes/analytics/report-state-table
-
-
-
 
     div.row
       div.col-md-12
         p(ng-if='vm.states.processing') Report is under construction, pls wait...
         div.report-container(ng-hide='vm.states.processing')
+
+
+    script(type='text/ng-template', id='chart-append-modal.html')
+      div.modal-header
+        h3.modal-title Append To Charts
+      div.modal-body
+        div.form-horizontal
+          div.form-group
+            label.col-md-2.control-label Series Name
+            div.col-md-10
+              p.form-control-static {{ vm.name }}{{ vm.selectedDataOption == "Full Data" ? "" : (" - " + vm.selectedDataOption) }}
+
+          div.form-group
+            label.col-md-2.control-label Name
+            div.col-md-10
+              input.form-control(ng-model='vm.name', placeholder='Series name')
+
+          div.form-group
+            label.col-md-2.control-label Data Value
+            div.col-md-10
+              select.form-control(ng-model='vm.selectedDataOption', ng-options='opt for opt in vm.dataOptions')
+
+          div.form-group
+            label.col-md-2.control-label Charts
+            div.col-md-10
+              label.radio-inline
+                input(type='radio', ng-model="vm.chartType", value='0', ng-disabled='vm.chartOptions.length == 0')
+                | Existing Charts
+              label.radio-inline
+                input(type='radio', ng-model="vm.chartType", value='1')
+                | New Chart
+              div(ng-show='vm.chartType == "0"')
+                div.checkbox(ng-repeat='chartOption in vm.chartOptions', ng-if='vm.chartOptions.length > 0')
+                  label
+                    input(type='checkbox', ng-model="chartOption.selected")
+                    | {{ chartOption.name }}
+              div(ng-show='vm.chartType == "1"')
+                input.form-control(ng-model='vm.chartName', placeholder='Chart name')
+
+
+      div.modal-footer
+        button.btn.btn-primary(ng-click='vm.actions.confirm()') Confirm
+        button.btn.btn-default(ng-click='vm.actions.dismiss()') Dismiss

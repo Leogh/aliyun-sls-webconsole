@@ -19,6 +19,7 @@ requirejs.config({
     "syntax-highlighter-brush-xml": "libs/SyntaxHighlighter/scripts/shBrushXml",
     // highcharts support
     "highcharts": "libs/highcharts/highcharts",
+    "highcharts-exporting": "libs/highcharts/modules/exporting",
     "highcharts-ng": "libs/highcharts-ng/dist/highcharts-ng.min",
     "select2": "3rd-parties/select2.full",
     "text": "libs/text/text",
@@ -48,8 +49,8 @@ requirejs.config({
     },
     'syntax-highlighter-brush-jscript': ['shCore'],
     'syntax-highlighter-brush-xml': ['shCore'],
-
-    'highcharts-ng': ['highcharts', 'angular'],
+    'highcharts-exporting': [ 'highcharts' ],
+    'highcharts-ng': ['highcharts-exporting', 'angular'],
     //'angular-bootstrap': ['bootstrap', 'angular-bootstrap-tpls']
   },
 
