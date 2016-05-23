@@ -12,14 +12,14 @@ define([
 ], function (angular, webapp, formUtils, AnalyticsReport, periodUnitFilter) {
   "use strict";
   // injections
-  analyticsReportController.$inject = ['$scope', '$uibModal', 'services.log-analytics-service'];
+  analyticsReportController.$inject = ['$scope', '$uibModal', '$window', 'services.log-analytics-service'];
 
   return webapp
     .controller('AnalyticsReportController', analyticsReportController)
     .controller('chartAppendingModalController', chartAppendingModalController)
     .filter('periodUnit', periodUnitFilter);
 
-  function analyticsReportController($scope, $uibModal,logAnalyticsService) {
+  function analyticsReportController($scope, $uibModal, $window, logAnalyticsService) {
 
     var vm = this;
     var now = new Date();
@@ -74,6 +74,13 @@ define([
     };
 
     vm.interpretFieldValue = interpretFieldValue;
+
+    $window.onbeforeunload = function (e) {
+      if (vm.states.reportLocked) {
+        return 'All the data will be removed if you leave/refresh this page.';
+      }
+      return undefined;
+    };
 
     reloadReports();
 
@@ -306,7 +313,7 @@ define([
         });
       });
       categories.sort(function (a, b) {
-        return parseInt(a) - parseInt(b);
+        return parseInt(a.from) - parseInt(b.from);
       });
       angular.forEach(categories, function (item, index) {
         var dashboard = report[item.from].dashboards[tskConsole.name];
