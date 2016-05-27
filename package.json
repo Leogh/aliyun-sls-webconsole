@@ -35,6 +35,7 @@
     "express": "~4.13.1",
     "express-session": "^1.13.0",
     "jade": "~1.11.0",
+    "json-config-ext": "^1.0.3",
     "log4js": "^0.6.33",
     "merge": "^1.2.0",
     "mongoose": "^4.4.11",

@@ -1,8 +1,8 @@
 node_modules/
 public/javascripts/libs/
-config/conf.c9.js
-config/conf.local-dev.js
-config/conf.prod.js
+config/config.c9.json
+config/config.prod.json
+config/config.local-dev.json
 .c9/
 .vscode/
 .mongo-data/

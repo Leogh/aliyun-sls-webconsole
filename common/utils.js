@@ -1,6 +1,6 @@
 var merge = require('merge');
+var authEnabled = require('json-config-ext').config.auth.authEnable;
 var restResp = require("../common/rest-response");
-var authEnabled = require("../common/config").auth.authEnable;
 
 const UNIX_TIME_START = new Date(1970, 0, 1, 0, 0, 0);
 
