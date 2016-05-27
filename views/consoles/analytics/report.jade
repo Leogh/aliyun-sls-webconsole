@@ -89,7 +89,7 @@ block content
           div.form-group
             label.col-md-2.control-label Data Value
             div.col-md-10
-              select.form-control(ng-model='vm.selectedDataOption', ng-options='opt for opt in vm.dataOptions')
+              select.form-control(ng-model='vm.selectedDataOption', ng-options='opt as vm.interpretFieldValue(opt) for opt in vm.dataOptions')
 
           div.form-group
             label.col-md-2.control-label Charts
