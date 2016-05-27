@@ -259,6 +259,9 @@ define([
           tskConsole: function () {
             return tskConsole;
           },
+          fieldValueInterpreter: function () {
+            return interpretFieldValue;
+          },
         },
       });
       modalInst.result.then(function (result) {
@@ -425,18 +428,17 @@ define([
       return categories;
     }
 
-
-
   }
 
 
-  function chartAppendingModalController($scope, $uibModalInstance, name, groupValue, charts, tskConsole) {
+  function chartAppendingModalController($scope, $uibModalInstance, name, groupValue, charts, tskConsole, fieldValueInterpreter) {
     var vm = this;
     var FULL_DATA = 'Full Data';
     vm.name = name;
     vm.chartType = charts.length > 0 ? '0' : '1';
     vm.chartName = null;
     vm.selectedDataOption = FULL_DATA;
+    vm.interpretFieldValue = interpretFieldValue;
     vm.dataOptions = function () {
       var options = [ FULL_DATA ];
       var compareField = tskConsole.compareSet.compareField;
@@ -460,6 +462,10 @@ define([
       confirm: confirmAdd,
       dismiss: closeModal,
     };
+
+    function interpretFieldValue(value) {
+      return fieldValueInterpreter(value, tskConsole.compareSet.compareField);
+    }
 
     function confirmAdd() {
       var selectedChartIndexes = null;

@@ -1,0 +1,27 @@
+{
+  "auth": {
+    "authEnable": true
+  },
+  "db": {
+    "mongo": {
+      "connectionString": ""
+    }
+  },
+  "aliyun": {
+    "sls": {
+      "accessKeyId": "在阿里云sls申请的 accessKeyId",
+      "secretAccessKey": "在阿里云sls申请的 secretAccessKey",
+      "endpoint": "http://cn-hangzhou.sls.aliyuncs.com",
+      "apiVersion": "2015-06-01"
+    },
+    "logAnalytics": {
+      "accessKeyId": "在阿里云sls申请的 accessKeyId",
+      "secretAccessKey": "在阿里云sls申请的 secretAccessKey",
+      "endpoint": "http://cn-hangzhou.sls.aliyuncs.com",
+      "apiVersion": "2015-06-01"
+    }
+  },
+  "logging": {
+    "configPath": ""
+  }
+}
