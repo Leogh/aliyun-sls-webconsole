@@ -16,6 +16,7 @@ var aliyunSLS = require('./routes/aliyun/sls');
 var aliyunSLSLogAnalytics = require('./routes/aliyun/analytics/route');
 var aliyunSLSLogAnalyticsAPIs = require('./routes/aliyun/analytics/api');
 
+
 var app = express();
 
 // view engine setup
@@ -95,5 +96,7 @@ app.use(function (err, req, res, next) {
   });
 });
 
+require('./common/schedule/notification-scheduler').initialize();
+require('./common/schedule/notification-scheduler');
 
 module.exports = app;

@@ -14,3 +14,9 @@ exports.PeriodUnit = {
   Week: 4,
   Month: 5
 };
+
+exports.NotificationWatcherType = {
+  Log: 1,
+  CompareSet: 2,
+  Report: 3,
+};
