@@ -3,6 +3,7 @@
  */
 
 var schedule = require('node-schedule');
+var utils = require('../utils');
 var NotificationRule = require('../../models/notification-rule');
 
 var instance = null;
@@ -22,6 +23,7 @@ NotificationScheduler.prototype.getRules = function (options, callback) {
     .populate('observers')
     .done(callback);
 };
+/*
 
 NotificationScheduler.prototype.addOrUpdateRule = function (rule, callback) {
   var isForAdd = rule._id == null;
@@ -56,12 +58,29 @@ NotificationScheduler.prototype.addOrUpdateRule = function (rule, callback) {
     });
   } else {
     //
+    var dbRule = new NotificationRule()
   }
 };
+*/
 
-NotificationScheduler.prototype.removeRule = function (rule, callback) {
-
-};
+/*NotificationScheduler.prototype.removeRule = function (ruleId, callback) {
+  this.getRules({
+    _id: ruleId
+  }, function (err, rules) {
+    if (err) {
+      callback(err, null);
+    } else {
+      NotificationRule.remove({
+        _id: ruleId
+      }, function (err, result) {
+        if (err) {
+          return callback(err, null);
+        }
+        callback(null, true);
+      });
+    }
+  });
+};*/
 
 NotificationScheduler.prototype.initialize = function () {
   var that = this;
