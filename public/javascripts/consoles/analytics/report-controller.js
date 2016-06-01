@@ -322,7 +322,7 @@ define([
         var dashboard = report[item.from].dashboards[tskConsole.name];
         var val = getDashboardValue(dashboard, compareValue, groupValue);
         data.push(val);
-        categories[index] = item.to;
+        categories[index] = item;
       });
 
       var targetChart = vm.lockedOptions.dashboards[chartIdx];
@@ -399,30 +399,41 @@ define([
     function constructChartCategory(timestampArr, periodUnit) {
       var categories = [];
       var monthArr = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var weekDayArr = [ 'SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
       var dateFormat = '';
       switch (parseInt(periodUnit)) {
         case periodUnitFilter.PeriodUnit.Minute:
         case periodUnitFilter.PeriodUnit.Hour:
-          dateFormat = '{month}. {date}, {hour}:{minute}';
+          dateFormat = '{month-t}. {date-t}, {hour-t}:{minute-t}';
           break;
         case periodUnitFilter.PeriodUnit.Day:
         case periodUnitFilter.PeriodUnit.Week:
-          dateFormat = '{month}. {date}';
+          dateFormat = '{month-f}. {date-f} [{weekday-f}]';
           break;
         case periodUnitFilter.PeriodUnit.Month:
-          dateFormat = '{month}. {year}';
+          dateFormat = '{month-f}. {year-f}';
           break;
       }
-      angular.forEach(timestampArr, function (timestamp) {
-        var date = new Date(timestamp * 1000);
-        var min = date.getMinutes();
-        var hrs = date.getHours();
+      angular.forEach(timestampArr, function (timestamp, index) {
+        var dateF = new Date(timestamp.from * 1000);
+        var hrsF = dateF.getHours();
+        var minF = dateF.getMinutes();
+        var dateT = new Date(timestamp.to * 1000);
+        var hrsT = dateT.getHours();
+        var minT = dateT.getMinutes();
         var txt = dateFormat
-          .replace('{year}', date.getFullYear())
-          .replace('{month}', monthArr[date.getMonth()])
-          .replace('{date}', date.getDate())
-          .replace('{hour}', hrs < 10 ? ('0' + hrs) : hrs)
-          .replace('{minute}', min < 10 ? ('0' + min) : min);
+          .replace('{year-f}', dateF.getFullYear())
+          .replace('{month-f}', monthArr[dateF.getMonth()])
+          .replace('{date-f}', dateF.getDate())
+          .replace('{weekday-f}', weekDayArr[dateF.getDay()])
+          .replace('{hour-f}', hrsF < 10 ? ('0' + hrsF) : hrsF)
+          .replace('{minute-f}', minF < 10 ? ('0' + minF) : minF)
+          .replace('{year-t}', dateT.getFullYear())
+          .replace('{month-t}', monthArr[dateT.getMonth()])
+          .replace('{date-t}', dateT.getDate())
+          .replace('{weekday-t}', weekDayArr[dateT.getDay()])
+          .replace('{hour-t}', hrsT < 10 ? ('0' + hrsT) : hrsT)
+          .replace('{minute-t}', minT < 10 ? ('0' + minT) : minT);
         categories.push(txt);
       });
       return categories;
