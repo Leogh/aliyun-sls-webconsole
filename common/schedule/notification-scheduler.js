@@ -2,15 +2,17 @@
  * Created by Roman Lo on 5/30/2016.
  */
 
+var AppEnum = require('../app-enum-types');
+var StatusType = AppEnum.StatusType;
 var schedule = require('node-schedule');
 var utils = require('../utils');
 var NotificationRule = require('../../models/notification-rule');
-
+var NotificationManager = require('../notification/notification-manager');
 var instance = null;
 
-var NotificationScheduler = function () {
-  this.rules = [];
-};
+var NotificationScheduler = function () { };
+
+NotificationScheduler.prototype = {};
 
 NotificationScheduler.prototype.getRules = function (options, callback) {
   NotificationRule
@@ -21,7 +23,21 @@ NotificationScheduler.prototype.getRules = function (options, callback) {
     .populate('observerGroups')
     .populate('observerGroups.observers')
     .populate('observers')
-    .done(callback);
+    .exec(callback);
+};
+
+NotificationScheduler.prototype.getRule = function (ruleId, callback) {
+  NotificationRule
+    .findOne({
+      _id: ruleId
+    })
+    .populate('watcherGroups')
+    .populate('watcherGroups.watchers')
+    .populate('watchers')
+    .populate('observerGroups')
+    .populate('observerGroups.observers')
+    .populate('observers')
+    .exec(callback);
 };
 /*
 
@@ -85,10 +101,30 @@ NotificationScheduler.prototype.addOrUpdateRule = function (rule, callback) {
 NotificationScheduler.prototype.initialize = function () {
   var that = this;
   this.getRules({
-    status: 1
+    status: StatusType.Active
   }, function (err, rules) {
-
+    if (err) {
+      throw Error(err);
+    }
+    // schedule jobs
+    for (var i = 0; i < rules.length; i++) {
+      var rule = rules[i];
+      if (rule instanceof NotificationRule){
+        schedule.scheduleJob(rule.cron, jobRunner.bind(null, rule._id));
+      }
+    }
   });
 };
 
 module.exports = instance = instance || new NotificationScheduler();
+
+function jobRunner(ruleId){
+  instance.getRule(ruleId, function (err, rule) {
+    if (rule.status != StatusType.Active) {
+      // ignore.
+    } else {
+      var notificationManager = new NotificationManager(rule);
+      notificationManager.sendNotification();
+    }
+  });
+}

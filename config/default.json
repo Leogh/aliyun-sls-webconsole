@@ -21,6 +21,19 @@
       "apiVersion": "2015-06-01"
     }
   },
+  "notification":  {
+    "provider": {
+      "email": {
+        "SMTPServer": "smtp.provider.com",
+        "port": 404,
+        "username": "email-address",
+        "password": "password"
+      },
+      "sms": {
+
+      }
+    }
+  },
   "logging": {
     "configPath": ""
   }
