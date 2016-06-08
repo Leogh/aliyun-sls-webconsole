@@ -15,7 +15,8 @@ var routes = require('./routes/index');
 var aliyunSLS = require('./routes/aliyun/sls');
 var aliyunSLSLogAnalytics = require('./routes/aliyun/analytics/route');
 var aliyunSLSLogAnalyticsAPIs = require('./routes/aliyun/analytics/api');
-
+var notificationViews = require('./routes/notification/route');
+var notificationAPIs = require('./routes/notification/api');
 
 var app = express();
 
@@ -63,7 +64,9 @@ mongoose.connect(config.db.mongo.connectionString);
 app.use('/', routes);
 app.use('/aliyun-sls', aliyunSLS);
 app.use('/analytics', aliyunSLSLogAnalytics);
+app.use('/notification', notificationViews);
 app.use('/analytics/api', aliyunSLSLogAnalyticsAPIs);
+app.use('/notification/api', notificationAPIs);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

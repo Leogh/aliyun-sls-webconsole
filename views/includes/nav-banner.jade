@@ -27,6 +27,15 @@ nav.navbar.navbar-default.navbar-fixed-top.navbar-inverse
               li.divider(role="separator")
               li(role="menuitem")
                 a(href="/analytics/management") Management Tool
+          li.dropdown
+            a.dropdown-toggle(href="#", data-toggle="dropdown") Notification&nbsp;
+              span.caret
+            ul.dropdown-menu
+              li(role="menuitem")
+                a(href="/notification/") Dashboard
+              li.divider(role="separator")
+              li(role="menuitem")
+                a(href="/notification/management") Management Tool
 
       ul.nav.navbar-nav.navbar-right
         if (user)

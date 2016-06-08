@@ -2,7 +2,6 @@
  * Created by Roman Lo on 5/18/2016.
  */
 var express = require('express');
-var passport = require('passport');
 var utils = require('../../../common/utils');
 
 var router = express.Router();
