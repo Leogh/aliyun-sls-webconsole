@@ -145,7 +145,7 @@ define([
           data: (function (brd) {
             var dataArr = [];
             var fullCnt = brd.full;
-            var availableColorSettings = Object.keys(compareSet.compareField.colorSetting);
+            var availableColorSettings = typeof compareSet.compareField.colorSetting === 'object' ? Object.keys(compareSet.compareField.colorSetting) : [];
             angular.forEach(brd.sub, function (subItem, key) {
               var interpretedTxt = interpretFieldValue(key, compareSet.compareField);
               var color = availableColorSettings.indexOf(key) >= 0 ? compareSet.compareField.colorSetting[key] : null;
