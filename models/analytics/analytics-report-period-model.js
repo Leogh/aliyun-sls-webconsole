@@ -3,10 +3,10 @@
  */
 
 var AnalyticsReportPeriodModel = function (dateRange) {
-  this.from = dateRange.from;
-  this.to = dateRange.to;
-  this.dashboards = {};
-};
+    this.from = dateRange.from;
+    this.to = dateRange.to;
+    this.dashboards = {};
+  };
 
 AnalyticsReportPeriodModel.prototype = {
   addDashboard: function (compareSetName, dashboard) {
