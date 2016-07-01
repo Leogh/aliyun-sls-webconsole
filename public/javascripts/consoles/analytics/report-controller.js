@@ -356,6 +356,9 @@ define([
           },
           plotOptions: {
             spline: {
+              dataLabels: {
+                enabled: true
+              },
               marker: {
                 radius: 4,
                 lineColor: '#666666',
