@@ -394,6 +394,7 @@ function addOrUpdateAnalyticsField(res, field) {
       obj.valueSet = field.valueSet;
       obj.status = field.status;
       obj.filterName = field.filterName;
+      obj.colorSetting = field.colorSetting;
       obj.save(function (err, data) {
         if (err) {
           utils.handleMongooseError(res, err);
@@ -408,6 +409,7 @@ function addOrUpdateAnalyticsField(res, field) {
         filterName: field.filterName,
         hashing: ALY_LOG_ANALYTICS_ACCESS_HASH,
         valueSet: field.valueSet,
+        colorSetting: field.colorSetting,
         status: 1,
       });
       newItem.save(function (err, data) {

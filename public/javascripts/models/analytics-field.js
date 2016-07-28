@@ -7,6 +7,7 @@ define(['base'], function (Base) {
     this.name = '';
     this.filterName = '';
     this.valueSet = [];
+    this.colorSetting = {};
     this.createTime = new Date();
     this.status = 1;
   };

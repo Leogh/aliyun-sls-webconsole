@@ -357,6 +357,7 @@ define([
 
     vm.field = angular.merge(new AnalyticsField(), fieldObj || new AnalyticsField());
     vm.tempValue = '';
+    vm.tempColor = '';
 
     vm.validate = {
       isValidValue: isValidValue,
@@ -383,11 +384,18 @@ define([
 
     function addValue() {
       vm.field.valueSet.push(vm.tempValue);
+      if (vm.tempColor.length > 0) {
+        vm.field.colorSetting[vm.tempValue] = (vm.tempColor[0] == '#' ? '' : '#') + vm.tempColor;
+      }
       vm.tempValue = '';
+      vm.tempColor = '';
     }
 
     function removeValue(idx) {
-      vm.field.valueSet.splice(idx, 1);
+      var val = vm.field.valueSet.splice(idx, 1);
+      if (Object.keys(vm.field.colorSetting).indexOf(val) >= 0){
+        delete vm.field.colorSetting[val];
+      }
     }
 
 

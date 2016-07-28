@@ -145,12 +145,19 @@ define([
           data: (function (brd) {
             var dataArr = [];
             var fullCnt = brd.full;
+            var availableColorSettings = typeof compareSet.compareField.colorSetting === 'object' ? Object.keys(compareSet.compareField.colorSetting) : [];
             angular.forEach(brd.sub, function (subItem, key) {
               var interpretedTxt = interpretFieldValue(key, compareSet.compareField);
-              dataArr.push({
+              var color = availableColorSettings.indexOf(key) >= 0 ? compareSet.compareField.colorSetting[key] : null;
+              var data = {
                 name: `${compareSet.compareField.name} - ${interpretedTxt}`,
                 y: subItem / fullCnt
-              });
+              };
+              if (color) {
+                data.colorByPoint = false;
+                data.color = color;
+              }
+              dataArr.push(data);
             });
             console.log(dataArr);
             return dataArr;

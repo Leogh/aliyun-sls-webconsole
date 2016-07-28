@@ -24,6 +24,8 @@ script(type='text/ng-template', id='analytics-field-modal.html')
         div.col-md-10
           div.input-group
             input.form-control(ng-model='vm.tempValue', placeholder='Put value into value set.')
+            span.input-group-addon Color: #
+            input.form-control(ng-model='vm.tempColor', placeholder='Put color value.')
             span.input-group-btn
               button.btn.btn-default(ng-click='vm.actions.addValue()', ng-disabled='!vm.validate.isValidValue()')
                 i.glyphicon.glyphicon-plus
@@ -33,6 +35,7 @@ script(type='text/ng-template', id='analytics-field-modal.html')
           ul.list-inline(ng-if='vm.field.valueSet.length > 0')
             li(ng-repeat='item in vm.field.valueSet')
               span.label.label-primary {{ item }} &nbsp;
+                span(ng-if='vm.field.colorSetting[item]') :{{ vm.field.colorSetting[item] }} &nbsp;
                 a(href='', ng-click='vm.actions.removeValue($index)') X
 
       //- status
