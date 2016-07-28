@@ -15,6 +15,7 @@ router.get('/login', function (req, res, next) {
 router.post('/login', function (req, res, next) {
   var username = req.body.username;
   var password = req.body.password;
+  var rememberMe= req.body.rememberMe;
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err); }    
     if (!user) {
@@ -23,18 +24,23 @@ router.post('/login', function (req, res, next) {
     }
     req.login(user, function(err) {
       if (err) { return next(err); }
-      var url = '/'
+      var url = '/';
+      if (rememberMe){
+        var hour = 3600000;
+        req.session.cookie.maxAge = 14 * 24 * hour; //2 weeks
+      }
       if (req.body.fromUrl) {
         url = req.body.fromUrl;
       }
+
       return res.redirect(url);
     });
   })(req, res, next);
 });
 
-router.get('/logout', function (req) {
+router.get('/logout', function (req, res) {
   req.logout();
-  req.redirect('/login');
+  res.redirect('/login');
 });
 
 router.get('/register', function (req, res, next) {

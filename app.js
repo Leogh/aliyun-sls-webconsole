@@ -46,6 +46,7 @@ app.use(session({
   secret: 'secret', // TODO: makeit configurable
   resave: true,
   saveUninitialized: true,
+  maxAge: new Date(Date.now() + (14 * 24 * 60 * 60 * 1000)),
   store: new MongoStore({
     mongooseConnection: mongoose.connection,
     ttl: 14 * 24 * 60 * 60 // = 14 days. Default

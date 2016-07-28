@@ -15,6 +15,12 @@ block content
           .col-xs-12
             input.form-control(type='password', name='password', placeholder='密码')
         .form-group
+          .col-xs-12
+            .checkbox
+              label
+                input(type='checkbox', name='rememberMe')
+                | 记住我！
+        .form-group
           .col-xs-12.text-center
             input(type='hidden', name='fromUrl', value=fromUrl)
             input.btn.btn-primary(type='submit', value='登陆')
