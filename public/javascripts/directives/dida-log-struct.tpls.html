@@ -5,7 +5,7 @@
     </p>
   </div>
   <div class="col-xs-12 col-sm-6 reserve-field-container">
-    <p ng-hide="vm.isEmpty(vm.doc.MachineName)">
+    <p ng-hide="vm.isEmpty(vm.doc.IP) && vm.isEmpty(vm.doc.MachineName)">
       <strong>Machine (IP):</strong> {{ vm.doc.MachineName }} <span ng-hide="vm.isEmpty(vm.doc.IP)">({{ vm.doc.IP }})</span>
     </p>
     <p ng-hide="vm.isEmpty(vm.doc.ProcessName)">

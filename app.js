@@ -7,6 +7,8 @@ var bodyParser = require('body-parser');
 var config = require('json-config-ext').config;
 var log4js = require('log4js');
 var mongoose = require('mongoose');
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var User = require('./models/user');
@@ -40,10 +42,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // passport setup
-app.use(require('express-session')({
+app.use(session({
   secret: 'secret', // TODO: makeit configurable
-  resave: false,
-  saveUninitialized: false
+  resave: true,
+  saveUninitialized: true,
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection,
+    ttl: 14 * 24 * 60 * 60 // = 14 days. Default
+  })
 }));
 app.use(passport.initialize());
 app.use(passport.session());
