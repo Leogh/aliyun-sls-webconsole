@@ -22,7 +22,7 @@ define([
         get: function (options) {
           return http.send({
             url: observerApi,
-            param: options,
+            params: options,
             method: 'get'
           });
         },
@@ -47,7 +47,7 @@ define([
         remove: function (observerId) {
           return http.send({
             url: observerApi,
-            data: {
+            params: {
               _id: observerId
             },
             method: 'delete'
@@ -58,7 +58,7 @@ define([
         get: function (options) {
           return http.send({
             url: observerGroupApi,
-            param: options,
+            params: options,
             method: 'get'
           });
         },
@@ -83,7 +83,7 @@ define([
         remove: function (observerId) {
           return http.send({
             url: observerGroupApi,
-            data: {
+            params: {
               _id: observerId
             },
             method: 'delete'

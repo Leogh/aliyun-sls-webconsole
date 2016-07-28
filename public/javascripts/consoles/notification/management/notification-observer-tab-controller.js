@@ -47,6 +47,7 @@ define([
         .observer.get()
         .success(function (observers) {
           oTab.observers = observers;
+          console.log(oTab.observers);
         })
         .error(function (code, msg) {
           alert(msg + ' [' +  code +  ']');
@@ -72,7 +73,7 @@ define([
         controllerAs: 'vm',
         resolve: {
           observer: function () {
-            return ob;
+            return angular.merge({}, ob);
           },
           service: function () {
             return notificationObserverService;
@@ -88,15 +89,52 @@ define([
     }
 
     function openCopyObserverModal(observer){
-
+      var clone = angular.merge({}, observer, { _id: null,});
+      openObserverModal(clone);
     }
 
-    function removeObserver() {
-
+    function removeObserver(observer) {
+        if (confirm(`Are you sure to remove ${observer.name}?`)){
+          notificationObserverService
+            .observer.remove(observer._id)
+            .error(function(code, msg){
+              alert(msg);
+            })
+            ['finally'](function(){
+              reload();
+            });
+        }
     }
 
-    function openObserverGroupModal() {
-
+    function openObserverGroupModal(group) {
+      var ob = null;
+      if (group == null){
+        ob = new NotificationObserverGroup();
+      } else {
+        ob = group;
+      }
+      var obModalInst = $uibModal.open({
+        animation: true,
+        backdrop: 'static',
+        keyboard: false,
+        templateUrl: 'notification-observer-group-modal.html',
+        controller: notificationObserverGroupModalController,
+        controllerAs: 'vm',
+        resolve: {
+          observers: function () {
+            return angular.merge([], oTab.observers);
+          },
+          service: function () {
+            return notificationObserverService;
+          }
+        },
+      });
+      obModalInst.result.then(function (object) {
+        console.log(object);
+        reload();
+      }, function () {
+        // closed
+      });
     }
 
     function removeObserverGroup() {
@@ -105,7 +143,7 @@ define([
 
     function notificationObserverModalController($scope, $uibModalInstance, observer, service) {
       var vm = this;
-
+      vm.isForAdd = observer._id == null;
       vm.observer = observer;
 
       vm.actions = {
@@ -128,9 +166,59 @@ define([
         }
 
         var success = false;
+        var method = vm.isForAdd ? 'add' : 'update';
         service.observer
-          .add(vm.observer)
-          .success(function (observer){
+          [method](vm.observer)
+          .success(function (){
+            success = true;
+          })
+          .error(function (code, msg) {
+            alert('Error: ' + msg + ' [' + code + ']');
+          })
+          ['finally'](function (){
+          if (success){
+            $uibModalInstance.close(vm.observer);
+          }
+        });
+      }
+
+      function dismiss(){
+        $uibModalInstance.dismiss('cancel');
+      }
+    }
+
+    function notificationObserverGroupModalController($scope, $uibModalInstance, group, observers, service) {
+      var vm = this;
+      vm.isForAdd = group._id == null;
+      vm.group = group;
+      vm.observers = (function (list) {
+        return list;
+      })(observers);
+
+      vm.actions = {
+        save: save,
+        dismiss: dismiss,
+      };
+
+      function save(){
+        if (vm.observer.name == '' || vm.observer.name == null){
+          alert('Observer name cannot be empty');
+          return;
+        }
+        if (vm.observer.realName == '' || vm.observer.realName == null){
+          alert('Real name cannot be empty');
+          return;
+        }
+        if (!formUtils.validateEmail(vm.observer.email)){
+          alert('Invalid email address: ' + vm.observer.email);
+          return;
+        }
+
+        var success = false;
+        var method = vm.isForAdd ? 'add' : 'update';
+        service.observer
+          [method](vm.observer)
+          .success(function (){
             success = true;
           })
           .error(function (code, msg) {

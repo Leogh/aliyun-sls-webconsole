@@ -13,10 +13,10 @@ div(ng-controller='NotificationObserverTabController as oTab')
           th Status
           th Actions
       tbody
-        tr(ng-if='vm.observers.length == 0')
+        tr(ng-if='oTab.observers.length == 0')
           td(colspan='5')
             p No observer
-        tr(ng-repeat='ob in vm.observers')
+        tr(ng-repeat='ob in oTab.observers')
           td {{ ob.name }}
           td {{ ob.realName }}
           td {{ ob.email }}
@@ -51,7 +51,7 @@ div(ng-controller='NotificationObserverTabController as oTab')
   // observer modal
   script(type='text/ng-template', id='notification-observer-modal.html')
     div.modal-header
-      h3.modal-title {{ vm.ob._id == null ? 'Add an' : 'Edit' }} Observer
+      h3.modal-title {{ vm.isForAdd ? 'Add an' : 'Edit' }} Observer
     div.modal-body
       div.form-horizontal
         div.form-group
@@ -74,8 +74,38 @@ div(ng-controller='NotificationObserverTabController as oTab')
               label.btn(uib-btn-radio='1', ng-model='vm.observer.status', ng-class='vm.observer.status == 1 ? "btn-success" : "btn-default"') On
               label.btn(uib-btn-radio='0', ng-model='vm.observer.status', ng-class='vm.observer.status == 0 ? "btn-danger" : "btn-default"') Off
     div.modal-footer
-      button.btn.btn-primary(ng-click='vm.actions.save()') {{ vm.filter._id == null ? 'Add' : 'Save' }}
+      button.btn.btn-primary(ng-click='vm.actions.save()') {{ vm.isForAdd ? 'Add' : 'Save' }}
       button.btn.btn-default(ng-click='vm.actions.dismiss()') Dismiss
 
   // observer group modal
   script(type='text/ng-template', id='notification-observer-group-modal.html')
+    div.modal-header
+      h3.modal-title {{ vm.isForAdd ? 'Add an' : 'Edit' }} Observer Group
+    div.modal-body
+      div.form-horizontal
+        div.form-group
+          label.col-sm-3.control-label Name
+          div.col-sm-9
+            input.form-control(type='text', ng-model='vm.group.name', placeholder='Observer group name')
+        div.form-group
+          label.col-sm-3.control-label Observers
+          div.col-sm-9
+            ul
+              li(ng-repeat='ob in vm.group.observers') {{ ob.name }}({{ ob.realName }}) - {{ ob.email }} &nbsp;&nbsp;
+                a(href='', ng-click='vm.actions.removeObserver($index)') Remove
+        div.form-group
+          div.col-sm-9.col-sm-push-3
+            div.form-group
+              select.form-control(ng-options='ob as (ob.name + "(" + ob.realName + ") - " + ob.email) for ob in vm.observers', ng-model='vm.selectedObserver')
+            div.form-group
+              button.btn.btn-primary(ng-click='vm.actions.addObserver()') Add
+        //- status
+        div.form-group
+          label.col-sm-3.control-label Status
+          div.col-md-9
+            div.btn-group
+              label.btn(uib-btn-radio='1', ng-model='vm.group.status', ng-class='vm.observer.status == 1 ? "btn-success" : "btn-default"') On
+              label.btn(uib-btn-radio='0', ng-model='vm.group.status', ng-class='vm.observer.status == 0 ? "btn-danger" : "btn-default"') Off
+    div.modal-footer
+      button.btn.btn-primary(ng-click='vm.actions.save()') {{ vm.isForAdd ? 'Add' : 'Save' }}
+      button.btn.btn-default(ng-click='vm.actions.dismiss()') Dismiss
