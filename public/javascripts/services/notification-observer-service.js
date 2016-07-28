@@ -54,6 +54,7 @@ define([
           });
         },
       },
+      
       observerGroup: {
         get: function (options) {
           return http.send({
@@ -62,29 +63,29 @@ define([
             method: 'get'
           });
         },
-        add: function(observer) {
+        add: function(group) {
           return http.send({
             url: observerGroupApi,
             data: {
-              observer: observer
+              observerGroup: group
             },
             method: 'post'
           });
         },
-        update: function (observer) {
+        update: function (group) {
           return http.send({
             url: observerGroupApi,
             data: {
-              observer: observer
+              observerGroup: group
             },
             method: 'put'
           });
         },
-        remove: function (observerId) {
+        remove: function (groupId) {
           return http.send({
             url: observerGroupApi,
             params: {
-              _id: observerId
+              _id: groupId
             },
             method: 'delete'
           });

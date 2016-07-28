@@ -18,6 +18,7 @@ module.exports = function (router) {
     var data = req.query;
     NotificationObserverGroup
       .find(data)
+      .populate('observers')
       .exec(function (err, observerGroups){
         if (err){
           return utils.handleMongooseError(res, err);
@@ -78,7 +79,7 @@ function addOrUpdateObserverGroup(res, observerGroup) {
       }
       var obIds = [];
       observerGroup.observers.forEach(function (item) {
-        obIds.push(item);
+        obIds.push(item._id);
       });
       if (obIds.length == 0) {
         cb(null, true);
@@ -105,7 +106,10 @@ function addOrUpdateObserverGroup(res, observerGroup) {
           })
           .exec(cb);
       } else {
-        cb(null, true);
+        NotificationObserverGroup.findOne({
+            name: observerGroup.name,
+          })
+          .exec(cb);
       }
     }
   }, function (err, result) {
@@ -118,12 +122,12 @@ function addOrUpdateObserverGroup(res, observerGroup) {
     var dbGroup = null;
     if (isForAdd) {
       if (existedGroup != null){
-        return res.send(restResp.error(null, `duplicate name: ${existedGroup.name}`));
+        return res.send(restResp.error(restResp.CODE_ERROR, `duplicate name: ${existedGroup.name}`));
       }
       dbGroup = new NotificationObserverGroup();
     } else {
       if (existedGroup == null){
-        return res.send(restResp.error(null, `no record found.`));
+        return res.send(restResp.error(restResp.CODE_ERROR, `no record found.`));
       }
       dbGroup = existedGroup;
     }
