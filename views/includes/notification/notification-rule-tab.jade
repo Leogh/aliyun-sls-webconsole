@@ -1,0 +1,32 @@
+//
+   Created by Roman Lo on 6/2/2016.
+div(ng-controller='NotificationRuleTabController as rTab')
+  h3 Notification Rule &nbsp;&nbsp;
+    button.btn.btn-primary(ng-click='rTab.actions.openRuleModal()') Add a Rule
+  div.panel.panel-default
+    table.table.table-bordered
+      thead
+        tr
+          th Name
+          th Watchers
+          th WatcherGroups
+          th Observers
+          th ObserverGroups
+          th Cron
+          th Status
+          th Actions
+      tbody
+        tr
+          td Rule I
+          td 1, 2, 3, 4
+          td G1, G4
+          td 1, 2, 3, 4
+          td G2, G3
+          td 0 */5 * * * *
+          td Active
+          td
+            button.btn.btn-primary.btn-sm(ng-click='rTab.actions.openRuleModal(rule)') Edit
+            | &nbsp;&nbsp;
+            button.btn.btn-warning.btn-sm(ng-click='rTab.actions.openCopyRuleModal(rule)') Copy
+            | &nbsp;&nbsp;
+            button.btn.btn-danger.btn-sm(ng-click='rTab.actions.removeRule(rule)') Remove

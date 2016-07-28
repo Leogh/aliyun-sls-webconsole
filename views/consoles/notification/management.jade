@@ -1,0 +1,26 @@
+//
+   Created by Roman Lo on 6/2/2016.
+
+extends ../../layout
+
+block stylesheets
+
+
+block scripts
+
+
+block content
+  input#controllerPath(type='hidden', value='consoles/notification/management-controller')
+
+  div(ng-controller='NotificationManagementController as vm')
+    div.row
+      div.col-md-12
+        uib-tabset(active='active', type='pills')
+          uib-tab(heading='Notification Rule')
+            include ../../includes/notification/notification-rule-tab
+
+          uib-tab(heading='Notification Watchers')
+            include ../../includes/notification/notification-watcher-tab
+
+          uib-tab(heading='Notification Observers')
+            include ../../includes/notification/notification-observer-tab

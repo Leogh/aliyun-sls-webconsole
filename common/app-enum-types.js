@@ -14,3 +14,22 @@ exports.PeriodUnit = {
   Week: 4,
   Month: 5
 };
+
+exports.NotificationWatcherType = {
+  Log: 1,
+  CompareSet: 2,
+  Report: 3,
+};
+
+exports.NotificationContentType = {
+  Email: 1,
+  /*
+  SMS: 2,
+  PhoneCall: 3,
+  */
+};
+
+exports.StatusType = {
+  Active: 1,
+  Inactive: 0,
+};

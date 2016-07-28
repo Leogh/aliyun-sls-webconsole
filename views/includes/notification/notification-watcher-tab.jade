@@ -1,0 +1,28 @@
+//
+   Created by Roman Lo on 6/2/2016.
+div(ng-controller='NotificationWatcherTabController as wTab')
+  h3 Notification Watcher &nbsp;&nbsp;
+    button.btn.btn-primary(ng-click='wTab.actions.openWatcherModal()') Add a Watcher
+    | &nbsp;
+    button.btn.btn-primary(ng-click='wTab.actions.openWatcherGroupModal()') Add a Group
+  div.panel.panel-default
+    table.table.table-bordered
+      thead
+        tr
+          th Group
+          th Name
+          th Details
+          th Status
+          th Actions
+      tbody
+        tr
+          td G1
+          td My Watcher
+          td aaaaa
+          td Active
+          td
+            button.btn.btn-primary.btn-sm(ng-click='wTab.actions.openWatcherModal(watcher)') Edit
+            | &nbsp;&nbsp;
+            button.btn.btn-warning.btn-sm(ng-click='wTab.actions.openCopyWatcherModal(watcher)') Copy
+            | &nbsp;&nbsp;
+            button.btn.btn-danger.btn-sm(ng-click='wTab.actions.removeWatcher(watcher)') Remove
