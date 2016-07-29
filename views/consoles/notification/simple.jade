@@ -1,0 +1,75 @@
+//
+   Created by Roman Lo on 7/29/2016.
+
+extends ../../layout
+
+block stylesheets
+
+block scripts
+
+block content
+  input#controllerPath(type='hidden', value='consoles/notification/simple-rule-controller')
+  div(ng-controller='SimpleNotificationRuleController as vm')
+    div.row
+      div.col-sm-8
+        div.panel.panel-default
+          div.panel-heading
+            | Simple Notification Rule
+          table.table.table-bordered
+            thead
+              tr
+                th Name
+                th Addresses
+                th Watchers
+                th Thresholds
+                th Cron Expression
+                th Actions
+            tbody
+              tr(ng-if='vm.rules.length == 0')
+                td(colspan='6')
+                  | No settings.
+
+      div.col-sm-4
+        div.panel.panel-default
+          div.panel-heading(ng-if='vm.selectedRule != null') {{ vm.selectedRule._id == null ? 'Add' : 'Edit' }} Rule
+          div.panel-body
+            p(ng-if='vm.selectedRule == null') Pick or &nbsp;
+              button.btn-primary.btn-sm.btn(ng-click='vm.actions.addRule()') Add a Rule
+              | .
+            div(ng-if='vm.selectedRule != null')
+              div.form-group
+                label.control-label Rule Name
+                div
+                  input.form-control(ng-model='vm.selectedRule.name')
+
+              div.form-group
+                label.control-label Target Addresses
+                div
+                  ul(ng-show='vm.selectedRule.addresses.length > 0')
+                    li(ng-repeat='addr in vm.selectedRule.addresses') {{ addr }} &nbsp;
+                      a(href='', ng-click='vm.selectedRule.addresses.splice($index, 1)') X
+                  div.input-group
+                    input.form-control(ng-model='vm.temp.address')
+                    span.input-group-btn
+                      button.btn.btn-primary(ng-disabled='vm.temp.address == null || vm.temp.address.length == 0',
+                          ng-click='vm.selectedRule.addresses.push(vm.temp.address) && (vm.temp.address = "")') Add
+
+
+
+              div.form-group
+                label.control-label Rule Name
+                div
+                  input.form-control(ng-model='vm.selectedRule.name')
+
+              div.form-group
+                label.control-label Run Time
+                div
+                  input.form-control(ng-model='vm.selectedRule.cronExpression')
+
+              div.form-group
+                div.
+
+              div.form-group
+                button.btn.btn-success(ng-click='vm.actions.submit(vm.selectedRule)') Save
+                | &nbsp;
+                button.btn.btn-default(ng-click='vm.selectedRule = null') Cancel

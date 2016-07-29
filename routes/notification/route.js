@@ -19,5 +19,11 @@ router.get('/management', utils.authChk('/login'), function (req, res) {
   });
 });
 
+router.get('/simple', utils.authChk('/login'), function (req,res){
+  res.render('consoles/notification/simple',{
+    title: 'Simple Setting - Notification'
+  });
+});
+
 module.exports = router;
 

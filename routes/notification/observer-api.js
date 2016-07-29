@@ -87,12 +87,12 @@ function addOrUpdateObserver(res, observer) {
     var dbObserver = null;
     if (isForAdd) {
       if (existedOb != null){
-        return res.send(restResp.error(null, `duplicate name: ${existedOb.name}`));
+        return res.send(restResp.error(restResp.CODE_ERROR, `duplicate name: ${existedOb.name}`));
       }
       dbObserver = new NotificationObserver();
     } else {
       if (existedOb == null){
-        return res.send(restResp.error(null, `no record found.`));
+        return res.send(restResp.error(restResp.CODE_ERROR, `no record found.`));
       }
       dbObserver = existedOb;
     }
