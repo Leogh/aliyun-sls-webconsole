@@ -45,6 +45,21 @@ var SimpleNotificationRule = new Schema({
         base: String,
         tar: String,
       },
+      // valType
+      // 0 normal: calculate the exact amount of log under the tar condition.
+      // 1 percentage: calculate the proportion of tar in base condition.
+      valType: {
+        type: Number,
+        validate: {
+          validator: function (value){
+            if (value > 1 || value < 0){
+              return false;
+            }
+            return true;
+          },
+          message: 'Invalid threshold value type {VALUE} detected.'
+        }
+      },
       thresholds:{ // threshold configurations
         type: [{
           // threshold name
@@ -67,21 +82,6 @@ var SimpleNotificationRule = new Schema({
           },
           // threshold value
           val: Number,
-          // valType
-          // 0 normal: calculate the exact amount of log under the tar condition.
-          // 1 percentage: calculate the proportion of tar in base condition.
-          valType: {
-            type: Number,
-            validate: {
-              validator: function (value){
-                if (value > 1 || value < 0){
-                  return false;
-                }
-                return true;
-              },
-              message: 'Invalid threshold value type {VALUE} detected.'
-            }
-          },
           // color type
           // 0 normal: black
           // 1 info: light blue

@@ -24,7 +24,6 @@ define(['base'], function (Base) {
     this.name = '';
     this.operatorType = OperatorType.GreaterThan;
     this.val = 0;
-    this.valType = ValueType.Normal;
     this.color = ColorType.Normal;
   };
 
@@ -36,6 +35,7 @@ define(['base'], function (Base) {
       base: '',
       tar: ''
     };
+    this.valType = ValueType.Normal;
     this.thresholds = []; // array of ThresholdConfig
     this.showDetail = false;
   };

@@ -11,7 +11,7 @@ block content
   input#controllerPath(type='hidden', value='consoles/notification/simple-rule-controller')
   div(ng-controller='SimpleNotificationRuleController as vm')
     div.row
-      div.col-sm-8
+      div.col-sm-12
         div.panel.panel-default
           div.panel-heading
             | Simple Notification Rule
@@ -29,47 +29,137 @@ block content
                 td(colspan='6')
                   | No settings.
 
-      div.col-sm-4
+
+
+      div.col-sm-12
         div.panel.panel-default
           div.panel-heading(ng-if='vm.selectedRule != null') {{ vm.selectedRule._id == null ? 'Add' : 'Edit' }} Rule
           div.panel-body
             p(ng-if='vm.selectedRule == null') Pick or &nbsp;
-              button.btn-primary.btn-sm.btn(ng-click='vm.actions.addRule()') Add a Rule
+              button.btn-primary.btn-sm.btn(ng-click='vm.actions.addOrUpdateRule()') Add a Rule
               | .
             div(ng-if='vm.selectedRule != null')
-              div.form-group
-                label.control-label Rule Name
-                div
-                  input.form-control(ng-model='vm.selectedRule.name')
+              div.col-sm-4
+                h3 General Info
+                div.form-horizontal
+                  div.form-group
+                    label.col-sm-12 Rule Name
+                    div.col-sm-12
+                      input.form-control(ng-model='vm.selectedRule.name')
 
-              div.form-group
-                label.control-label Target Addresses
-                div
-                  ul(ng-show='vm.selectedRule.addresses.length > 0')
-                    li(ng-repeat='addr in vm.selectedRule.addresses') {{ addr }} &nbsp;
-                      a(href='', ng-click='vm.selectedRule.addresses.splice($index, 1)') X
-                  div.input-group
-                    input.form-control(ng-model='vm.temp.address')
-                    span.input-group-btn
-                      button.btn.btn-primary(ng-disabled='vm.temp.address == null || vm.temp.address.length == 0',
+                  div.form-group
+                    label.col-sm-12 Target Addresses
+                    div.col-sm-12
+                      ul(ng-show='vm.selectedRule.addresses.length > 0')
+                        li(ng-repeat='addr in vm.selectedRule.addresses') {{ addr }} &nbsp;
+                          a(href='', ng-click='vm.selectedRule.addresses.splice($index, 1)') X
+                      div.input-group
+                        input.form-control(ng-model='vm.temp.address')
+                        span.input-group-btn
+                          button.btn.btn-primary(ng-disabled='vm.temp.address == null || vm.temp.address.length == 0',
                           ng-click='vm.selectedRule.addresses.push(vm.temp.address) && (vm.temp.address = "")') Add
 
+                  div.form-group
+                    label.col-sm-12 Run Time
+                    div.col-sm-12
+                      input.form-control(ng-model='vm.selectedRule.cronExpression')
+
+              div.col-sm-8
+                h3 Watcher Info &nbsp;
+                  button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdateWatcher()', ng-show='vm.temp.wItem == null') Add a Watcher
+                div.form-horizontal
+                  div.form-group
+                    label.col-sm-12 Watch List
+                    div.col-sm-12
+                      p.form-control-static(ng-if='vm.selectedRule.watchList.length == 0') Empty
+                      ul(ng-show='vm.selectedRule.watchList.length > 0')
+                        li(ng-repeat='wItem in vm.selectedRule.watchList')
+                          | {{ wItem.projectName }} - {{ wItem.logStore }} - {{ wItem.topic }}
+                          | &nbsp;&nbsp;
+                          a(href='', ng-click='vm.actions.addOrUpdateWatcher($index)', ng-show='vm.temp.wItem == null') Edit
+
+                div.form-horizontal(ng-show='vm.temp.wItem != null')
+                  h4 {{ vm.temp.wItem._index >= 0 ? 'Edit' : 'Add a' }} Watcher
+                  div.form-group
+                    div.col-sm-12
+                      div.form-inline
+                        label Project Name:
+                        input.form-control(ng-model='vm.temp.wItem.projectName')
+                        | &nbsp;
+                        label LogStore:
+                        input.form-control(ng-model='vm.temp.wItem.logStore')
+                        | &nbsp;
+                        label Topic:
+                        input.form-control(ng-model='vm.temp.wItem.topic')
+
+                      label Threshold Type
+                      select.form-control(ng-model='vm.temp.wItem.valType')
+                        option(value='0') Normal
+                        option(value='1') Percentage
+
+                      div(ng-if='vm.temp.wItem.valType == 1')
+                        label Base Condition
+                        textarea.form-control(ng-model='vm.temp.wItem.condition.base')
+
+                      label Condition
+                      textarea.form-control(ng-model='vm.temp.wItem.condition.tar')
+
+                      label Thresholds &nbsp;
+                        button.btn.btn-primary.btn-xs(ng-click='vm.actions.openThresholdModal()') Add
+                      ul(ng-show='vm.temp.wItem.thresholds.length > 0')
+                        li(ng-repeat='thConfig in vm.temp.wItem.thresholds')
+                          strong(ng-class='{ "text-danger" : thConfig.color == 3, "text-warning" : thConfig.color == 2, "text-info" : thConfig.color == 1 }') {{ thConfig.name }}
+                          | {{ thConfig.operatorType | operatorType }} {{ thConfig.val }} &nbsp;&nbsp;
+                          a(ng-click='vm.actions.openThresholdModal($index)', href='') Edit
+
+                      div.checkbox
+                        label
+                          input(type='checkbox', ng-model='vm.config.showDetail')
+                          | Show Log Detail
+
+                      div
+                        button.btn.btn-sm.btn-success(ng-click='vm.actions.saveWatcher()') Save Watcher
+                        | &nbsp;&nbsp;
+                        button.btn.btn-sm.btn-default(ng-click='vm.temp.wItem = null') Cancel
 
 
-              div.form-group
-                label.control-label Rule Name
-                div
-                  input.form-control(ng-model='vm.selectedRule.name')
+      div.col-sm-12
+        div.form-group
+          button.btn.btn-success(ng-click='vm.actions.submit(vm.selectedRule)') Save
+          | &nbsp;
+          button.btn.btn-default(ng-click='vm.selectedRule = null') Cancel
 
-              div.form-group
-                label.control-label Run Time
-                div
-                  input.form-control(ng-model='vm.selectedRule.cronExpression')
+    script(type='text/ng-template', id='threshold-modal.html')
+      div.modal-header
+        h3.modal-title Threshold Config
+      div.modal-body
+        div.form-horizontal
+          div.form-group
+            label.control-label.col-sm-2 Name
+            div.col-sm-10
+              input.form-control(ng-model='vm.config.name', placeholder='Put words like "Warn" or "Error"')
+          div.form-group
+            label.control-label.col-sm-2 Value
+            div.col-sm-10
+              div.input-group
+                span.input-group-btn
+                  div.btn-group(uib-dropdown)
+                    button.btn.btn-default(uib-dropdown-toggle) {{ vm.config.type | operatorType }} &nbsp;
+                      span.caret
+                    ul.dropdown-menu(uib-dropdown-menu)
+                      li(ng-repeat='item in [0, 1, 2]')
+                        a(ng-click='vm.config.type = item', href='') {{ item | operatorType }}
+                input.form-control(ng-model='vm.config.val')
 
-              div.form-group
-                div.
+          div.form-group
+            label.control-label.col-sm-2 Color
+            div.col-sm-10
+              select.form-control(ng-model='vm.config.color')
+                option(value='0') Normal
+                option(value='1') Info
+                option(value='2') Warn
+                option(value='3') Danger
 
-              div.form-group
-                button.btn.btn-success(ng-click='vm.actions.submit(vm.selectedRule)') Save
-                | &nbsp;
-                button.btn.btn-default(ng-click='vm.selectedRule = null') Cancel
+      div.modal-footer
+        button.btn.btn-primary(ng-click='vm.actions.save()') Save
+        button.btn.btn-default(ng-click='vm.actions.dismiss()') Dismiss
