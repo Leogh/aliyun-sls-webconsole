@@ -27,12 +27,17 @@ define([
 
   function simpleNotificationRuleController($scope, notificationRuleService, $uibModal) {
     var vm = this;
-    console.log(SimpleNotificationRule);
 
     vm.rules = [];
     vm.selectedRule = null;
     vm.temp = {
       wItem: null,
+      watcher: null,
+    };
+    vm.config = {
+      conditionPopover: {
+        templateUrl: 'conditionPopoverTemplate.html',
+      }
     };
 
     vm.actions = {
@@ -73,7 +78,7 @@ define([
           vm.temp.wItem = angular.merge({}, vm.selectedRule.watchList[index]);
         } else {
           vm.temp.wItem = new WatchEntity();
-          vm.temp.wItem.valType = ValueType.Percentage.toString();
+          vm.temp.wItem.valType = ValueType.Percentage;
         }
         vm.temp.wItem._index = index;
       },
@@ -82,8 +87,9 @@ define([
         var idx = vm.temp.wItem._index;
         if (idx >= 0) {
           vm.selectedRule.watchList[idx] = item;
+        } else {
+          vm.selectedRule.watchList.push(item);
         }
-        vm.selectedRule.watchList.push(item);
         vm.temp.wItem = null;
       },
       openThresholdModal: function (idx) {
@@ -92,8 +98,8 @@ define([
           thresholdConfig = vm.temp.wItem.thresholds[idx];
         } else {
           thresholdConfig = new ThresholdConfig();
-          thresholdConfig.color = ColorType.Normal.toString();
-          thresholdConfig.type = OperatorType.GreaterThan.toString();
+          thresholdConfig.color = ColorType.Normal;
+          thresholdConfig.type = OperatorType.GreaterThan;
         }
         var thresholdConfigModal = $uibModal.open({
           animation: true,
@@ -105,6 +111,9 @@ define([
           resolve: {
             thresholdConfig: function () {
               return angular.merge({}, thresholdConfig);
+            },
+            options: function () {
+              return vm.options;
             }
           },
         });
@@ -123,6 +132,43 @@ define([
       }
     };
 
+    vm.options = {
+      thresholdTypeOptions:[{
+        type: ValueType.Normal,
+        text: 'Normal'
+      },{
+        type: ValueType.Percentage,
+        text: 'Percentage'
+      }],
+
+      colorOptions: [{
+        type: ColorType.Normal,
+        text: 'Normal'
+      },{
+        type: ColorType.Info,
+        text: 'Info'
+      },{
+        type: ColorType.Warn,
+        text: 'Warn'
+      },{
+        type: ColorType.Danger,
+        text: 'Danger'
+      }],
+
+      operatorTypeOptions: [{
+        type: OperatorType.Equals,
+        text: 'Equals'
+      },{
+        type: OperatorType.GreaterThan,
+        text: 'Greater than'
+      },{
+        type: OperatorType.LessThan,
+        text: 'Less than'
+      }]
+    };
+
+    reload();
+
     function reload() {
       vm.selectedRule = null;
       notificationRuleService
@@ -138,8 +184,7 @@ define([
 
     function addOrUpdateRule(rule){
       var method = rule._id == null ? 'add' : 'update';
-      console.log(method, rule);
-      return null;
+      var isSuccess = false;
       notificationRuleService
         .simple[method](rule)
         .error(function (code, msg) {
@@ -147,16 +192,21 @@ define([
         })
         .success(function (result) {
           console.log(result);
+          isSuccess = true;
+          alert('success!');
         })
         ['finally'](function () {
-          reload();
+          if (isSuccess){
+            reload();
+          }
         });
     }
 
-    function thresholdConfigModalController ($scope, $uibModalInstance, thresholdConfig){
+    function thresholdConfigModalController ($scope, $uibModalInstance, thresholdConfig, options){
       var vm = this;
 
       vm.config = thresholdConfig;
+      vm.options = options;
 
       vm.actions = {
         save: function () {

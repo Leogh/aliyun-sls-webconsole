@@ -13,4 +13,6 @@ require('./watcher-api')(router);
 require('./watcher-group-api')(router);
 require('./rule-api')(router);
 
+require('./simple-rule-api')(router);
+
 module.exports = router;
