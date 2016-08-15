@@ -8,6 +8,11 @@ var schedule = require('node-schedule');
 var utils = require('../utils');
 var SimpleNotificationRule = require('../../models/notification/simple-notification-rule');
 var simpleNotificationManager = require('../notification/simple-notification-manager');
+//var nodemailer = require('nodemailer');
+// var config =
+
+// var transporter = nodemailer.createTransport()
+
 var instance = null;
 
 var _scheduled_jobs = {};
@@ -51,7 +56,7 @@ SimpleNotificationScheduler.prototype.initialize = function () {
 
 SimpleNotificationScheduler.prototype.getScheduledJobs = function () {
   "use strict";
-
+  
 };
 
 module.exports = instance = instance || new SimpleNotificationScheduler();

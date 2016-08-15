@@ -25,10 +25,10 @@ router.get('/simple', utils.authChk('/login'), function (req,res){
   });
 });
 
-router.get('/pool', utils.authChk('/login'), function (req,res) {
+router.get('/pool-config', utils.authChk('/login'), function (req,res) {
   "use strict";
-  res.render('consoles/notification/pool',{
-    title: 'Pool Setting - Notification'
+  res.render('consoles/notification/pool-config',{
+    title: 'Pool Configuration - Notification'
   });
 });
 
