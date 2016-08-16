@@ -383,7 +383,10 @@ define([
       if (/^{[\w\W\s\S]*\}$/.test(text)) {
         return 'brush: js';
       }
-      return 'brush: xml';
+      if (/^<[\w\W\s\S]*>$/.test(text)) {
+        return 'brush: xml';
+      }
+      return '';
     };
   }
 
