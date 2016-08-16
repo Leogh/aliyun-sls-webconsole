@@ -1,0 +1,89 @@
+//
+   Created by Roman Lo on 8/16/2016.
+
+div.form-horizontal
+  div.form-group
+    label.col-sm-2.control-label Title
+    div.col-sm-10
+      input.form-control(ng-model='modal.pConfig.title', placeholder='Allow replacement expression {from} and {to}.')
+  div.form-group
+    label.col-sm-2.control-label Targets
+    div.col-sm-10
+      table.table.table-bordered
+        thead(ng-show='modal.pConfig.targets.length > 0')
+          tr
+            th Project name
+            th Log Stores
+            th Topics
+            th Actions
+        tbody.target-body(ng-repeat='target in modal.pConfig.targets')
+          tr(ng-if='target.stores !== "*"', ng-repeat='(name, store) in target.stores')
+            td(rowspan='{{ modal.storeCount(target.stores) }}', ng-if='$first') {{ target.projectName }}
+            td {{ name }}
+            td
+              p(ng-if='store === "*"') *
+              div(ng-if='store !== "*"', ng-repeat='topic in store')
+                strong Topic # {{ $index + 1 }}
+                pre.topic-json-container {{ topic | json }}
+            td(rowspan='{{ modal.storeCount(target.stores) }}', ng-if='$first')
+              div(ng-show='modal.temp.targetJson == null')
+                button.btn.btn-xs.btn-primary(ng-click='modal.actions.addOrUpdateTarget($parent.$parent.$index)') Edit
+                | &nbsp;
+                button.btn.btn-xs.btn-danger(ng-click='modal.pConfig.targets.splice($parent.$parent.$index, 1)') Remove
+
+          tr(ng-if='target.stores === "*"')
+            td {{ target.projectName }}
+            td(colspan='2')
+              pre.topic-json-container *
+            td
+              div(ng-show='modal.temp.targetJson == null')
+                button.btn.btn-xs.btn-primary(ng-click='modal.actions.addOrUpdateTarget($index)') Edit
+                | &nbsp;
+                button.btn.btn-xs.btn-danger(ng-click='modal.pConfig.targets.splice($index, 1)') Remove
+
+        tbody(ng-if='modal.temp.targetJson == null')
+          tr
+            td.text-center(colspan='4')
+              a(href='', ng-click='modal.actions.addOrUpdateTarget()') Add a Target
+
+      div(ng-if='modal.temp.targetJson != null')
+        div.form-horizontal
+          div.form-group(ng-class='{ "has-error": modal.temp.jsonErr != null }')
+            div.col-sm-12
+              strong Target Config: &nbsp;
+              a(href='https://github.com/DidaTravel/aliyun-sls-notification-service', title='How to config?', target='_blank')
+                i.glyphicon.glyphicon-question-sign
+                | &nbsp;How to config
+              textarea.form-control(ng-model='modal.temp.targetJson', rows='10')
+              span.help-block(ng-if='modal.temp.jsonErr != null') {{ modal.temp.jsonErr }}
+
+          div.form-group
+            div.col-sm-12
+              button.btn.btn-primary.btn-sm(ng-click='modal.actions.saveTarget()') Save
+              | &nbsp;&nbsp;
+              button.btn.btn-default.btn-sm(ng-click='modal.temp.targetJson = null; modal.temp._tarIndex = null;') Dismiss
+        // include notification-pool-config-target-form
+
+  div.form-group
+    label.col-sm-2.control-label Observers
+    div.col-sm-10
+      ul
+        li(ng-repeat='ob in modal.pConfig.observers') {{ ob }} &nbsp;
+          a.text-danger(href='',ng-click='modal.pConfig.observers.splice($index, 1)')
+            i.glyphicon.glyphicon-remove
+      div.input-group
+        input.form-control(ng-model='modal.temp.ob', placeholder='Observer email address.')
+        span.input-group-btn
+          button.btn.btn-success(ng-click='modal.actions.addObserver()')
+            i.glyphicon.glyphicon-plus
+
+  div.form-group
+    label.col-sm-2.control-label Log Delay(sec)
+    div.col-sm-10
+      input.form-control(ng-model='modal.pConfig.logDelay', type='number', min='0')
+  div.form-group
+    label.col-sm-2.control-label Cron Expression &nbsp;
+      a(href='https://github.com/node-schedule/node-schedule#cron-style-scheduling', title='About cron-like expression', target='_blank')
+        i.glyphicon.glyphicon-question-sign
+    div.col-sm-10
+      input.form-control(ng-model='modal.pConfig.cron')

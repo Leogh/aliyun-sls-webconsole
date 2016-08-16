@@ -13,7 +13,7 @@ var NotificationPool = new Schema({
     type: [{
       projectName: String,
       stores: {
-        type: Mixed,
+        type: Schema.Types.Mixed,
         validate: {
           validator: function (value) {
             "use strict";
@@ -30,7 +30,27 @@ var NotificationPool = new Schema({
         return true;
       }
     }
-  }
+  },
+  observers: {
+    type: Array,
+    validate: {
+      validator: function (value){
+        "use strict";
+        return true;
+      }
+    }
+  },
+  logDelay: {
+    type: Number,
+    validate: {
+      validator: function (value){
+        "use strict";
+        return true;
+        // return !isNaN(value) && parseInt(value) >=0;
+      }
+    }
+  },
+  cron: String
 });
 
 module.exports = mongoose.model('Notification.NotificationPool', NotificationPool);
