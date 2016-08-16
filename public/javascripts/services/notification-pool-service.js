@@ -15,6 +15,7 @@ define([
   notificationPoolService.$inject = ['utils.http-client', '$q'];
 
   var poolApi = '/notification/api/pool-config';
+  var execAPi = '/notification/api/exec';
 
   function notificationPoolService(http) {
     return {
@@ -48,6 +49,16 @@ define([
           method: 'delete'
         });
       },
+      exec: function (command, poolId){
+        return http.send({
+          url: execAPi,
+          data: {
+            action: command,
+            id: poolId
+          },
+          method: 'post'
+        });
+      }
     };
   }
 

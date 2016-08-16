@@ -28,7 +28,6 @@ block content
                   i.glyphicon.glyphicon-question-sign
               th Targets
               th Observers
-              th Status
               th Running State
               th Actions
           tbody
@@ -38,13 +37,13 @@ block content
               td {{ pool.cron }}
               td
                 div(ng-repeat='target in pool.targets')
-                  strong # {{ $index }}
+                  strong # {{ $index + 1 }}
                   pre.target-json-container {{ target | json }}
               td
                 p(ng-repeat='ob in pool.observers') {{ ob }}
 
-              td {{ pool._id }}
-              td {{ pool._id }}
+              td
+                pre.target-json-container {{ vm.poolRunState(pool._id) | json }}
               td
                 button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdatePool(pool)') Edit
                 button.btn.btn-primary.btn-sm(ng-click='vm.actions.removePool(pool)') Remove

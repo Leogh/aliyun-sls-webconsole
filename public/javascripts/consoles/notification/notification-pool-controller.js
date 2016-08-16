@@ -11,7 +11,7 @@ define([
   "use strict";
 
   // injections
-  notificationPoolController.$inject = ['$scope', '$uibModal', 'services.notification-pool-service'];
+  notificationPoolController.$inject = ['$scope', '$uibModal', '$interval','services.notification-pool-service'];
 
   return webapp
     .controller('NotificationPoolController', notificationPoolController)
@@ -24,13 +24,25 @@ define([
       };
     });
 
-  function notificationPoolController($scope, $uibModal, poolService) {
+  function notificationPoolController($scope, $uibModal, $interval, poolService) {
     var vm = this;
 
     vm.pools = [];
+    vm.poolStatus = {};
     vm.states = {
       loading: false,
       processing: false,
+    };
+
+    vm.poolRunState = function (id, withConfig){
+      if (vm.poolStatus[id]){
+        var val = angular.merge({}, vm.poolStatus[id]);
+        if (!withConfig && val.config){
+          delete val.config;
+        }
+        return val;
+      }
+      return undefined;
     };
 
     vm.actions = {
@@ -52,16 +64,31 @@ define([
     };
 
     loadPools();
+    $interval(function () {
+      loadStatus();
+    }, 5000);
 
     function loadPools(){
       vm.pools = [];
+      loadStatus();
       poolService
         .get()
-        .success(function (pools) {
-          vm.pools = pools;
-        })
         .error(function (code, msg) {
           console.warn(code, msg);
+        })
+        .success(function (pools) {
+          vm.pools = pools;
+        });
+    }
+    
+    function loadStatus(){
+      poolService
+        .exec('status')
+        .error(function (code, msg) {
+          console.warn(code, msg);
+        })
+        .success(function (results) {
+          vm.poolStatus = results;
         });
     }
 

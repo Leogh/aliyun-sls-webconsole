@@ -107,6 +107,6 @@ app.use(function (err, req, res, next) {
 });
 
 // require('./common/schedule/notification-scheduler').initialize();
-require('./common/schedule/simple-notification-scheduler').initialize();
+// require('./common/schedule/simple-notification-scheduler').initialize();
 
 module.exports = app;

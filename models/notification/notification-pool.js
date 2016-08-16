@@ -7,22 +7,26 @@ var mongoose = require("mongoose");
 
 var Schema = mongoose.Schema;
 
+var TargetSchema = new Schema({
+  projectName: String,
+  stores: {
+    type: Schema.Types.Mixed,
+    validate: {
+      validator: function (value) {
+        "use strict";
+        // TODO target log store validation
+        return true;
+      }
+    }
+  }
+},{
+  _id: false,
+});
+
 var NotificationPool = new Schema({
   title: String,
   targets: {
-    type: [{
-      projectName: String,
-      stores: {
-        type: Schema.Types.Mixed,
-        validate: {
-          validator: function (value) {
-            "use strict";
-            // TODO target log store validation
-            return true;
-          }
-        }
-      }
-    }],
+    type: [TargetSchema],
     validate: {
       validator: function (value){
         "use strict";

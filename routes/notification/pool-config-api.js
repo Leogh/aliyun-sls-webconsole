@@ -6,6 +6,7 @@ var utils = require('../../common/utils');
 var restResp = require("../../common/rest-response");
 var NotificationPool = require("../../models/notification/notification-pool");
 
+var notificationCommander = require("../../common/notification/notification-commander");
 
 module.exports = function (router) {
   /*
@@ -56,7 +57,21 @@ module.exports = function (router) {
   });
 
   router.post('/exec', utils.authChk('/login'), function (req, res){
-
+    var data = req.body;
+    var action = data.action;
+    var id = data.id;
+    if (typeof notificationCommander[action] !== 'function') {
+      res.send(restResp.error(restResp.CODE_ERROR, `invalid command '${action}'`));
+      return;
+    }
+    notificationCommander[action].call(this, id, function(err, result){
+      "use strict";
+      if (err){
+        res.send(restResp.error(restResp.CODE_ERROR, 'exec error.'));
+        return;
+      }
+      res.send(restResp.success(result));
+    });
   });
 
 };
