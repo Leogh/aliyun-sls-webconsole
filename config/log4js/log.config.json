@@ -1,10 +1,10 @@
 {
   "appenders": [{
     "type": "console",
-    "category": "console"
+    "category": "aliyun-sls-webconsole"
   }],
   "replaceConsole": true,
   "levels": {
-    "console": "DEBUG"
+    "aliyun-sls-webconsole": "DEBUG"
   }
 }
