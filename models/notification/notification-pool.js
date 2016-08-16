@@ -54,7 +54,9 @@ var NotificationPool = new Schema({
       }
     }
   },
-  cron: String
+  cron: String,
+  level: String,
+  threshold: Number,
 });
 
 module.exports = mongoose.model('Notification.NotificationPool', NotificationPool);

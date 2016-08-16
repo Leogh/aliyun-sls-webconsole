@@ -139,16 +139,28 @@ define([
                 alert('Log delay should be greater than 0.');
                 return;
               }
+              // if (needLogLevelValidate){
+              //   // validate log level
+              //   if (!/[\w\W]+/.test(modal.pConfig.level)) {
+              //     modal.temp.jsonErr = 'log level is not defined';
+              //     return;
+              //   }
+              //   // validate threshold
+              //   if (!/\d+/.test(modal.pConfig.threshold)) {
+              //     modal.temp.jsonErr = 'threshold is not defined';
+              //     return;
+              //   }
+              // }
               var actionName = modal.isForAdd ? 'add' : 'update';
               var isSuccess = false;
               service[actionName](modal.pConfig)
-                .success(function (result) {
-                  console.log(result);
-                  isSuccess = true;
-                })
                 .error(function (code, msg) {
                   alert(msg);
                   console.error(code, msg);
+                })
+                .success(function (result) {
+                  console.log(result);
+                  isSuccess = true;
                 })
                 ['finally'](function () {
                   if (isSuccess){
@@ -171,9 +183,7 @@ define([
               } else {
                 target = {
                   projectName: '',
-                  stores: '*',
-                  level: 'Error',
-                  threshold: 1,
+                  stores: '*'
                 }
               }
               modal.temp._tarIndex = index;
@@ -282,18 +292,6 @@ define([
                 return;
               }
 
-              if (needLogLevelValidate){
-                // validate log level
-                if (!/[\w\W]+/.test(target.level)) {
-                  modal.temp.jsonErr = 'log level is not defined';
-                  return;
-                }
-                // validate threshold
-                if (!/\d+/.test(target.threshold)) {
-                  modal.temp.jsonErr = 'threshold is not defined';
-                  return;
-                }
-              }
               return target;
             } catch (err) {
               var pos = err.message.match(/position (\d+)/)[1];
@@ -313,8 +311,10 @@ define([
               targets: [],
               observers: [],
               logDelay: 60,
-              cron: '* */1 * * * *'
-            }
+              cron: '* */1 * * * *',
+              level: '',
+              threshold: ''
+            };
           }
 
         },

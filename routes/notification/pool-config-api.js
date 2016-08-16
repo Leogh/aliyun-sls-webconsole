@@ -111,6 +111,8 @@ function addOrUpdateNotificationPool(res, pool){
     dbPool.observers = pool.observers;
     dbPool.logDelay = pool.logDelay;
     dbPool.cron = pool.cron;
+    dbPool.level = pool.level;
+    dbPool.threshold = pool.threshold;
 
     dbPool.save(function (err, result) {
       if (err) {
