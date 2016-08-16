@@ -46,6 +46,7 @@ function sendCommand(action, poolId, callback){
     }
   }, function (error, response, body){
     if (error){
+      logger.error('api call failed: ' + ServiceApi, error);
       callback(error, null);
       return;
     }
