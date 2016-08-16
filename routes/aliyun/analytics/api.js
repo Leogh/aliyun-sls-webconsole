@@ -20,7 +20,7 @@ var AnalyticsReportPeriodModel = require("../../../models/analytics/analytics-re
 var AppEnum = require("../../../common/app-enum-types");
 
 
-var logger = log4js.getLogger("aliyun.sls");
+var logger = log4js.getLogger("aliyun-sls-webconsole");
 var shasum = crypto.createHash('sha1');
 shasum.update(config.aliyun.logAnalytics.accessKeyId);
 const ALY_LOG_ANALYTICS_ACCESS_HASH = shasum.digest('hex');

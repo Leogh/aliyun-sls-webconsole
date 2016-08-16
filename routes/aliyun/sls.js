@@ -11,7 +11,7 @@ var AliyunSLSProject = require("../../models/aliyun-sls-project");
 var User = require("../../models/user");
 var ALY = require("aliyun-sdk");
 var log4js = require('log4js');
-var logger = log4js.getLogger("aliyun.sls");
+var logger = log4js.getLogger("aliyun-sls-webconsole");
 var restResp = require("../../common/rest-response");
 
 var router = express.Router();

@@ -28,7 +28,7 @@ app.set('view engine', 'jade');
 
 // log4js setup
 log4js.configure(config.logging.log4jsConfPath);
-app.use(log4js.connectLogger(log4js.getLogger('dateFileLog'), {
+app.use(log4js.connectLogger(log4js.getLogger('aliyun-sls-webconsole'), {
   level: 'debug',
   format: ':method :url :response-time ms'
 }));

@@ -5,7 +5,7 @@
 var request = require('request');
 var config = require('json-config-ext').config;
 var log4js = require('log4js');
-var logger = log4js.getLogger("aliyun.sls");
+var logger = log4js.getLogger("aliyun-sls-webconsole");
 
 var ServiceApi = getNotificationServiceApi();
 

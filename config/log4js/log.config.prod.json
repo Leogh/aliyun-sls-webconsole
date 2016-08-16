@@ -5,10 +5,10 @@
     "pattern": "_yyyy-MM-dd",
     "maxLogSize": 50000,
     "alwaysIncludePattern": false,
-    "category": "dateFileLog"
+    "category": "aliyun-sls-webconsole"
   }],
   "replaceConsole": true,
   "levels": {
-    "dateFileLog": "INFO"
+    "aliyun-sls-webconsole": "INFO"
   }
 }
