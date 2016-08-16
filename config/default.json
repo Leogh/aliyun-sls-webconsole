@@ -28,10 +28,13 @@
         "port": 404,
         "username": "email-address",
         "password": "password"
-      },
-      "sms": {
-
       }
+    },
+    "service": {
+      "server": "localhost",
+      "port": 3001,
+      "secret": "",
+      "key": ""
     }
   },
   "logging": {

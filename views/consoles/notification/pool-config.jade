@@ -1,0 +1,65 @@
+//
+   Created by roman on 8/12/16.
+
+extends ../../layout
+
+block stylesheets
+
+block scripts
+
+
+block content
+  input#controllerPath(type='hidden', value='consoles/notification/notification-pool-controller')
+  div(ng-controller='NotificationPoolController as vm')
+    div.row
+      div.col-sm-12
+        h3 Notification Pool(s) Configuration Central &nbsp;&nbsp;
+          button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdatePool()') Add a Pool
+
+    div.row
+      div.col-sm-12
+        table.table.table-bordered
+          thead
+            tr
+              th ID
+              th Title
+              th Cron Expression &nbsp;
+                a(href='https://github.com/node-schedule/node-schedule#cron-style-scheduling', title='About cron-like expression', target='_blank')
+                  i.glyphicon.glyphicon-question-sign
+              th Targets
+              th Observers
+              th Running State
+              th Actions
+          tbody
+            tr(ng-repeat='pool in vm.pools')
+              td {{ pool._id }}
+              td {{ pool.title }}
+              td {{ pool.cron }}
+              td
+                div(ng-repeat='target in pool.targets')
+                  strong # {{ $index + 1 }}
+                  pre.target-json-container {{ target | json }}
+              td
+                p(ng-repeat='ob in pool.observers') {{ ob }}
+
+              td
+                pre.target-json-container {{ vm.poolRunState(pool._id) | json }}
+              td
+                button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdatePool(pool)') Edit
+                button.btn.btn-primary.btn-sm(ng-click='vm.actions.removePool(pool)') Remove
+
+
+
+  script(type='text/ng-template', id='notification-pool-config-modal.html')
+    div.modal-header
+      div.pull-right
+        a(href='https://github.com/DidaTravel/aliyun-sls-notification-service', title='How to config?', target='_blank')
+          i.glyphicon.glyphicon-question-sign
+          | &nbsp;How to config
+      h3.modal-title {{ modal.isForAdd ? 'Add a' : 'Edit' }} Notification Pool &nbsp;
+    div.modal-body
+      include ../../includes/notification/notification-pool-config-form
+
+    div.modal-footer
+      button.btn.btn-primary(ng-click='modal.actions.save()') {{ modal.isForAdd ? 'Add' : 'Save' }}
+      button.btn.btn-default(ng-click='modal.actions.dismiss()') Dismiss

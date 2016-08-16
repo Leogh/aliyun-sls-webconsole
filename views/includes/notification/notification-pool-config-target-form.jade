@@ -1,0 +1,29 @@
+//
+   Created by Roman Lo on 8/16/2016.
+
+div.form-horizontal
+  div.form-group
+    label.col-sm-2.control-label Project Name
+    div.col-sm-10
+      input.form-control(ng-model='modal.temp.target.projectName')
+
+  div.form-group
+    label.col-sm-2.control-label Log Stores
+    div.col-sm-10
+      input.form-control(ng-model='modal.temp.target.stores')
+
+  div.form-group
+    label.col-sm-2.control-label Level
+    div.col-sm-10
+      input.form-control(ng-model='modal.temp.target.level')
+
+  div.form-group
+    label.col-sm-2.control-label Threshold
+    div.col-sm-10
+      input.form-control(ng-model='modal.temp.target.threshold')
+
+  div.form-group
+    div.col-sm-10.col-sm-push-2
+      button.btn.btn-sm.btn-primary(ng-click='modal.actions.saveTarget()') Save
+      | &nbsp;&nbsp;
+      button.btn.btn-sm.btn-default(ng-click='modal.temp.target = null; modal.temp._tarIndex = null;') Dismiss

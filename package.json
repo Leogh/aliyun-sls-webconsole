@@ -42,9 +42,11 @@
     "mongoose": "^4.4.11",
     "morgan": "~1.6.1",
     "node-schedule": "^1.1.1",
+    "nodemailer": "^2.5.0",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^4.0.0",
+    "request": "^2.74.0",
     "serve-favicon": "~2.3.0"
   },
   "devDependencies": {

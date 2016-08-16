@@ -98,3 +98,11 @@ hr.xs {
   width: 220px;
   text-align: center;
 }
+
+.target-body {
+  border-top: 3px double #000000;
+  border-bottom: 3px double #000000;
+}
+.topic-json-container {
+  max-width: 450px;
+}

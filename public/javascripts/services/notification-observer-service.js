@@ -22,7 +22,7 @@ define([
         get: function (options) {
           return http.send({
             url: observerApi,
-            param: options,
+            params: options,
             method: 'get'
           });
         },
@@ -47,44 +47,45 @@ define([
         remove: function (observerId) {
           return http.send({
             url: observerApi,
-            data: {
+            params: {
               _id: observerId
             },
             method: 'delete'
           });
         },
       },
+      
       observerGroup: {
         get: function (options) {
           return http.send({
             url: observerGroupApi,
-            param: options,
+            params: options,
             method: 'get'
           });
         },
-        add: function(observer) {
+        add: function(group) {
           return http.send({
             url: observerGroupApi,
             data: {
-              observer: observer
+              observerGroup: group
             },
             method: 'post'
           });
         },
-        update: function (observer) {
+        update: function (group) {
           return http.send({
             url: observerGroupApi,
             data: {
-              observer: observer
+              observerGroup: group
             },
             method: 'put'
           });
         },
-        remove: function (observerId) {
+        remove: function (groupId) {
           return http.send({
             url: observerGroupApi,
-            data: {
-              _id: observerId
+            params: {
+              _id: groupId
             },
             method: 'delete'
           });
