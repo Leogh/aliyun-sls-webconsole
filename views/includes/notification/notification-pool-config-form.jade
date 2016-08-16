@@ -87,3 +87,11 @@ div.form-horizontal
         i.glyphicon.glyphicon-question-sign
     div.col-sm-10
       input.form-control(ng-model='modal.pConfig.cron')
+  div.form-group
+    label.col-sm-2.control-label Log Level
+    div.col-sm-10
+      input.form-control(ng-model='modal.pConfig.level', placeholder='Debug, Info, etc.')
+  div.form-group
+    label.col-sm-2.control-label Threshold
+    div.col-sm-10
+      input.form-control(ng-model='modal.pConfig.threshold')

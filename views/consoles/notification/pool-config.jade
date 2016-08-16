@@ -21,24 +21,33 @@ block content
         table.table.table-bordered
           thead
             tr
-              th ID
               th Title
               th Cron Expression &nbsp;
                 a(href='https://github.com/node-schedule/node-schedule#cron-style-scheduling', title='About cron-like expression', target='_blank')
                   i.glyphicon.glyphicon-question-sign
               th Targets
+              th Fallback Cond.
               th Observers
               th Running State
               th Actions
           tbody
-            tr(ng-repeat='pool in vm.pools')
-              td {{ pool._id }}
+            tr(ng-repeat='pool in vm.pools', data-obj-id='{{ pool._id }}')
               td {{ pool.title }}
               td {{ pool.cron }}
               td
                 div(ng-repeat='target in pool.targets')
                   strong # {{ $index + 1 }}
                   pre.target-json-container {{ target | json }}
+              td
+                p
+                  strong Log Level:
+                  br
+                  span {{ pool.level ? pool.level : 'N/A' }}
+                p
+                  strong Threshold:
+                  br
+                  span {{ pool.threshold ? pool.threshold : 'N/A' }}
+
               td
                 p(ng-repeat='ob in pool.observers') {{ ob }}
 
