@@ -106,3 +106,9 @@ hr.xs {
 .topic-json-container {
   max-width: 450px;
 }
+.target-json-container {
+  max-width: 650px;
+}
+.state-json-container {
+  max-width: 450px;
+}
