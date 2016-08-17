@@ -4,6 +4,26 @@
 extends ../../layout
 
 block stylesheets
+  style.
+    .col-title {
+      width: 250px;
+    }
+    .col-cron-expr {
+      width: 150px;
+    }
+    .col-fallback-cond {
+      width: 100px;
+    }
+    .col-observers {
+      width: 250px;
+    }
+    .col-state {
+      width: 500px;
+    }
+    .col-actions {
+      width: 100px;
+    }
+
 
 block scripts
 
@@ -23,15 +43,15 @@ block content
         table.table.table-bordered
           thead
             tr
-              th Title
-              th Cron Expression &nbsp;
+              th.col-title Title
+              th.col-cron-expr Cron Expression &nbsp;
                 a(href='https://github.com/node-schedule/node-schedule#cron-style-scheduling', title='About cron-like expression', target='_blank')
                   i.glyphicon.glyphicon-question-sign
-              th Targets
-              th Fallback Cond.
-              th Observers
-              th Running State
-              th Actions
+              th.col-targets Targets
+              th.col-fallback-cond Fallback Cond.
+              th.col-observers Observers
+              th.col-state Running State
+              th.col-actions Actions
           tbody
             tr(ng-repeat='pool in vm.pools', data-obj-id='{{ pool._id }}')
               td {{ pool.title }}
@@ -54,7 +74,7 @@ block content
                 p(ng-repeat='ob in pool.observers') {{ ob }}
 
               td
-                pre.target-json-container {{ vm.poolRunState(pool._id) | json }}
+                pre.state-json-container {{ vm.poolRunState(pool._id) | json }}
               td
                 p
                   button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdatePool(pool)', ng-diabled='vm.states.cmdExecuting') Edit
