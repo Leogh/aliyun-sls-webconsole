@@ -27,11 +27,14 @@ define([
   function notificationPoolController($scope, $uibModal, $interval, poolService) {
     var vm = this;
 
+    var ticker = null;
+
     vm.pools = [];
     vm.poolStatus = {};
     vm.states = {
       loading: false,
       processing: false,
+      cmdExecuting: false,
     };
 
     vm.poolRunState = function (id, withConfig){
@@ -42,7 +45,7 @@ define([
         }
         return val;
       }
-      return undefined;
+      return { msg: 'N/A' };
     };
 
     vm.actions = {
@@ -60,13 +63,51 @@ define([
               loadPools();
             });
         }
+      },
+      refreshPoolState: function () {
+        loadStatus();
+      },
+      restartPool: function (pool) {
+        vm.states.cmdExecuting = true;
+        poolService
+          .exec('start', pool._id)
+          .error(function (code, msg) {
+            alert(code + ': ' + msg);
+          })
+          .success(function () {
+            loadStatus();
+          })
+          ['finally'](function (){
+            vm.states.cmdExecuting = false;
+          });
+      },
+      stopPool: function (pool) {
+        vm.states.cmdExecuting = true;
+        poolService
+          .exec('stop', pool._id)
+          .error(function (code, msg) {
+            alert(code + ': ' + msg);
+          })
+          .success(function () {
+            loadStatus();
+          })
+          ['finally'](function (){
+            vm.states.cmdExecuting = false;
+          });
+      },
+      toggleAutoRefreshPoolState: function(interval){
+        if (ticker == null){
+          ticker = $interval(function () {
+            loadStatus();
+          }, interval);
+        } else {
+          $interval.cancel(ticker);
+          ticker = null;
+        }
       }
     };
 
     loadPools();
-    $interval(function () {
-      loadStatus();
-    }, 5000);
 
     function loadPools(){
       vm.pools = [];
