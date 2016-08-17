@@ -15,6 +15,8 @@ block content
       div.col-sm-12
         h3 Notification Pool(s) Configuration Central &nbsp;&nbsp;
           button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdatePool()') Add a Pool
+          | &nbsp;&nbsp;
+          button.btn.btn-primary.btn-sm(ng-click='vm.actions.refreshPoolState()') Refresh State
 
     div.row
       div.col-sm-12
@@ -54,9 +56,14 @@ block content
               td
                 pre.target-json-container {{ vm.poolRunState(pool._id) | json }}
               td
-                button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdatePool(pool)') Edit
-                button.btn.btn-primary.btn-sm(ng-click='vm.actions.removePool(pool)') Remove
-
+                p
+                  button.btn.btn-primary.btn-sm(ng-click='vm.actions.addOrUpdatePool(pool)', ng-diabled='vm.states.cmdExecuting') Edit
+                p
+                  button.btn.btn-primary.btn-sm(ng-click='vm.actions.removePool(pool)', ng-diabled='vm.states.cmdExecuting') Remove
+                p
+                  button.btn.btn-success.btn-sm(ng-click='vm.actions.restartPool(pool)', ng-diabled='vm.states.cmdExecuting') Restart
+                p
+                  button.btn.btn-danger.btn-sm(ng-click='vm.actions.stopPool(pool)', ng-diabled='vm.states.cmdExecuting') Stop
 
 
   script(type='text/ng-template', id='notification-pool-config-modal.html')
