@@ -112,3 +112,8 @@ hr.xs {
 .state-json-container {
   max-width: 450px;
 }
+
+.log-message-container p {
+  word-wrap: break-word;
+  word-break: break-all;
+}
